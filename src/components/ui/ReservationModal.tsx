@@ -202,7 +202,7 @@ export function ReservationModal({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-8"
+          className="fixed inset-0 z-100 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-3 md:p-8"
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
@@ -212,11 +212,11 @@ export function ReservationModal({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="rounded-[24px] overflow-hidden shadow-modal"
+            className="rounded-t-[24px] sm:rounded-[24px] overflow-hidden shadow-modal"
           >
             <div
               ref={panelRef}
-              className="relative w-full max-w-2xl max-h-[85vh] bg-white flex flex-col"
+              className="relative w-full sm:max-w-2xl max-h-[95vh] sm:max-h-[85vh] bg-white flex flex-col"
             >
               <button
                 onClick={onClose}
@@ -229,7 +229,7 @@ export function ReservationModal({
               {step === "form" && (
                 <>
                   {/* Fixed Header */}
-                  <div className="shrink-0 px-8 md:px-10 pt-12 pb-4">
+                  <div className="shrink-0 px-5 md:px-10 pt-12 pb-4">
                     <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile text-on-surface mb-2 pr-10">
                       Reserve {property.name}
                     </h2>
@@ -241,7 +241,7 @@ export function ReservationModal({
 
                   {/* Scrollable Body */}
                   <div
-                    className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-8 md:px-10 pb-4"
+                    className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 md:px-10 pb-4"
                     style={{ WebkitOverflowScrolling: "touch" }}
                   >
                     {/* Trip Details */}
@@ -557,12 +557,12 @@ export function ReservationModal({
 
               {/* Footer - shown during form and submitting states */}
               {(step === "form" || step === "submitting") && (
-                <div className="shrink-0 px-8 md:px-10 pt-4 pb-8 md:pb-10 border-t border-outline-variant/30">
-                  <div className="flex items-center gap-4">
+                <div className="shrink-0 px-5 md:px-10 pt-4 pb-6 md:pb-10 border-t border-outline-variant/30">
+                  <div className="flex flex-col-reverse sm:flex-row items-center gap-3">
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 md:flex-none px-8 py-4 font-body text-label-caps text-on-surface-variant uppercase tracking-widest border border-outline-variant rounded-default hover:bg-surface-container-low transition-all duration-300 cursor-pointer"
+                      className="w-full sm:w-auto px-8 py-4 font-body text-label-caps text-on-surface-variant uppercase tracking-widest border border-outline-variant rounded-default hover:bg-surface-container-low transition-all duration-300 cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -570,7 +570,7 @@ export function ReservationModal({
                       type="button"
                       onClick={handleSubmit}
                       disabled={step === "submitting"}
-                      className="flex-1 md:flex-none inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary text-on-primary font-body text-label-caps uppercase tracking-widest rounded-default shadow-button hover:bg-primary-hover hover:shadow-elevated transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary text-on-primary font-body text-label-caps uppercase tracking-widest rounded-default shadow-button hover:bg-primary-hover hover:shadow-elevated transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {step === "submitting" ? (
                         <>
@@ -683,7 +683,7 @@ function SuccessState({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="p-8 md:p-10 text-center"
+      className="p-6 md:p-10 text-center"
     >
       <motion.div
         initial={{ scale: 0 }}
