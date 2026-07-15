@@ -10,10 +10,13 @@ import {
   Mail,
   MessageCircle,
   FileText,
+  ArrowRight,
+  Copy,
 } from "lucide-react";
 import { GuestSelector } from "./GuestSelector";
 import type { GuestCount } from "./GuestSelector";
 import type { VillaPolicy } from "../../types";
+import { generateReservationId } from "../../lib/reservationData";
 
 interface PropertyInfo {
   id: string;
@@ -87,6 +90,7 @@ export function ReservationModal({
   const [specialRequests, setSpecialRequests] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [reservationId, setReservationId] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
   const initialFocusRef = useRef<HTMLInputElement>(null);
   const facebookNameRef = useRef<HTMLInputElement>(null);
@@ -180,6 +184,25 @@ export function ReservationModal({
 
   function handleSubmit() {
     if (!validate()) return;
+    const newId = generateReservationId();
+    setReservationId(newId);
+
+    const reservationData = {
+      id: newId,
+      email,
+      villaId: property.id,
+      villaName: property.name,
+      maxGuests: property.maxGuests,
+      checkIn,
+      checkOut,
+      guests,
+      createdAt: new Date().toISOString().split("T")[0],
+      status: "awaiting_confirmation" as const,
+    };
+
+    localStorage.setItem("krib_last_reservation", JSON.stringify({ id: newId, email }));
+    localStorage.setItem("krib_last_reservation_full", JSON.stringify(reservationData));
+
     setStep("submitting");
     setTimeout(() => setStep("success"), 1800);
   }
@@ -642,6 +665,7 @@ export function ReservationModal({
                   <SuccessState
                     onClose={onClose}
                     propertyName={property.name}
+                    reservationId={reservationId}
                   />
                 </div>
               )}
@@ -674,10 +698,21 @@ function SectionDivider({
 function SuccessState({
   onClose,
   propertyName,
+  reservationId,
 }: {
   onClose: () => void;
   propertyName: string;
+  reservationId: string;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(reservationId).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -707,19 +742,48 @@ function SuccessState({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
-        className="font-body text-body-md text-on-surface-variant max-w-lg mx-auto leading-relaxed mb-8"
+        className="font-body text-body-md text-on-surface-variant max-w-lg mx-auto leading-relaxed mb-6"
       >
         Thank you for choosing KRiB Beverly Place. We have received your
         reservation request for{" "}
         <strong className="text-on-surface">{propertyName}</strong>. Our team
         will review your selected date and contact you through your preferred
-        contact method once your reservation has been reviewed.
+        contact method.
       </motion.p>
+
+      {/* Reservation ID */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        className="mb-6"
+      >
+        <p className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] mb-2">
+          Reservation ID
+        </p>
+        <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-container-low rounded-default border border-outline-variant/40">
+          <code className="font-mono text-sm font-semibold text-on-surface tracking-tight">
+            {reservationId}
+          </code>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="p-1.5 rounded-md hover:bg-outline-variant/30 transition-colors cursor-pointer"
+            aria-label="Copy reservation ID"
+          >
+            {copied ? (
+              <Check size={14} className="text-tertiary" />
+            ) : (
+              <Copy size={14} className="text-on-surface-variant" />
+            )}
+          </button>
+        </div>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.5 }}
+        transition={{ duration: 0.4, delay: 0.55 }}
         className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-amber-50 border border-amber-200/60 mb-10"
       >
         <Clock size={14} className="text-amber-600" />
@@ -736,8 +800,18 @@ function SuccessState({
       >
         <button
           type="button"
+          onClick={() => {
+            onClose();
+            window.location.href = "/my-reservation";
+          }}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-primary text-on-primary font-body text-label-caps uppercase tracking-widest rounded-default hover:bg-primary-hover transition-all duration-300 cursor-pointer"
+        >
+          View My Reservation <ArrowRight size={14} />
+        </button>
+        <button
+          type="button"
           onClick={onClose}
-          className="px-8 py-4 font-body text-label-caps text-on-surface-variant uppercase tracking-widest border border-outline-variant rounded-default hover:bg-surface-container-low transition-all duration-300 cursor-pointer"
+          className="w-full sm:w-auto px-8 py-4 font-body text-label-caps text-on-surface-variant uppercase tracking-widest border border-outline-variant rounded-default hover:bg-surface-container-low transition-all duration-300 cursor-pointer"
         >
           Close
         </button>

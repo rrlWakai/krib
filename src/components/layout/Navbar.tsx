@@ -88,19 +88,18 @@ export function Navbar() {
                 Contact
               </a>
             </>
-          ) : (
-            <Link
-              to="/track-reservation"
-              className={cn(
-                "font-body text-sm font-medium transition-all duration-300",
-                scrolled
-                  ? "text-on-surface-variant hover:text-primary"
-                  : "text-white/90 hover:text-white",
-              )}
-            >
-              Track Reservation
-            </Link>
-          )}
+          ) : null}
+          <Link
+            to="/my-reservation"
+            className={cn(
+              "font-body text-sm font-medium transition-all duration-300",
+              scrolled
+                ? "text-on-surface-variant hover:text-primary"
+                : "text-white/90 hover:text-white",
+            )}
+          >
+            My Reservation
+          </Link>
         </div>
 
         <div className="hidden md:block">
@@ -170,15 +169,14 @@ export function Navbar() {
                     Contact
                   </a>
                 </>
-              ) : (
-                <Link
-                  to="/track-reservation"
-                  onClick={() => setMobileOpen(false)}
-                  className="font-body text-sm font-medium text-on-surface transition-colors hover:text-primary"
-                >
-                  Track Reservation
-                </Link>
-              )}
+              ) : null}
+              <Link
+                to="/my-reservation"
+                onClick={() => setMobileOpen(false)}
+                className="font-body text-sm font-medium text-on-surface transition-colors hover:text-primary"
+              >
+                My Reservation
+              </Link>
               <a
                 href={isHomePage ? "#villas" : "/"}
                 onClick={() => setMobileOpen(false)}

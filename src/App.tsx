@@ -20,8 +20,8 @@ const GalleryPage = lazy(() =>
 const LocationPage = lazy(() =>
   import("./pages/LocationPage").then((m) => ({ default: m.LocationPage })),
 );
-const TrackReservationPage = lazy(() =>
-  import("./pages/TrackReservationPage").then((m) => ({ default: m.TrackReservationPage })),
+const MyReservationPage = lazy(() =>
+  import("./pages/MyReservationPage").then((m) => ({ default: m.MyReservationPage })),
 );
 
 function PageLoader() {
@@ -109,7 +109,7 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                 <Route path="/krib-2" element={<VillaDetailPage />} />
                 <Route path="/gallery" element={<GalleryPage />} />
                 <Route path="/location" element={<LocationPage />} />
-                <Route path="/track-reservation" element={<TrackReservationPage />} />
+                <Route path="/my-reservation" element={<MyReservationPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
