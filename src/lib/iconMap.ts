@@ -1,0 +1,52 @@
+import {
+  Waves, Bed, ShowerHead, UtensilsCrossed, ChefHat, ParkingCircle,
+  Wifi, Tv, Wine, Snowflake, WashingMachine, Refrigerator, Microwave,
+  Coffee, Sun, Speaker, LogIn, LogOut, Users, Ban, PawPrint, Volume2,
+  Sparkles, Scale, ShoppingBag, Plane, Mountain, Store, Car, Circle,
+  Flame, CookingPot, Droplets, Music, Gamepad2, Camera, PartyPopper,
+  type LucideIcon,
+} from 'lucide-react'
+
+const iconMap: Record<string, LucideIcon> = {
+  pool: Waves,
+  bed: Bed,
+  shower: ShowerHead,
+  restaurant: UtensilsCrossed,
+  outdoor_grill: ChefHat,
+  local_parking: ParkingCircle,
+  wifi: Wifi,
+  tv: Tv,
+  wine_bar: Wine,
+  ac_unit: Snowflake,
+  local_laundry_service: WashingMachine,
+  kitchen: Refrigerator,
+  microwave: Microwave,
+  coffee: Coffee,
+  deck: Sun,
+  speaker: Speaker,
+  login: LogIn,
+  logout: LogOut,
+  people: Users,
+  smoke_free: Ban,
+  pets: PawPrint,
+  volume_up: Volume2,
+  cleaning_services: Sparkles,
+  gavel: Scale,
+  shopping_bag: ShoppingBag,
+  flight: Plane,
+  terrain: Mountain,
+  store: Store,
+  directions_car: Car,
+  flame: Flame,
+  utensils: UtensilsCrossed,
+  cooking_pot: CookingPot,
+  droplets: Droplets,
+  music: Music,
+  gamepad: Gamepad2,
+  camera: Camera,
+  party: PartyPopper,
+}
+
+export function getIcon(name: string): LucideIcon {
+  return iconMap[name] || Circle
+}

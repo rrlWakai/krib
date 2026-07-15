@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@theme {
+  /* Font families */
+  --font-display: "Playfair Display", serif;
+  --font-body: "Inter", sans-serif;
+
+  /* Display sizes */
+  --text-display-lg: 80px;
+  --text-display-lg--line-height: 92px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 600;
+
+  --text-display-lg-mobile: 48px;
+  --text-display-lg-mobile--line-height: 56px;
+  --text-display-lg-mobile--letter-spacing: -0.01em;
+  --text-display-lg-mobile--font-weight: 600;
+
+  /* Headlines */
+  --text-headline-xl: 48px;
+  --text-headline-xl--line-height: 56px;
+  --text-headline-xl--font-weight: 500;
+
+  --text-headline-xl-mobile: 32px;
+  --text-headline-xl-mobile--line-height: 40px;
+  --text-headline-xl-mobile--font-weight: 500;
+
+  --text-headline-md: 32px;
+  --text-headline-md--line-height: 40px;
+  --text-headline-md--font-weight: 400;
+
+  /* Body sizes */
+  --text-body-lg: 20px;
+  --text-body-lg--line-height: 32px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 26px;
+  --text-body-md--font-weight: 400;
+
+  /* Labels */
+  --text-label-caps: 12px;
+  --text-label-caps--line-height: 16px;
+  --text-label-caps--letter-spacing: 0.1em;
+  --text-label-caps--font-weight: 600;
+
+  /* Quote */
+  --text-quote: 28px;
+  --text-quote--line-height: 42px;
+  --text-quote--font-weight: 400;
+
+  /* ─── MODERN TROPICAL EDITORIAL PALETTE ─── */
+
+  /* Base backgrounds - white dominant */
+  --color-background: #ffffff;
+  --color-on-background: #1e2328;
+  --color-surface: #ffffff;
+  --color-on-surface: #1e2328;
+  --color-on-surface-variant: #5a6068;
+
+  /* Surface layers */
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f8f8f6;
+  --color-surface-container: #f8f8f6;
+  --color-surface-container-high: #f0f0ee;
+  --color-surface-container-highest: #e8e8e6;
+  --color-surface-dim: #e8e8e6;
+  --color-surface-bright: #ffffff;
+
+  /* Primary - Cobalt Blue */
+  --color-primary: #0047ab;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #e4edf8;
+  --color-on-primary-container: #001d4e;
+  --color-primary-hover: #003585;
+  --color-primary-light: #a8c8ee;
+
+  /* Secondary - Walnut Brown */
+  --color-secondary: #8b5e3c;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #f2eae2;
+  --color-on-secondary-container: #5a3a22;
+  --color-secondary-fixed: #f2eae2;
+  --color-secondary-fixed-dim: #d4b8a4;
+  --color-on-secondary-fixed: #5a3a22;
+
+  /* Tertiary - Hunter Green */
+  --color-tertiary: #355e3b;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #e8f0e8;
+  --color-on-tertiary-container: #1e3822;
+  --color-tertiary-fixed: #e8f0e8;
+  --color-tertiary-fixed-dim: #b0c8b0;
+  --color-on-tertiary-fixed: #1e3822;
+
+  /* Utility */
+  --color-outline: #d0d4d8;
+  --color-outline-variant: #e4e6e8;
+  --color-inverse-surface: #2a2e32;
+  --color-inverse-on-surface: #f0f0ee;
+  --color-inverse-primary: #a8c8ee;
+
+  /* Error */
+  --color-error: #d32f2f;
+  --color-on-error: #ffffff;
+  --color-error-container: #fce8e8;
+  --color-on-error-container: #8a1a1a;
+
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-button: 0 2px 6px rgba(79, 145, 184, 0.2);
+  --shadow-modal: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-default: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-section-gap: 160px;
+  --spacing-gutter: 32px;
+  --spacing-margin-desktop: 80px;
+  --spacing-margin-mobile: 24px;
+  --spacing-container-max: 1440px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline);
+  border-radius: 99px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

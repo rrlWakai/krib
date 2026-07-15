@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Our Villas | KRiB Beverly Place</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e4e2dd",
+                    "tertiary-fixed-dim": "#ffb693",
+                    "inverse-on-surface": "#f2f1ec",
+                    "on-tertiary-container": "#ffa072",
+                    "secondary": "#815520",
+                    "on-secondary-fixed": "#2c1700",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#592100",
+                    "primary-container": "#14532d",
+                    "outline-variant": "#c0c9be",
+                    "on-tertiary-fixed-variant": "#76330d",
+                    "surface-container-highest": "#e4e2dd",
+                    "primary": "#003b1b",
+                    "on-primary-container": "#87c695",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#96d5a3",
+                    "secondary-container": "#fdc081",
+                    "on-surface-variant": "#404941",
+                    "on-error": "#ffffff",
+                    "surface-container": "#f0eee9",
+                    "inverse-primary": "#96d5a3",
+                    "on-surface": "#1b1c19",
+                    "tertiary-container": "#78350f",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#717970",
+                    "surface-container-high": "#eae8e3",
+                    "background": "#fbf9f4",
+                    "surface-dim": "#dbdad5",
+                    "secondary-fixed": "#ffdcbc",
+                    "on-secondary-fixed-variant": "#663e09",
+                    "surface-bright": "#fbf9f4",
+                    "tertiary-fixed": "#ffdbcc",
+                    "primary-fixed": "#b1f2be",
+                    "on-background": "#1b1c19",
+                    "on-secondary-container": "#784d18",
+                    "on-primary-fixed": "#00210d",
+                    "on-error-container": "#93000a",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#2e6a41",
+                    "on-primary-fixed-variant": "#12512c",
+                    "surface": "#fbf9f4",
+                    "inverse-surface": "#30312e",
+                    "on-tertiary-fixed": "#351000",
+                    "surface-container-low": "#f5f3ee",
+                    "secondary-fixed-dim": "#f6bb7c",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "80px",
+                    "unit": "8px",
+                    "container-max": "1440px",
+                    "margin-mobile": "24px",
+                    "section-gap": "160px",
+                    "gutter": "32px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["Playfair Display"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-xl": ["Playfair Display"],
+                    "headline-xl-mobile": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "quote": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "body-lg": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "headline-xl": ["48px", {"lineHeight": "56px", "fontWeight": "500"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "400"}],
+                    "quote": ["28px", {"lineHeight": "42px", "fontWeight": "400"}],
+                    "display-lg": ["80px", {"lineHeight": "92px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .reveal-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .editorial-line {
+            position: relative;
+        }
+        .editorial-line::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 1px;
+            background-color: #815520;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-transparent flex justify-between items-center px-margin-desktop py-8 w-full max-w-container-max mx-auto transition-all duration-700 ease-in-out" id="main-nav">
+<div class="font-headline-md text-headline-md tracking-tighter text-primary">KRiB Beverly Place</div>
+<div class="hidden md:flex items-center gap-10">
+<a class="font-label-caps text-label-caps text-on-surface hover:text-secondary transition-colors duration-500" href="#">The Estate</a>
+<a class="font-label-caps text-label-caps text-primary border-b border-primary pb-1 transition-colors duration-500" href="#">Villas</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-secondary transition-colors duration-500" href="#">Dining</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-secondary transition-colors duration-500" href="#">Wellness</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-secondary transition-colors duration-500" href="#">Experience</a>
+</div>
+<button class="font-label-caps text-label-caps bg-primary text-on-primary px-8 py-3 hover:bg-on-primary-fixed-variant transition-colors duration-500 uppercase tracking-widest">
+            Book Now
+        </button>
+</nav>
+<main class="pt-40">
+<!-- Header & Breadcrumb -->
+<header class="px-margin-desktop max-w-container-max mx-auto mb-20">
+<nav class="mb-8 reveal-on-scroll">
+<ol class="flex items-center gap-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
+<li><a class="hover:text-primary transition-colors" href="#">Home</a></li>
+<li><span class="material-symbols-outlined text-[14px]">chevron_right</span></li>
+<li class="text-primary font-bold">Our Villas</li>
+</ol>
+</nav>
+<h1 class="font-display-lg text-display-lg max-w-3xl reveal-on-scroll">Refined Sanctuaries for the Discerning Soul.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-8 reveal-on-scroll">Discover our collection of handcrafted private residences, where architectural precision meets the raw beauty of the Beverly Place landscape.</p>
+</header>
+<!-- Boutique Filter Bar -->
+<section class="px-margin-desktop max-w-container-max mx-auto mb-32 border-y border-outline-variant py-6 reveal-on-scroll">
+<div class="flex flex-wrap items-center justify-between gap-8">
+<div class="flex items-center gap-12">
+<div class="group cursor-pointer">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Collection</span>
+<div class="flex items-center gap-2 font-body-md text-body-md text-on-surface">
+                            All Villas <span class="material-symbols-outlined text-[18px] group-hover:rotate-180 transition-transform">expand_more</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Bedrooms</span>
+<div class="flex items-center gap-2 font-body-md text-body-md text-on-surface">
+                            Any Size <span class="material-symbols-outlined text-[18px] group-hover:rotate-180 transition-transform">expand_more</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Amenities</span>
+<div class="flex items-center gap-2 font-body-md text-body-md text-on-surface">
+                            Select <span class="material-symbols-outlined text-[18px] group-hover:rotate-180 transition-transform">expand_more</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="font-body-md text-body-md text-on-surface-variant italic">Showing 08 Private Residences</span>
+<button class="flex items-center gap-2 font-label-caps text-label-caps text-primary border border-primary px-6 py-2 hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">tune</span> Map View
+                    </button>
+</div>
+</div>
+</section>
+<!-- Villa Listings (Vertical Asymmetric) -->
+<section class="space-y-section-gap mb-section-gap">
+<!-- Villa 01 -->
+<article class="relative reveal-on-scroll">
+<div class="flex flex-col md:flex-row items-center gap-16 px-margin-desktop max-w-container-max mx-auto">
+<div class="w-full md:w-7/12 relative aspect-[4/5] overflow-hidden">
+<img class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000" data-alt="A cinematic, high-angle shot of a minimalist luxury villa at KRiB Beverly Place. The architecture features clean horizontal lines and natural stone textures. A private infinity pool reflects a soft lavender sunset. The lighting is warm and golden, emphasizing a handcrafted, serene atmosphere consistent with an ivory and charcoal editorial palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQR3RiLaM815bvnwcQq7lyLtW-ZPg3pb1Qq2Cq9sylSSoXTy-S4pp2sSM_igLVtCScGv05ZArj-pA2rVoAw9Ze0lKkmnf3ZNTXRNQiJTit6TRPdYfPASg2QnYPl2Rk4Es7Qu7kBK9J7NXhaQwxuWsBRZ9paGP1OZvZ1EiVDyeJx4hK6eiNiDVUEzPWRRIqRGOXUOIGHkgayIQ3jO7mlDBiuhEZs0AAHZ3_AJnQbGJMMe3hK_FUfVIjUYXFtYwMjAjEN-stlxox4zGm"/>
+<div class="absolute top-12 left-12 bg-background/90 backdrop-blur-md p-6">
+<span class="font-label-caps text-label-caps text-secondary block mb-1">01</span>
+<span class="font-headline-md text-headline-md text-on-surface">The Meridian</span>
+</div>
+</div>
+<div class="w-full md:w-4/12">
+<h3 class="font-headline-md text-headline-md mb-6 editorial-line">Sanctuary of Light</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">Elevated above the valley floor, The Meridian offers panoramic views and a layout designed to capture the rhythmic cycle of natural light from dawn to dusk.</p>
+<ul class="space-y-4 mb-10">
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">pool</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Private Infinity Pool</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">cooking</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Artisan Kitchen</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">king_bed</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Master Garden Suite</span>
+</li>
+</ul>
+<div class="flex items-center gap-8 border-t border-outline-variant pt-8">
+<button class="font-label-caps text-label-caps border-b border-on-surface pb-1 hover:text-secondary hover:border-secondary transition-all">Check Availability</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all">View Floorplan</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Villa 02 -->
+<article class="relative reveal-on-scroll">
+<div class="flex flex-col md:flex-row-reverse items-center gap-16 px-margin-desktop max-w-container-max mx-auto">
+<div class="w-full md:w-7/12 relative aspect-[4/5] overflow-hidden">
+<img class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000" data-alt="An interior view of a luxury villa featuring double-height ceilings and a grand stone fireplace. The furniture is curated mid-century modern in neutral tones. Floor-to-ceiling windows look out onto a lush forest at KRiB Beverly Place. Soft morning light filters through sheer ivory curtains, creating a calm, high-end architectural digest aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-dxTrEUzretQIKz4ayr0V4kXgz6kTk0w_dVssvNXb5a8wYwyhKFfVmpJr0pKbd8_no8utHitDUiDKVbwuYmA7U9BxryfL_exRaXqJB8ufueYxjmPw7wf0FE8P9jFeHQupg_kG73ua7BpOq-Mdgc5X0iRNxASebJe3SMinidZhpxVyJr7GLjTEBLI82IAyTdCe5wi2kmOJk3a5kc2xgSZuqCMnhPY1zZ3z9pnN9A8R9_4tBTxWIZejVCRT44DBTe3Zr620nYrPtz78"/>
+<div class="absolute top-12 right-12 bg-background/90 backdrop-blur-md p-6 text-right">
+<span class="font-label-caps text-label-caps text-secondary block mb-1">02</span>
+<span class="font-headline-md text-headline-md text-on-surface">The Hearthstone</span>
+</div>
+</div>
+<div class="w-full md:w-4/12">
+<h3 class="font-headline-md text-headline-md mb-6 editorial-line">Organic Warmth</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">Crafted from local limestone and reclaimed timber, The Hearthstone is a grounded retreat focusing on tactile materials and intimate fireside gatherings.</p>
+<ul class="space-y-4 mb-10">
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">fireplace</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Double-Sided Hearth</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">wine_bar</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Temperature Controlled Cellar</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">spa</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Private Onsen Spa</span>
+</li>
+</ul>
+<div class="flex items-center gap-8 border-t border-outline-variant pt-8">
+<button class="font-label-caps text-label-caps border-b border-on-surface pb-1 hover:text-secondary hover:border-secondary transition-all">Check Availability</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all">View Floorplan</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Villa 03 -->
+<article class="relative reveal-on-scroll">
+<div class="flex flex-col md:flex-row items-center gap-16 px-margin-desktop max-w-container-max mx-auto">
+<div class="w-full md:w-7/12 relative aspect-[4/5] overflow-hidden">
+<img class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000" data-alt="A wide architectural shot of a luxury estate at Beverly Place featuring an outdoor artisan kitchen and a sunken fire pit lounge area. Lush greenery surrounds the property. The overall atmosphere is one of handcrafted luxury, with ivory stone paths and charcoal metal accents under a clear blue afternoon sky." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCA7JlebJ1A2HQS9lUNfblZntsiDLExGy7FqFQOuybkjGHRozgP-F-CmecJsh6OIaid1ol0LbvPcOyhFecr5Dz9OzIRjdRIlzh8LO15yGfd1xXaWwrBwhvWH1knbu0rziDUUOW8VTsNxmXJfSxeGgLk6CXJx4hR67CxbCUtiPOC78yvpfw6tnW1yjFvYV7S_Goz8FqnPzQE4D-1n--6LQVSD_f6bm__jHqbI6XPpwNT1bXkJ6HcZdaM2kIu6b631nMXe3kwlabcS37h"/>
+<div class="absolute top-12 left-12 bg-background/90 backdrop-blur-md p-6">
+<span class="font-label-caps text-label-caps text-secondary block mb-1">03</span>
+<span class="font-headline-md text-headline-md text-on-surface">The Pavilion</span>
+</div>
+</div>
+<div class="w-full md:w-4/12">
+<h3 class="font-headline-md text-headline-md mb-6 editorial-line">Indoor-Outdoor Flow</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">A masterclass in spatial design, The Pavilion features retractable glass walls that dissolve the boundaries between the living room and the wild landscape.</p>
+<ul class="space-y-4 mb-10">
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">deck</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Floating Terrace</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">outdoor_grill</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Chef's Al Fresco Kitchen</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">psychology</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Media &amp; Library Hub</span>
+</li>
+</ul>
+<div class="flex items-center gap-8 border-t border-outline-variant pt-8">
+<button class="font-label-caps text-label-caps border-b border-on-surface pb-1 hover:text-secondary hover:border-secondary transition-all">Check Availability</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all">View Floorplan</button>
+</div>
+</div>
+</div>
+</article>
+</section>
+<!-- Experiences Reminder -->
+<section class="bg-surface-container-low py-32 px-margin-desktop overflow-hidden">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row items-end justify-between gap-16">
+<div class="w-full md:w-1/2 reveal-on-scroll">
+<span class="font-label-caps text-label-caps text-secondary uppercase tracking-[0.2em] mb-4 block">The Beverly Lifestyle</span>
+<h2 class="font-display-lg text-display-lg leading-none mb-12">Beyond the <br/> Threshold.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12">Your villa is just the beginning. Immerse yourself in our curated experiences, from private astronomical tours to slow-fire culinary workshops.</p>
+<a class="group inline-flex items-center gap-4 font-label-caps text-label-caps text-primary border border-primary px-10 py-5 hover:bg-primary hover:text-on-primary transition-all duration-500" href="#">
+                        Explore All Experiences
+                        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
+</a>
+</div>
+<div class="w-full md:w-1/2 flex gap-8 reveal-on-scroll">
+<div class="w-1/2 aspect-[3/4] overflow-hidden mt-20">
+<img class="w-full h-full object-cover" data-alt="A close-up shot of hands preparing fresh, artisanal pasta in a rustic kitchen setting. Soft dustings of flour catch the light. The mood is authentic and luxury-focused, highlighting the handcrafted experiences at Beverly Place." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB722NwwEJ0a34eeJJWPBNMaOhufT7_9hYjGC22HsQHczwkg0iKt90SFbd0LqiHmuVk11G16jVW_NDEilirGEDtXH49ZvvkqN3kqKkNKVXo4Qgz_piKv8jhwZdkXfg73ELUcfN3C-LIiqvcNVJ-i7CKZnXeRYhfvtYJTPlZiMKOdOxZf212lXAV14ff75uLJ1N3oSomT70CiYkfBHUcWBBxfF3NwCp43v42oT7-NGGJSzio4klDk5gZ0rohTx2w_9DjSGNiJillH4tG"/>
+</div>
+<div class="w-1/2 aspect-[3/4] overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A serene wide shot of a guest practicing yoga on a private terrace overlooking misty mountains at dawn. The color palette is muted ivory, charcoal, and soft blues. The composition is calm and minimal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBa4HvLvZCLxaF09W7PB6RF4L0XB9k4-vGNPhvcB2w2C4xJ1p44Ny-Hd8DhKvarZ9cKCboCI0ZIw_J7cx4lVzuk1V52V_LU35Ps1iqMNPRKtujexl-JLlFmS0jixuZmHChyjZyZ1ejCoPrHqQbnusAL2J7qcjcmnpzotDKmY2Gn5FFyQbTTE4-bSZ7lJhi9c9oq_0QYBJ7DbCmWYg7hEdVAuatpl_piXYU3OljhgrdUp9qmz0wQY0sIlcjgCLDImX-YKgkotSEb8RQk"/>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-dim border-t border-outline-variant dark:border-outline">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop py-16 w-full max-w-container-max mx-auto gap-8">
+<div class="flex flex-col gap-4">
+<div class="font-headline-md text-headline-md text-primary">KRiB Beverly Place</div>
+<p class="font-body-md text-body-md text-on-surface-variant opacity-80 max-w-xs">Handcrafted luxury and architectural serenity in the heart of the estate.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-10">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Press</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Careers</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Contact</a>
+</div>
+<div class="text-right">
+<p class="font-body-md text-body-md text-on-surface-variant opacity-80">© 2024 KRiB Beverly Place. All rights reserved.</p>
+<div class="flex gap-4 justify-center md:justify-end mt-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">brand_awareness</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">camera</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">language</span>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Reveal on Scroll Logic
+        const revealElements = document.querySelectorAll('.reveal-on-scroll');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Navigation Scroll Effect
+        const nav = document.getElementById('main-nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.classList.add('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'py-4');
+                nav.classList.remove('py-8');
+            } else {
+                nav.classList.remove('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'py-4');
+                nav.classList.add('py-8');
+            }
+        });
+
+        // Simple Smooth Parallax for Images
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const images = document.querySelectorAll('article img');
+            images.forEach(img => {
+                const speed = 0.05;
+                const rect = img.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    const yPos = (rect.top * speed);
+                    img.style.transform = `scale(1.1) translateY(${yPos}px)`;
+                }
+            });
+        });
+    </script>
+</body></html>
