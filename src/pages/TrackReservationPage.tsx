@@ -1,16 +1,26 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, X, CalendarDays, Users, Hash, Mail, ChevronRight, Clock } from "lucide-react";
+import {
+  Search,
+  X,
+  CalendarDays,
+  Users,
+  Hash,
+  Mail,
+  Clock,
+} from "lucide-react";
 import { cn } from "../lib/cn";
 import { lookupReservation, getStatusDisplay } from "../lib/reservationData";
-import type { Reservation, ReservationStatus } from "../lib/reservationData";
+import type { Reservation } from "../lib/reservationData";
 import { ReservationStatusBadge } from "../components/ui/ReservationStatusBadge";
 import { ReservationTimeline } from "../components/ui/ReservationTimeline";
 
 export function TrackReservationPage() {
   const [reservationId, setReservationId] = useState("");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "found" | "not_found">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "found" | "not_found"
+  >("idle");
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [errors, setErrors] = useState<{ id?: string; email?: string }>({});
 
@@ -18,7 +28,8 @@ export function TrackReservationPage() {
     const e: { id?: string; email?: string } = {};
     if (!reservationId.trim()) e.id = "Reservation ID is required";
     if (!email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Enter a valid email";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      e.email = "Enter a valid email";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -58,7 +69,8 @@ export function TrackReservationPage() {
             Track Your Reservation
           </h1>
           <p className="font-body text-body-lg text-on-surface-variant max-w-md mx-auto leading-relaxed">
-            Enter your Reservation ID and email address to check the status of your booking.
+            Enter your Reservation ID and email address to check the status of
+            your booking.
           </p>
         </motion.div>
 
@@ -83,7 +95,11 @@ export function TrackReservationPage() {
                   placeholder="e.g. KRIB-20260715-8F3XK2"
                   className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-default font-body text-body-md text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary transition-colors duration-200"
                 />
-                {errors.id && <p className="font-body text-[12px] text-error mt-1">{errors.id}</p>}
+                {errors.id && (
+                  <p className="font-body text-[12px] text-error mt-1">
+                    {errors.id}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1.5">
@@ -97,7 +113,11 @@ export function TrackReservationPage() {
                   placeholder="you@email.com"
                   className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-default font-body text-body-md text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary transition-colors duration-200"
                 />
-                {errors.email && <p className="font-body text-[12px] text-error mt-1">{errors.email}</p>}
+                {errors.email && (
+                  <p className="font-body text-[12px] text-error mt-1">
+                    {errors.email}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -109,9 +129,24 @@ export function TrackReservationPage() {
             >
               {status === "loading" ? (
                 <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    />
                   </svg>
                   Searching...
                 </>
@@ -140,8 +175,8 @@ export function TrackReservationPage() {
               Reservation Not Found
             </h2>
             <p className="font-body text-body-md text-on-surface-variant max-w-sm mx-auto leading-relaxed mb-6">
-              We couldn't find a reservation matching the ID and email you provided.
-              Please double-check your information and try again.
+              We couldn't find a reservation matching the ID and email you
+              provided. Please double-check your information and try again.
             </p>
             <button
               type="button"
@@ -178,16 +213,19 @@ export function TrackReservationPage() {
             <ReservationSummaryCard reservation={reservation} />
 
             {/* Awaiting Payment Card */}
-            {reservation.status === "awaiting_payment" && reservation.amountDue && (
-              <AwaitingPaymentCard
-                amountDue={reservation.amountDue}
-                deadline={reservation.paymentDeadline!}
-              />
-            )}
+            {reservation.status === "awaiting_payment" &&
+              reservation.amountDue && (
+                <AwaitingPaymentCard
+                  amountDue={reservation.amountDue}
+                  deadline={reservation.paymentDeadline!}
+                />
+              )}
 
             {/* Timeline */}
             <div className="rounded-[24px] border border-outline-variant/60 bg-white p-8 shadow-sm">
-              <h3 className="font-display text-headline-md text-on-surface mb-6">Reservation Progress</h3>
+              <h3 className="font-display text-headline-md text-on-surface mb-6">
+                Reservation Progress
+              </h3>
               <ReservationTimeline status={reservation.status} />
             </div>
           </motion.div>
@@ -200,32 +238,70 @@ export function TrackReservationPage() {
 function ReservationSummaryCard({ reservation }: { reservation: Reservation }) {
   return (
     <div className="rounded-[24px] border border-outline-variant/60 bg-white p-8 shadow-sm">
-      <h3 className="font-display text-headline-md text-on-surface mb-6">Reservation Details</h3>
+      <h3 className="font-display text-headline-md text-on-surface mb-6">
+        Reservation Details
+      </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <DetailField icon={Hash} label="Reservation ID" value={reservation.id} />
-        <DetailField icon={CalendarDays} label="Check-in" value={formatDate(reservation.checkIn)} />
-        <DetailField icon={CalendarDays} label="Check-out" value={formatDate(reservation.checkOut)} />
-        <DetailField icon={Users} label="Guests" value={formatGuests(reservation.guests)} />
-        <DetailField icon={Clock} label="Status" value={getStatusDisplay(reservation.status).label} />
+        <DetailField
+          icon={Hash}
+          label="Reservation ID"
+          value={reservation.id}
+        />
+        <DetailField
+          icon={CalendarDays}
+          label="Check-in"
+          value={formatDate(reservation.checkIn)}
+        />
+        <DetailField
+          icon={CalendarDays}
+          label="Check-out"
+          value={formatDate(reservation.checkOut)}
+        />
+        <DetailField
+          icon={Users}
+          label="Guests"
+          value={formatGuests(reservation.guests)}
+        />
+        <DetailField
+          icon={Clock}
+          label="Status"
+          value={getStatusDisplay(reservation.status).label}
+        />
         <DetailField icon={Mail} label="Email" value={reservation.email} />
       </div>
     </div>
   );
 }
 
-function DetailField({ icon: Icon, label, value }: { icon: typeof Hash; label: string; value: string }) {
+function DetailField({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Hash;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="p-4 bg-surface-container-low rounded-default">
-      <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1.5 flex items-center gap-1.5">
+      <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1.5 items-center gap-1.5">
         <Icon size={12} className="text-primary/60" />
         {label}
       </label>
-      <p className="font-body text-body-md font-medium text-on-surface break-all">{value}</p>
+      <p className="font-body text-body-md font-medium text-on-surface break-all">
+        {value}
+      </p>
     </div>
   );
 }
 
-function AwaitingPaymentCard({ amountDue, deadline }: { amountDue: number; deadline: string }) {
+function AwaitingPaymentCard({
+  amountDue,
+  deadline,
+}: {
+  amountDue: number;
+  deadline: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -233,7 +309,7 @@ function AwaitingPaymentCard({ amountDue, deadline }: { amountDue: number; deadl
       transition={{ delay: 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "rounded-[24px] border p-8 shadow-sm",
-        "border-blue-200/60 bg-gradient-to-br from-blue-50/60 to-white",
+        "border-blue-200/60 bg-linear-to-br from-blue-50/60 to-white",
       )}
     >
       <div className="flex items-start gap-4">
@@ -241,10 +317,14 @@ function AwaitingPaymentCard({ amountDue, deadline }: { amountDue: number; deadl
           <Clock size={20} className="text-[#4F91B8]" />
         </div>
         <div className="flex-1">
-          <h3 className="font-display text-headline-md text-on-surface mb-1">Payment Required</h3>
+          <h3 className="font-display text-headline-md text-on-surface mb-1">
+            Payment Required
+          </h3>
           <p className="font-body text-body-md text-on-surface-variant leading-relaxed mb-4">
-            Your reservation has been confirmed! Please complete the payment of{' '}
-            <strong className="text-on-surface">₱{(amountDue / 100).toLocaleString()}</strong>{' '}
+            Your reservation has been confirmed! Please complete the payment of{" "}
+            <strong className="text-on-surface">
+              ₱{(amountDue / 100).toLocaleString()}
+            </strong>{" "}
             to secure your booking.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200/60 mb-4">
@@ -254,8 +334,12 @@ function AwaitingPaymentCard({ amountDue, deadline }: { amountDue: number; deadl
             </span>
           </div>
           <div className="w-full bg-white border border-blue-200/60 rounded-default p-6 text-center">
-            <p className="font-body text-sm text-on-surface-variant/60 mb-1">Payment via</p>
-            <p className="font-display text-headline-sm font-semibold text-on-surface">PayMongo</p>
+            <p className="font-body text-sm text-on-surface-variant/60 mb-1">
+              Payment via
+            </p>
+            <p className="font-display text-headline-sm font-semibold text-on-surface">
+              PayMongo
+            </p>
             <p className="font-body text-xs text-on-surface-variant/40 mt-2">
               Online payment integration coming soon.
             </p>
@@ -276,11 +360,19 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function formatGuests(g: { adults: number; children: number; infants: number; pets: number }): string {
+function formatGuests(g: {
+  adults: number;
+  children: number;
+  infants: number;
+  pets: number;
+}): string {
   const parts: string[] = [];
-  if (g.adults) parts.push(`${g.adults} ${g.adults === 1 ? "Adult" : "Adults"}`);
-  if (g.children) parts.push(`${g.children} ${g.children === 1 ? "Child" : "Children"}`);
-  if (g.infants) parts.push(`${g.infants} ${g.infants === 1 ? "Infant" : "Infants"}`);
+  if (g.adults)
+    parts.push(`${g.adults} ${g.adults === 1 ? "Adult" : "Adults"}`);
+  if (g.children)
+    parts.push(`${g.children} ${g.children === 1 ? "Child" : "Children"}`);
+  if (g.infants)
+    parts.push(`${g.infants} ${g.infants === 1 ? "Infant" : "Infants"}`);
   if (g.pets) parts.push(`${g.pets} ${g.pets === 1 ? "Pet" : "Pets"}`);
   return parts.join(", ");
 }
