@@ -161,7 +161,7 @@ export function AvailabilityCalendar({ villaId }: AvailabilityCalendarProps) {
         )}
       </div>
 
-      <div className="border-t border-outline-variant px-8 py-4 flex items-center gap-6">
+      <div className="border-t border-outline-variant px-8 py-4 flex items-center gap-6 flex-wrap">
         {(['available', 'limited', 'booked'] as AvailabilityStatus[]).map((status) => (
           <div key={status} className="flex items-center gap-2">
             <div className={cn('w-2.5 h-2.5 rounded-full', statusColors[status])} />

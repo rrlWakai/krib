@@ -17,7 +17,7 @@ export function NotFoundPage() {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="font-display text-[120px] leading-none text-primary/10 font-semibold mb-4"
+          className="font-display text-[clamp(72px,20vw,120px)] leading-none text-primary/10 font-semibold mb-4"
         >
           404
         </motion.p>

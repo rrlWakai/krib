@@ -41,7 +41,7 @@ export function SectionHeading({
       {typeof title === 'string' ? (
         <h2
           className={cn(
-            'font-display text-headline-xl mb-6',
+            'font-display text-headline-xl max-md:text-headline-xl-mobile mb-6',
             titleClassName
           )}
         >

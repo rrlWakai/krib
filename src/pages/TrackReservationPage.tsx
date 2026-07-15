@@ -80,7 +80,7 @@ export function TrackReservationPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-[24px] border border-outline-variant/60 bg-white p-8 shadow-sm"
+            className="rounded-[24px] border border-outline-variant/60 bg-white p-8 max-md:p-6 shadow-sm"
           >
             <div className="space-y-5">
               <div>
@@ -166,7 +166,7 @@ export function TrackReservationPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-[24px] border border-outline-variant/60 bg-white p-8 md:p-12 shadow-sm text-center"
+            className="rounded-[24px] border border-outline-variant/60 bg-white p-8 max-md:p-6 md:p-12 shadow-sm text-center"
           >
             <div className="w-14 h-14 rounded-full bg-surface-container-low flex items-center justify-center mx-auto mb-5">
               <Search size={24} className="text-on-surface-variant/50" />
@@ -222,7 +222,7 @@ export function TrackReservationPage() {
               )}
 
             {/* Timeline */}
-            <div className="rounded-[24px] border border-outline-variant/60 bg-white p-8 shadow-sm">
+            <div className="rounded-[24px] border border-outline-variant/60 bg-white p-8 max-md:p-6 shadow-sm">
               <h3 className="font-display text-headline-md text-on-surface mb-6">
                 Reservation Progress
               </h3>
@@ -237,7 +237,7 @@ export function TrackReservationPage() {
 
 function ReservationSummaryCard({ reservation }: { reservation: Reservation }) {
   return (
-    <div className="rounded-[24px] border border-outline-variant/60 bg-white p-8 shadow-sm">
+    <div className="rounded-[24px] border border-outline-variant/60 bg-white p-8 max-md:p-6 shadow-sm">
       <h3 className="font-display text-headline-md text-on-surface mb-6">
         Reservation Details
       </h3>

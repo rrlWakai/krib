@@ -36,7 +36,7 @@ export function LocationPage() {
             <div className="space-y-8 mb-12">
               {location.directions.map((d, i) => (
                 <div key={i} className="border-l-2 border-primary pl-6">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <span className="font-body text-label-caps text-secondary uppercase tracking-widest">
                       From {d.from}
                     </span>

@@ -74,7 +74,7 @@ export function Footer() {
             <div className="flex flex-col gap-3">
               <a
                 href={`mailto:${contact.email}`}
-                className="font-body text-headline-xs text-on-surface hover:text-primary transition-colors duration-300"
+                className="font-body text-headline-xs text-on-surface hover:text-primary transition-colors duration-300 break-all"
               >
                 {contact.email}
               </a>
