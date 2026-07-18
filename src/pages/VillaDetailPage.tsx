@@ -18,12 +18,13 @@ import { fadeUp, pageTransition } from "../lib/animations";
 import { Reveal } from "../components/ui/Reveal";
 import { SectionLabel } from "../components/ui/SectionLabel";
 import { StickyReservationCard } from "../components/ui/StickyReservationCard";
+import { StickyBookingBar } from "../components/ui/StickyBookingBar";
 import { AvailabilityCalendar } from "../components/ui/AvailabilityCalendar";
 import { PhotoGalleryModal } from "../components/ui/PhotoGalleryModal";
 import { VillaPolicies } from "../components/ui/VillaPolicies";
 import { VillaHeader } from "../components/ui/VillaHeader";
 import { VillaAmenities } from "../components/sections/villa/VillaAmenities";
-import { ReservationModal } from "../components/ui/ReservationModal";
+import { BookingExperience } from "../components/ui/BookingExperience";
 import { getIcon } from "../lib/iconMap";
 import { cn } from "../lib/cn";
 import { images } from "../lib/images";
@@ -65,6 +66,7 @@ export function VillaDetailPage() {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [reservationOpen, setReservationOpen] = useState(false);
+  const [partyFeeActive, setPartyFeeActive] = useState(false);
 
   const allImages = useMemo(() => {
     if (!villa) return [];
@@ -221,7 +223,7 @@ export function VillaDetailPage() {
                   key={i}
                   onClick={() => setGalleryIndex(i)}
                   className={cn(
-                    "w-2 h-2 rounded-full transition-all duration-300",
+                    "w-3 h-3 min-w-11 min-h-11 flex items-center justify-center rounded-full transition-all duration-300",
                     galleryIndex === i
                       ? "bg-primary w-6"
                       : "bg-primary/30 hover:bg-primary/60",
@@ -268,7 +270,7 @@ export function VillaDetailPage() {
         </section>
 
         {/* ===== 2-7: MAIN CONTENT + STICKY CARD ===== */}
-        <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile py-section-gap">
+        <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile py-section-gap max-md:py-section-gap-mobile">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
             {/* Left Column */}
             <div className="lg:col-span-7 space-y-section-gap">
@@ -431,8 +433,8 @@ export function VillaDetailPage() {
               </section>
             </div>
 
-            {/* Right Column - Sticky Card */}
-            <div className="lg:col-span-5">
+            {/* Right Column - Sticky Card (Desktop only) */}
+            <div className="hidden lg:block lg:col-span-5">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -445,7 +447,8 @@ export function VillaDetailPage() {
                   rateType={villa.priceDetails.rateType}
                   villaName={villa.name}
                   maxGuests={villa.maxGuests}
-                  hasPartyFee
+                  partyFeeActive={partyFeeActive}
+                  onPartyFeeToggle={setPartyFeeActive}
                   onReserve={() => setReservationOpen(true)}
                 />
               </motion.div>
@@ -456,7 +459,7 @@ export function VillaDetailPage() {
         {/* ===== 7. GALLERY — luxury editorial ===== */}
         <section className="overflow-hidden">
           {/* Header */}
-          <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile mb-14 md:mb-20 pt-section-gap">
+          <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile mb-14 md:mb-20 pt-section-gap max-md:pt-section-gap-mobile">
             <Reveal>
               <div className="w-10 h-[2px] bg-primary mb-6" />
               <SectionLabel>GALLERY</SectionLabel>
@@ -616,7 +619,7 @@ export function VillaDetailPage() {
         </section>
 
         {/* ===== 8. LOCATION ===== */}
-        <section id="location" className="py-section-gap">
+        <section id="location" className="py-section-gap max-md:py-section-gap-mobile">
           <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-16">
               <Reveal className="md:col-span-5">
@@ -697,7 +700,7 @@ export function VillaDetailPage() {
         </section>
 
         {/* ===== 9. HOUSE POLICIES ===== */}
-        <section className="bg-surface-container-low py-section-gap">
+        <section className="bg-surface-container-low py-section-gap max-md:py-section-gap-mobile">
           <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile">
             <Reveal>
               <SectionLabel>HOUSE POLICIES</SectionLabel>
@@ -723,7 +726,7 @@ export function VillaDetailPage() {
         onNext={handleNext}
       />
       {villa && (
-        <ReservationModal
+        <BookingExperience
           isOpen={reservationOpen}
           onClose={() => setReservationOpen(false)}
           property={{
@@ -731,10 +734,20 @@ export function VillaDetailPage() {
             name: villa.name,
             priceDetails: villa.priceDetails,
             maxGuests: villa.maxGuests,
-            hasPartyFee: true,
             partyFeeLabel: '₱5,000',
-            policies: villa.policies,
           }}
+          partyFeeActive={partyFeeActive}
+          onPartyFeeToggle={setPartyFeeActive}
+        />
+      )}
+      {villa && (
+        <StickyBookingBar
+          price={villa.priceDetails.perNight}
+          rateType={villa.priceDetails.rateType}
+          maxGuests={villa.maxGuests}
+          partyFeeActive={partyFeeActive}
+          onPartyFeeToggle={setPartyFeeActive}
+          onReserve={() => setReservationOpen(true)}
         />
       )}
     </>

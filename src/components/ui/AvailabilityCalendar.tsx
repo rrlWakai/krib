@@ -20,9 +20,10 @@ const statusLabels: Record<AvailabilityStatus, string> = {
 interface AvailabilityCalendarProps {
   villaId: string
   villaName: string
+  onDateSelect?: (date: string | null) => void
 }
 
-export function AvailabilityCalendar({ villaId }: AvailabilityCalendarProps) {
+export function AvailabilityCalendar({ villaId, onDateSelect }: AvailabilityCalendarProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
@@ -45,6 +46,7 @@ export function AvailabilityCalendar({ villaId }: AvailabilityCalendarProps) {
   function handleDateClick(day: CalendarDay) {
     if (day.status === 'booked') return
     setSelectedDate(day.date)
+    onDateSelect?.(day.date)
   }
 
   const departureDate = selectedDate

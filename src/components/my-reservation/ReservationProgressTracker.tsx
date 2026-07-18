@@ -23,7 +23,7 @@ export function ReservationProgressTracker({ status }: Props) {
 
   return (
     <div className="w-full">
-      <div className="relative flex items-start justify-between gap-0 md:gap-4">
+      <div className="relative flex items-start justify-between gap-2 md:gap-4 overflow-x-auto">
         {TIMELINE_STEPS.map((step, i) => {
           const rank = STATUS_RANK[step.key]
           const done = !isTerminal && currentRank > rank
@@ -46,7 +46,7 @@ export function ReservationProgressTracker({ status }: Props) {
                   animate={{ scale: 1 }}
                   transition={{ delay: i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   className={cn(
-                    "relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500",
+                    "relative z-10 flex h-9 w-9 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500",
                     done
                       ? "border-primary bg-primary text-white shadow-[0_0_0_4px_rgba(0,71,171,0.1)]"
                       : active
@@ -91,7 +91,7 @@ export function ReservationProgressTracker({ status }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 + 0.15, duration: 0.3 }}
                 className={cn(
-                  "font-body text-[11px] md:text-xs font-medium mt-3 text-center leading-tight max-w-[80px] md:max-w-none transition-colors duration-500",
+                  "font-body text-[10px] md:text-xs font-medium mt-3 text-center leading-tight max-w-[60px] md:max-w-none transition-colors duration-500",
                   done || active ? "text-on-surface" : "text-on-surface-variant/50",
                 )}
               >

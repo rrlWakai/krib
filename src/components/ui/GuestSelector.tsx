@@ -80,11 +80,22 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
 
   useEffect(() => {
     if (isMobile && isOpen) {
-      document.body.style.overflow = 'hidden'
+      const alreadyLocked = document.body.style.position === 'fixed'
+      if (!alreadyLocked) {
+        document.body.style.overflow = 'hidden'
+      }
     } else {
-      document.body.style.overflow = ''
+      const alreadyLocked = document.body.style.position === 'fixed'
+      if (!alreadyLocked) {
+        document.body.style.overflow = ''
+      }
     }
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      const alreadyLocked = document.body.style.position === 'fixed'
+      if (!alreadyLocked) {
+        document.body.style.overflow = ''
+      }
+    }
   }, [isMobile, isOpen])
 
   useEffect(() => {
@@ -172,7 +183,7 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 bg-black/20 z-40 md:hidden"
+                className="fixed inset-0 bg-black/20 z-[110] md:hidden"
                 onClick={() => setIsOpen(false)}
                 aria-hidden="true"
               />
@@ -187,7 +198,7 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
               animate="visible"
               exit="exit"
               className={`
-                bg-white shadow-modal border-0 z-50 overflow-y-auto
+                bg-white shadow-modal border-0 z-[115] overflow-y-auto
 
                 /* Mobile: bottom sheet */
                 fixed bottom-0 left-0 right-0 rounded-t-[20px] max-h-[85vh]

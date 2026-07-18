@@ -14,7 +14,7 @@ export function CTA() {
   const scale = useTransform(scrollY, [0, 400], [1.02, 1.08])
 
   return (
-    <section className="relative overflow-hidden bg-[#0f172a] py-40 md:py-48">
+    <section className="relative overflow-hidden bg-[#0f172a] py-20 md:py-40 lg:py-48">
       <motion.img
         src={ctaBackground}
         alt=""

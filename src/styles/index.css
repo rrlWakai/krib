@@ -25,6 +25,26 @@
   --text-headline-xl-mobile--line-height: 40px;
   --text-headline-xl-mobile--font-weight: 500;
 
+  --text-headline-md-mobile: 24px;
+  --text-headline-md-mobile--line-height: 32px;
+  --text-headline-md-mobile--font-weight: 400;
+
+  --text-headline-xs: 20px;
+  --text-headline-xs--line-height: 28px;
+  --text-headline-xs--font-weight: 400;
+
+  --text-headline-sm: 24px;
+  --text-headline-sm--line-height: 32px;
+  --text-headline-sm--font-weight: 400;
+
+  --text-headline-sm-mobile: 18px;
+  --text-headline-sm-mobile--line-height: 26px;
+  --text-headline-sm-mobile--font-weight: 400;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 22px;
+  --text-body-sm--font-weight: 400;
+
   --text-display-md: 60px;
   --text-display-md--line-height: 72px;
   --text-display-md--letter-spacing: -0.02em;
@@ -147,6 +167,7 @@
 
   /* Spacing */
   --spacing-section-gap: 160px;
+  --spacing-section-gap-mobile: 80px;
   --spacing-gutter: 32px;
   --spacing-margin-desktop: 80px;
   --spacing-margin-mobile: 24px;

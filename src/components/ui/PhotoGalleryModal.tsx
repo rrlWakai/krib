@@ -80,7 +80,7 @@ export function PhotoGalleryModal({
             className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white/80 hover:text-white transition-colors z-10 cursor-pointer rounded-full hover:bg-white/10"
             aria-label="Close gallery"
           >
-            <X size={24} className="md:size-28" />
+            <X size={24} className="md:size-8" />
           </button>
 
           {/* Previous Button */}

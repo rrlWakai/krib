@@ -94,7 +94,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-outline-variant px-margin-desktop max-md:px-margin-mobile py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="font-body text-body-sm text-on-surface-variant/60">
-            &copy; 2024 KRiB Beverly Place. All rights reserved.
+            &copy; {new Date().getFullYear()} KRiB Beverly Place. All rights reserved.
           </p>
           <div className="flex gap-6">
             {contact.social.facebook && (
@@ -102,7 +102,7 @@ export function Footer() {
                 href={contact.social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-body text-body-sm text-on-surface-variant/60 hover:text-primary transition-colors duration-300"
+                className="min-w-11 min-h-11 flex items-center font-body text-body-sm text-on-surface-variant/60 hover:text-primary transition-colors duration-300"
               >
                 Facebook
               </a>
@@ -112,7 +112,7 @@ export function Footer() {
                 href={contact.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-body text-body-sm text-on-surface-variant/60 hover:text-primary transition-colors duration-300"
+                className="min-w-11 min-h-11 flex items-center font-body text-body-sm text-on-surface-variant/60 hover:text-primary transition-colors duration-300"
               >
                 Instagram
               </a>

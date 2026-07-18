@@ -7,6 +7,9 @@ export function useParallax(speed = 0.4) {
     const el = ref.current
     if (!el) return
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
     const handleScroll = () => {
       const scrolled = window.scrollY
       el.style.transform = `translateY(${scrolled * speed}px) scale(1.05)`

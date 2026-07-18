@@ -119,7 +119,7 @@ export function Navbar() {
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className={cn(
-            "md:hidden transition-colors duration-300",
+            "md:hidden min-w-11 min-h-11 flex items-center justify-center transition-colors duration-300",
             scrolled ? "text-on-surface" : "text-white",
           )}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}

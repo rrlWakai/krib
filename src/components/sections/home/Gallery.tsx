@@ -17,7 +17,7 @@ const gallery: GalleryItem[] = [
     alt: 'KRiB 2 villa exterior with tropical garden',
     caption: 'KRiB 2 — signature villa',
     cols: 'md:col-span-5',
-    height: 'h-[50vh] md:h-[80vh]',
+    height: 'h-[35vh] md:h-[80vh]',
   },
   {
     id: 'lifestyle',
@@ -25,7 +25,7 @@ const gallery: GalleryItem[] = [
     alt: 'Al fresco breakfast at KRiB',
     caption: 'Slow mornings by the pool',
     cols: 'md:col-span-7',
-    height: 'h-[50vh] md:h-[80vh]',
+    height: 'h-[35vh] md:h-[80vh]',
   },
   {
     id: 'interior',
@@ -33,7 +33,7 @@ const gallery: GalleryItem[] = [
     alt: 'Spacious living room with natural light',
     caption: 'Open living, open hearts',
     cols: 'md:col-span-4',
-    height: 'h-[45vh] md:h-[65vh]',
+    height: 'h-[30vh] md:h-[65vh]',
   },
   {
     id: 'detail',
@@ -41,7 +41,7 @@ const gallery: GalleryItem[] = [
     alt: 'Architectural staircase detail',
     caption: 'Every detail tells a story',
     cols: 'md:col-span-4',
-    height: 'h-[45vh] md:h-[65vh]',
+    height: 'h-[30vh] md:h-[65vh]',
   },
   {
     id: 'garden',
@@ -49,7 +49,7 @@ const gallery: GalleryItem[] = [
     alt: 'Private pool surrounded by lush greenery',
     caption: 'Your own tropical escape',
     cols: 'md:col-span-4',
-    height: 'h-[45vh] md:h-[65vh]',
+    height: 'h-[30vh] md:h-[65vh]',
   },
   {
     id: 'aerial',
@@ -57,7 +57,7 @@ const gallery: GalleryItem[] = [
     alt: 'Aerial view of KRiB Beverly Place estate',
     caption: 'Beverly Place, Pampanga',
     cols: 'md:col-span-12',
-    height: 'h-[40vh] md:h-[70vh]',
+    height: 'h-[35vh] md:h-[70vh]',
   },
 ]
 
@@ -96,7 +96,7 @@ export function Gallery() {
   return (
     <section className="overflow-hidden bg-white" id="gallery">
       {/* Section header */}
-      <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile pt-section-gap pb-16 md:pb-20">
+      <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile pt-section-gap max-md:pt-section-gap-mobile pb-16 md:pb-20">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -26,7 +26,7 @@ export function Connect() {
   return (
     <section
       id="connect"
-      className="relative overflow-hidden bg-[#f7fafc] py-section-gap"
+      className="relative overflow-hidden bg-[#f7fafc] py-section-gap max-md:py-section-gap-mobile"
     >
       <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile">
         <div className="overflow-hidden rounded-4xl border border-white/60 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.08)]">
@@ -70,7 +70,7 @@ export function Connect() {
               </Reveal>
             </div>
 
-            <div className="relative min-h-120 overflow-hidden">
+            <div className="relative min-h-80 md:min-h-120 overflow-hidden">
               <img
                 src={socialImage}
                 alt="A lifestyle image of KRiB Beverly Place"
