@@ -1,14 +1,20 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { ReservationHero } from "../components/my-reservation/ReservationHero"
+import { LookupForm } from "../components/my-reservation/LookupForm"
+import { EmptyState } from "../components/my-reservation/EmptyState"
 import { ReservationProgressTracker } from "../components/my-reservation/ReservationProgressTracker"
-import { ReservationStatusCard } from "../components/my-reservation/ReservationStatusCard"
 import { ReservationOverviewCard } from "../components/my-reservation/ReservationOverviewCard"
+import { ReservationStatusCard } from "../components/my-reservation/ReservationStatusCard"
 import { PaymentCard } from "../components/my-reservation/PaymentCard"
 import { BeforeCheckInSection } from "../components/my-reservation/BeforeCheckInSection"
 import type { Reservation, ReservationStatus } from "../lib/reservationData"
-import { lookupReservation } from "../lib/reservationData"
+import {
+  lookupReservation,
+  lookupByCode,
+  lookupByEmail,
+} from "../lib/reservationData"
 
 type PageStep = "lookup" | "result"
 
@@ -16,13 +22,11 @@ const TERMINAL: ReservationStatus[] = ["cancelled", "declined", "expired"]
 
 export function MyReservationPage() {
   const [pageStep, setPageStep] = useState<PageStep>("lookup")
-  const [id, setId] = useState("")
-  const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [searching, setSearching] = useState(false)
   const [reservation, setReservation] = useState<Reservation | null>(null)
 
-  // auto-load from localStorage if redirected after booking
+  // Auto-load from localStorage if redirected after booking
   useEffect(() => {
     const fullData = localStorage.getItem("krib_last_reservation_full")
     if (fullData) {
@@ -40,8 +44,6 @@ export function MyReservationPage() {
     if (stored) {
       try {
         const parsed: { id: string; email: string } = JSON.parse(stored)
-        setId(parsed.id)
-        setEmail(parsed.email)
         handleAutoLookup(parsed.id, parsed.email)
       } catch { /* ignore */ }
     }
@@ -62,23 +64,45 @@ export function MyReservationPage() {
     localStorage.removeItem("krib_last_reservation")
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!id.trim() || !email.trim()) {
-      setError("Please enter both reservation ID and email.")
-      return
-    }
+  const handleLookup = useCallback(async (lookupData: { id: string; email: string }) => {
     setSearching(true)
     setError("")
-    const result = await lookupReservation(id, email)
+
+    let result: Reservation | null = null
+
+    if (lookupData.id && !lookupData.email) {
+      // Code-only lookup
+      result = await lookupByCode(lookupData.id)
+      if (!result) {
+        setError("No reservation found with that code. Please double-check and try again.")
+      }
+    } else if (lookupData.email && !lookupData.id) {
+      // Email-only lookup
+      const results = await lookupByEmail(lookupData.email)
+      if (results.length === 0) {
+        setError("No reservations found under that email address.")
+      } else if (results.length === 1) {
+        result = results[0]
+      } else {
+        // Multiple reservations — show the most recent one
+        result = results.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )[0]
+      }
+    } else if (lookupData.id && lookupData.email) {
+      // Combined lookup (from auto-load)
+      result = await lookupReservation(lookupData.id, lookupData.email)
+      if (!result) {
+        setError("No reservation found. Check your details and try again.")
+      }
+    }
+
     if (result) {
       setReservation(result)
       setPageStep("result")
-    } else {
-      setError("No reservation found. Check your ID and email and try again.")
     }
     setSearching(false)
-  }
+  }, [])
 
   function handleReset() {
     setPageStep("lookup")
@@ -88,12 +112,13 @@ export function MyReservationPage() {
 
   const hasPaymentAction = reservation?.status === "awaiting_payment"
   const isTerminal = reservation ? TERMINAL.includes(reservation.status) : false
+  const showGuide = reservation && !isTerminal
 
   return (
     <div className="min-h-screen bg-white">
       <ReservationHero />
 
-      <section className="px-margin-desktop max-md:px-margin-mobile pb-24">
+      <section className="px-margin-desktop max-md:px-margin-mobile pb-section-gap max-md:pb-section-gap-mobile">
         <div className="max-w-container-max mx-auto">
           <AnimatePresence mode="wait">
             {pageStep === "lookup" ? (
@@ -103,78 +128,27 @@ export function MyReservationPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="max-w-lg mx-auto"
               >
-                <div className="rounded-[24px] border border-outline-variant/60 bg-white p-8 max-md:p-6 shadow-sm">
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="w-6 h-px bg-primary/40" />
-                    <span className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px]">
-                      Find Your Reservation
-                    </span>
-                  </div>
-                  <form onSubmit={handleSubmit} noValidate>
-                    <div className="space-y-5">
-                      <div>
-                        <label htmlFor="res-id" className="font-body text-sm font-medium text-on-surface block mb-1.5">
-                          Reservation ID
-                        </label>
-                        <input
-                          id="res-id"
-                          type="text"
-                          value={id}
-                          onChange={(e) => setId(e.target.value)}
-                          placeholder="e.g. KRIB-20260715-8F3XK2"
-                          className="w-full px-4 py-3.5 rounded-default border border-outline-variant bg-white text-on-surface font-body text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                          autoComplete="off"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="res-email" className="font-body text-sm font-medium text-on-surface block mb-1.5">
-                          Email Address
-                        </label>
-                        <input
-                          id="res-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="you@example.com"
-                          className="w-full px-4 py-3.5 rounded-default border border-outline-variant bg-white text-on-surface font-body text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                          autoComplete="email"
-                        />
-                      </div>
-                      {error && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="font-body text-sm text-red-600"
-                        >
-                          {error}
-                        </motion.p>
-                      )}
-                      <button
-                        type="submit"
-                        disabled={searching}
-                        className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-primary text-on-primary font-body text-label-caps uppercase tracking-widest rounded-default hover:bg-primary-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {searching ? (
-                          <span className="flex items-center gap-2">
-                            <motion.span
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                              className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                            />
-                            Searching...
-                          </span>
-                        ) : (
-                          <>
-                            <Search size={14} />
-                            Find Reservation
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                <LookupForm
+                  onFound={handleLookup}
+                  onError={setError}
+                  onSearching={setSearching}
+                  searching={searching}
+                />
+
+                {/* Error message */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="max-w-lg mx-auto mt-4"
+                    >
+                      <EmptyState message={error} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ) : reservation ? (
               <motion.div
@@ -183,32 +157,48 @@ export function MyReservationPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="max-w-4xl mx-auto"
               >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                {/* Back button */}
+                <motion.div
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1, duration: 0.3 }}
+                  className="mb-8 md:mb-10"
+                >
                   <button
                     onClick={handleReset}
-                    className="inline-flex items-center gap-2 font-body text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+                    className="inline-flex items-center gap-2 font-body text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group"
                   >
-                    <ArrowLeft size={14} />
-                    Back
+                    <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
+                    Back to Lookup
                   </button>
-                </div>
+                </motion.div>
 
-                {/* Progress tracker centerpiece */}
-                <div className="mb-10 md:mb-14">
+                {/* Timeline */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15, duration: 0.5 }}
+                  className="mb-10 md:mb-14"
+                >
                   <ReservationProgressTracker status={reservation.status} />
-                </div>
+                </motion.div>
 
-                <div className="space-y-5 max-w-3xl">
+                {/* Reservation Summary */}
+                <div className="space-y-5 md:space-y-6">
                   <ReservationOverviewCard reservation={reservation} />
+
                   <ReservationStatusCard status={reservation.status} />
 
                   {hasPaymentAction && reservation.amountDue && reservation.paymentDeadline && (
-                    <PaymentCard amountDue={reservation.amountDue} deadline={reservation.paymentDeadline} />
+                    <PaymentCard
+                      amountDue={reservation.amountDue}
+                      deadline={reservation.paymentDeadline}
+                    />
                   )}
 
-                  {!isTerminal && <BeforeCheckInSection />}
+                  {showGuide && <BeforeCheckInSection />}
                 </div>
               </motion.div>
             ) : null}
