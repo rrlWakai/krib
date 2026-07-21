@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { NAV_ITEMS } from '../data/mockData'
@@ -35,25 +36,31 @@ const iconMap: Record<string, React.FC<{ size?: number; className?: string }>> =
 interface SidebarProps {
   collapsed: boolean
   onToggle: () => void
+  onClose?: () => void
+  isMobile: boolean
+  isOpen: boolean
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const sidebarWidth = collapsed ? 72 : 240
-
+function SidebarContent({
+  collapsed,
+  onToggle,
+  isMobile,
+}: {
+  collapsed: boolean
+  onToggle: () => void
+  isMobile: boolean
+}) {
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: sidebarWidth }}
-      transition={{
-        duration: 0.3,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className="fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-outline-variant bg-white"
-    >
+    <div className="flex h-full flex-col">
       {/* Brand */}
-      <div className="flex h-16 items-center border-b border-outline-variant px-5">
+      <div
+        className={cn(
+          'flex h-16 shrink-0 items-center border-b border-outline-variant',
+          collapsed ? 'justify-center px-3' : 'px-5'
+        )}
+      >
         {collapsed ? (
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary text-on-primary font-display text-body-md font-semibold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-display text-body-md font-semibold text-on-primary">
             K
           </div>
         ) : (
@@ -80,11 +87,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 <NavLink
                   to={item.path}
                   end={isDashboard}
+                  onClick={isMobile ? onToggle : undefined}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 rounded-[12px] px-3 py-2.5 font-body text-body-md transition-all duration-200',
+                      'flex items-center gap-3 rounded-[12px] px-3 py-3 font-body text-body-md transition-all duration-200',
                       isActive
-                        ? 'bg-primary text-on-primary font-semibold'
+                        ? 'bg-primary font-semibold text-on-primary'
                         : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface',
                       collapsed && 'justify-center px-0'
                     )
@@ -92,7 +100,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon size={20} className={cn('shrink-0', isActive && 'text-on-primary')} />
+                      <Icon
+                        size={20}
+                        className={cn(
+                          'shrink-0',
+                          isActive && 'text-on-primary'
+                        )}
+                      />
                       {!collapsed && (
                         <motion.span
                           initial={{ opacity: 0, width: 0 }}
@@ -112,25 +126,88 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </ul>
       </nav>
 
-      {/* Toggle */}
-      <div className="border-t border-outline-variant px-3 py-3">
-        <button
-          onClick={onToggle}
-          className={cn(
-            'flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 font-body text-body-md text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface',
-            collapsed && 'justify-center px-0'
-          )}
-        >
-          {collapsed ? (
-            <ChevronRight size={20} className="shrink-0" />
-          ) : (
-            <>
-              <ChevronLeft size={20} className="shrink-0" />
-              <span>Collapse</span>
-            </>
-          )}
-        </button>
-      </div>
+      {/* Collapse toggle (desktop/laptop only) */}
+      {!isMobile && (
+        <div className="border-t border-outline-variant px-3 py-3">
+          <button
+            onClick={onToggle}
+            className={cn(
+              'flex w-full items-center gap-3 rounded-[12px] px-3 py-3 font-body text-body-md text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface',
+              collapsed && 'justify-center px-0'
+            )}
+          >
+            {collapsed ? (
+              <ChevronRight size={20} className="shrink-0" />
+            ) : (
+              <>
+                <ChevronLeft size={20} className="shrink-0" />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function Sidebar({
+  collapsed,
+  onToggle,
+  onClose,
+  isMobile,
+  isOpen,
+}: SidebarProps) {
+  if (isMobile) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={onClose}
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed left-0 top-0 z-50 flex h-screen w-[280px] flex-col border-r border-outline-variant bg-white shadow-2xl"
+            >
+              <button
+                onClick={onClose}
+                className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high lg:hidden"
+              >
+                <X size={20} />
+              </button>
+              <SidebarContent
+                collapsed={false}
+                onToggle={onClose ?? onToggle}
+                isMobile={isMobile}
+              />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    )
+  }
+
+  return (
+    <motion.aside
+      initial={false}
+      animate={{ width: collapsed ? 72 : 240 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-outline-variant bg-white lg:flex"
+    >
+      <SidebarContent
+        collapsed={collapsed}
+        onToggle={onToggle}
+        isMobile={isMobile}
+      />
     </motion.aside>
   )
 }

@@ -89,7 +89,7 @@ export default function Payments() {
 
       <motion.div
         variants={item}
-        className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3"
+        className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3"
       >
         <StatCard
           title="Total Collected"
@@ -103,12 +103,14 @@ export default function Payments() {
           icon={<Clock size={22} />}
           accent="amber"
         />
-        <StatCard
-          title="Rejected"
-          value={formatCurrency(totalRejected)}
-          icon={<AlertCircle size={22} />}
-          accent="red"
-        />
+        <div className="col-span-2 sm:col-span-1">
+          <StatCard
+            title="Rejected"
+            value={formatCurrency(totalRejected)}
+            icon={<AlertCircle size={22} />}
+            accent="red"
+          />
+        </div>
       </motion.div>
 
       <motion.div
@@ -128,7 +130,7 @@ export default function Payments() {
             className="w-full rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-10 pr-4 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/60 transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Filter
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
@@ -136,7 +138,7 @@ export default function Payments() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'all')}
-            className="appearance-none rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-9 pr-8 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full appearance-none rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-9 pr-8 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:w-auto"
           >
             {PAYMENT_STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
@@ -147,9 +149,58 @@ export default function Payments() {
         </div>
       </motion.div>
 
+      <motion.div variants={item} className="md:hidden">
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-[16px] bg-white px-6 py-16 shadow-card">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-high">
+              <CreditCard size={24} className="text-on-surface-variant" />
+            </div>
+            <p className="font-body text-body-md text-on-surface-variant">
+              No payments match your filters
+            </p>
+            <button
+              onClick={() => {
+                setStatusFilter('all')
+                setSearchQuery('')
+              }}
+              className="font-body text-body-sm font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              Clear all filters
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {filtered.map((pay) => (
+              <div
+                key={pay.id}
+                className="rounded-[12px] border border-outline-variant/50 bg-white p-4 shadow-sm"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-primary">{pay.id}</span>
+                  <StatusBadge status={pay.status} size="sm" />
+                </div>
+                <p className="font-medium text-on-surface">{pay.guestName}</p>
+                <div className="mt-1 flex items-center justify-between text-sm text-on-surface-variant">
+                  <span>{pay.villaName}</span>
+                  <span className="font-medium text-on-surface">{formatCurrency(pay.amount)}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-xs text-on-surface-variant">{formatDate(pay.createdAt)}</span>
+                  {pay.status === 'submitted' && (
+                    <button className="rounded-full bg-tertiary px-3 py-1.5 text-xs font-medium text-white">
+                      Verify
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       <motion.div
         variants={item}
-        className="overflow-hidden rounded-[16px] bg-white shadow-card"
+        className="hidden overflow-hidden rounded-[16px] bg-white shadow-card md:block"
       >
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -167,13 +218,13 @@ export default function Payments() {
                 <th className="px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                   Amount
                 </th>
-                <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+                <th className="hidden px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant xl:table-cell">
                   Method
                 </th>
                 <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                   Status
                 </th>
-                <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+                <th className="hidden px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant lg:table-cell">
                   Date
                 </th>
                 <th className="px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
@@ -237,7 +288,7 @@ export default function Payments() {
                     <td className="px-6 py-3.5 text-right font-body text-body-md font-medium text-on-surface">
                       {formatCurrency(pay.amount)}
                     </td>
-                    <td className="px-6 py-3.5">
+                    <td className="hidden px-6 py-3.5 xl:table-cell">
                       <span className="font-body text-body-sm text-on-surface-variant">
                         {pay.method || '—'}
                       </span>
@@ -245,7 +296,7 @@ export default function Payments() {
                     <td className="px-6 py-3.5">
                       <StatusBadge status={pay.status} size="sm" />
                     </td>
-                    <td className="px-6 py-3.5 font-body text-body-sm text-on-surface-variant">
+                    <td className="hidden px-6 py-3.5 font-body text-body-sm text-on-surface-variant lg:table-cell">
                       {formatDate(pay.createdAt)}
                     </td>
                     <td className="px-6 py-3.5 text-right">

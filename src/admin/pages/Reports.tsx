@@ -92,11 +92,11 @@ export default function Reports() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <motion.div
           variants={fadeIn}
-          className="rounded-[16px] bg-white p-6 shadow-card"
+          className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
         >
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="font-display text-title-md text-on-surface">
+              <h2 className="font-display text-title-sm text-on-surface sm:text-title-md">
                 Revenue by Month
               </h2>
               <p className="mt-1 font-body text-body-sm text-on-surface-variant">
@@ -111,13 +111,13 @@ export default function Reports() {
             </div>
           </div>
 
-          <div className="flex items-end gap-3" style={{ height: 220 }}>
+          <div className="flex h-[180px] items-end gap-2 sm:h-[220px] sm:gap-3">
             {revenueByMonth.map((d, i) => {
               const height = (d.revenue / maxRevenue) * 180
               return (
                 <div
                   key={d.month}
-                  className="group flex flex-1 flex-col items-center gap-2"
+                  className="group flex flex-1 flex-col items-center gap-2 overflow-hidden"
                 >
                   <div className="relative w-full">
                     <motion.div
@@ -128,13 +128,13 @@ export default function Reports() {
                         duration: 0.5,
                         ease: 'easeOut' as const,
                       }}
-                      className="mx-auto w-full max-w-[36px] rounded-t-[4px] bg-primary transition-all duration-200 group-hover:bg-primary/80"
+                      className="mx-auto w-full max-w-[24px] rounded-t-[4px] bg-primary transition-all duration-200 group-hover:bg-primary/80 sm:max-w-[36px]"
                     />
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-[8px] bg-on-surface px-2 py-1 font-body text-body-xs text-on-primary opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap overflow-hidden rounded-[8px] bg-on-surface px-2 py-1 font-body text-body-xs text-on-primary opacity-0 transition-opacity group-hover:opacity-100">
                       {formatCurrency(d.revenue)}
                     </div>
                   </div>
-                  <span className="font-body text-body-xs text-on-surface-variant">
+                  <span className="font-body text-[10px] text-on-surface-variant sm:text-body-xs">
                     {d.month.slice(0, 3)}
                   </span>
                 </div>
@@ -159,11 +159,11 @@ export default function Reports() {
 
         <motion.div
           variants={fadeIn}
-          className="rounded-[16px] bg-white p-6 shadow-card"
+          className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
         >
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="font-display text-title-md text-on-surface">
+              <h2 className="font-display text-title-sm text-on-surface sm:text-title-md">
                 Occupancy Rate
               </h2>
               <p className="mt-1 font-body text-body-sm text-on-surface-variant">
@@ -178,7 +178,7 @@ export default function Reports() {
             </div>
           </div>
 
-          <div className="relative" style={{ height: 220 }}>
+          <div className="relative h-[180px] overflow-hidden sm:h-[220px]">
             <div className="absolute inset-x-0 top-0 flex h-full flex-col justify-between">
               {[100, 75, 50, 25, 0].map((tick) => (
                 <div
@@ -193,10 +193,10 @@ export default function Reports() {
               ))}
             </div>
 
-            <div className="absolute inset-y-0 left-10 right-0 flex items-end">
+            <div className="absolute inset-y-0 left-10 right-0 flex items-end overflow-hidden">
               <svg
                 viewBox={`0 0 ${occupancyData.length * 60} ${maxOccupancy}`}
-                className="h-[180px] w-full"
+                className="h-[140px] w-full sm:h-[180px]"
                 preserveAspectRatio="none"
               >
                 <defs>
@@ -255,11 +255,11 @@ export default function Reports() {
               </svg>
             </div>
 
-            <div className="absolute inset-x-10 bottom-0 flex justify-between">
+            <div className="absolute inset-x-10 bottom-0 flex justify-between overflow-hidden">
               {occupancyData.map((d) => (
                 <span
                   key={d.month}
-                  className="font-body text-body-xs text-on-surface-variant"
+                  className="font-body text-[10px] text-on-surface-variant sm:text-body-xs"
                 >
                   {d.month.slice(0, 3)}
                 </span>
@@ -267,7 +267,7 @@ export default function Reports() {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-6">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <div className="flex items-center gap-2">
               <div className="h-0.5 w-4 rounded-full bg-primary" />
               <span className="font-body text-body-xs text-on-surface-variant">
@@ -291,7 +291,7 @@ export default function Reports() {
       </div>
 
       <motion.div variants={fadeIn} className="mt-8">
-        <h2 className="mb-4 font-display text-title-md text-on-surface">
+        <h2 className="mb-4 font-display text-title-sm text-on-surface sm:text-title-md">
           Villa Popularity
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -302,7 +302,7 @@ export default function Reports() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 + i * 0.1 }}
               whileHover={{ y: -2, transition: { duration: 0.2 } }}
-              className="rounded-[16px] bg-white p-5 shadow-card"
+              className="rounded-[16px] bg-white p-4 shadow-card sm:p-5"
             >
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-display text-headline-sm text-on-surface">
@@ -315,7 +315,7 @@ export default function Reports() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                 <div className="flex flex-col">
                   <div className="mb-1 flex items-center gap-1">
                     <Users size={12} className="text-on-surface-variant" />

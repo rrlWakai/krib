@@ -40,26 +40,28 @@ function Toggle({
   description: string
 }) {
   return (
-    <div className="flex items-center justify-between py-3">
-      <div className="flex flex-col gap-0.5">
+    <div className="flex items-center justify-between py-3.5 sm:py-3">
+      <div className="min-w-0 flex-1 pr-4">
         <span className="font-body text-body-md font-medium text-on-surface">
           {label}
         </span>
-        <span className="font-body text-body-sm text-on-surface-variant">
+        <p className="font-body text-body-sm text-on-surface-variant">
           {description}
-        </span>
+        </p>
       </div>
       <button
         onClick={onChange}
         className={cn(
-          'relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200',
+          'relative inline-flex h-8 w-[52px] shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200',
           enabled ? 'bg-primary' : 'bg-outline-variant'
         )}
+        role="switch"
+        aria-checked={enabled}
       >
         <span
           className={cn(
-            'inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
-            enabled ? 'translate-x-[22px]' : 'translate-x-1'
+            'inline-block h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-200',
+            enabled ? 'translate-x-[24px]' : 'translate-x-1'
           )}
         />
       </button>
@@ -79,18 +81,18 @@ function InfoRow({
   onCopy?: () => void
 }) {
   return (
-    <div className="flex items-center gap-3 py-3">
+    <div className="flex items-center gap-3 py-3.5 sm:py-3">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-low">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-body text-body-xs text-on-surface-variant">{label}</p>
-        <p className="font-body text-body-md text-on-surface">{value}</p>
+        <p className="font-body text-body-md text-on-surface truncate">{value}</p>
       </div>
       {onCopy && (
         <button
           onClick={onCopy}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
           title="Copy"
         >
           <Copy size={14} />
@@ -139,18 +141,18 @@ export default function SettingsPage() {
         />
       </motion.div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 sm:gap-6">
         <motion.div
           variants={fadeIn}
-          className="rounded-[16px] bg-white p-6 shadow-card"
+          className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
         >
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
                 <Building2 size={20} className="text-primary" />
               </div>
               <div>
-                <h2 className="font-display text-title-md text-on-surface">
+                <h2 className="font-display text-title-sm sm:text-title-md text-on-surface">
                   Business Information
                 </h2>
                 <p className="font-body text-body-sm text-on-surface-variant">
@@ -160,7 +162,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => handleEdit('Business Information')}
-              className="flex items-center gap-2 rounded-[12px] border border-outline-variant bg-white px-4 py-2 font-body text-body-sm font-medium text-on-surface transition-all duration-200 hover:border-primary hover:text-primary"
+              className="flex min-h-[44px] items-center justify-center gap-2 self-start rounded-[12px] border border-outline-variant bg-white px-4 py-2 font-body text-body-sm font-medium text-on-surface transition-all duration-200 hover:border-primary hover:text-primary sm:self-auto"
             >
               <Pencil size={14} />
               Edit
@@ -174,7 +176,7 @@ export default function SettingsPage() {
               value={businessInfo.name}
               onCopy={() => copyToClipboard(businessInfo.name, 'name')}
             />
-            <div className="py-3">
+            <div className="py-3.5 sm:py-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-low">
                   <span className="font-display text-body-sm italic text-primary">
@@ -216,15 +218,15 @@ export default function SettingsPage() {
 
         <motion.div
           variants={fadeIn}
-          className="rounded-[16px] bg-white p-6 shadow-card"
+          className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
         >
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
                 <Phone size={20} className="text-primary" />
               </div>
               <div>
-                <h2 className="font-display text-title-md text-on-surface">
+                <h2 className="font-display text-title-sm sm:text-title-md text-on-surface">
                   Contact Details
                 </h2>
                 <p className="font-body text-body-sm text-on-surface-variant">
@@ -234,7 +236,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => handleEdit('Contact Details')}
-              className="flex items-center gap-2 rounded-[12px] border border-outline-variant bg-white px-4 py-2 font-body text-body-sm font-medium text-on-surface transition-all duration-200 hover:border-primary hover:text-primary"
+              className="flex min-h-[44px] items-center justify-center gap-2 self-start rounded-[12px] border border-outline-variant bg-white px-4 py-2 font-body text-body-sm font-medium text-on-surface transition-all duration-200 hover:border-primary hover:text-primary sm:self-auto"
             >
               <Pencil size={14} />
               Edit
@@ -296,15 +298,15 @@ export default function SettingsPage() {
 
         <motion.div
           variants={fadeIn}
-          className="rounded-[16px] bg-white p-6 shadow-card"
+          className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
         >
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
                 <Bell size={20} className="text-primary" />
               </div>
               <div>
-                <h2 className="font-display text-title-md text-on-surface">
+                <h2 className="font-display text-title-sm sm:text-title-md text-on-surface">
                   Notification Settings
                 </h2>
                 <p className="font-body text-body-sm text-on-surface-variant">

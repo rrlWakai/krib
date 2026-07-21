@@ -7,10 +7,12 @@ import {
   CalendarDays,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
+import { StatusBadge } from '../components/StatusBadge'
 import { reservations } from '../data/mockData'
 import { cn } from '../../lib/cn'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   pending: { bg: 'bg-[#fef3c7]', text: 'text-[#92400e]', border: 'border-[#fbbf24]' },
@@ -50,6 +52,18 @@ function formatMonthYear(year: number, month: number) {
     month: 'long',
     year: 'numeric',
   })
+}
+
+function formatShortMonth(dateStr: string) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short' })
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/)
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
+  return parts[0].slice(0, 2).toUpperCase()
 }
 
 export default function Calendar() {
@@ -159,40 +173,40 @@ export default function Calendar() {
         }
       />
 
-      <div className="rounded-[16px] bg-white p-6 shadow-card">
+      <div className="rounded-[16px] bg-white p-3 shadow-card md:p-6">
         {/* Month Navigation */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between md:mb-6">
           <button
             onClick={prevMonth}
-            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-surface-container-low"
+            className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-surface-container-low"
           >
             <ChevronLeft size={20} className="text-on-surface" />
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <CalendarDays size={20} className="text-primary" />
-            <h2 className="font-display text-title-lg font-medium text-on-surface">
+            <h2 className="font-display text-title-md font-medium text-on-surface md:text-title-lg">
               {formatMonthYear(currentYear, currentMonth)}
             </h2>
           </div>
           <button
             onClick={nextMonth}
-            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-surface-container-low"
+            className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-surface-container-low"
           >
             <ChevronRight size={20} className="text-on-surface" />
           </button>
         </div>
 
         {/* Legend */}
-        <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div className="mb-3 flex flex-wrap items-center gap-3 md:mb-4 md:gap-4">
           {LEGEND_ITEMS.map((legend) => (
-            <div key={legend.label} className="flex items-center gap-2">
+            <div key={legend.label} className="flex items-center gap-1.5 md:gap-2">
               <div
                 className={cn(
-                  'h-3 w-6 rounded-sm border',
+                  'h-3 w-5 rounded-sm border md:w-6',
                   legend.color
                 )}
               />
-              <span className="font-body text-body-sm text-on-surface-variant">
+              <span className="font-body text-body-xs text-on-surface-variant md:text-body-sm">
                 {legend.label}
               </span>
             </div>
@@ -200,10 +214,22 @@ export default function Calendar() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="overflow-x-auto">
-          <div className="min-w-[700px]">
-            {/* Weekday Headers */}
-            <div className="mb-2 grid grid-cols-7 gap-1">
+        <div className="overflow-x-auto max-md:overflow-visible">
+          <div className="min-w-[700px] max-md:min-w-0">
+            {/* Mobile Weekday Headers */}
+            <div className="mb-2 grid grid-cols-7 gap-1 md:hidden">
+              {WEEKDAYS_SHORT.map((day, idx) => (
+                <div
+                  key={`short-${idx}`}
+                  className="py-2 text-center font-body text-label-caps uppercase tracking-widest text-on-surface-variant"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Weekday Headers */}
+            <div className="mb-2 hidden grid-cols-7 gap-1 md:grid">
               {WEEKDAYS.map((day) => (
                 <div
                   key={day}
@@ -226,7 +252,12 @@ export default function Calendar() {
               >
                 {monthDates.map((day, idx) => {
                   if (day === null) {
-                    return <div key={`empty-${idx}`} className="min-h-[100px]" />
+                    return (
+                      <div
+                        key={`empty-${idx}`}
+                        className="min-h-[60px] md:min-h-[100px]"
+                      />
+                    )
                   }
 
                   const dayReservations = getReservationsForDay(day)
@@ -238,7 +269,7 @@ export default function Calendar() {
                     <div
                       key={`day-${day}`}
                       className={cn(
-                        'min-h-[100px] rounded-[12px] border p-1.5 transition-colors',
+                        'min-h-[60px] rounded-[12px] border p-1 transition-colors md:min-h-[100px] md:p-1.5',
                         todayHighlight
                           ? 'border-primary bg-primary/5'
                           : 'border-outline-variant/50 hover:bg-surface-container-low/50'
@@ -247,7 +278,7 @@ export default function Calendar() {
                       <div className="mb-1 flex items-center justify-between px-1">
                         <span
                           className={cn(
-                            'flex h-7 w-7 items-center justify-center rounded-full font-body text-body-md',
+                            'flex h-6 w-6 items-center justify-center rounded-full font-body text-body-sm md:h-7 md:w-7 md:text-body-md',
                             todayHighlight
                               ? 'bg-primary font-medium text-on-primary'
                               : 'text-on-surface'
@@ -281,7 +312,12 @@ export default function Calendar() {
                                 colors.border
                               )}
                             >
-                              {res.guestName}
+                              <span className="hidden md:inline">
+                                {res.guestName}
+                              </span>
+                              <span className="md:hidden">
+                                {getInitials(res.guestName)}
+                              </span>
                             </button>
                           )
                         })}
@@ -297,6 +333,38 @@ export default function Calendar() {
               </motion.div>
             </AnimatePresence>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Agenda - hidden on md+ */}
+      <div className="mt-6 md:hidden">
+        <h3 className="mb-3 font-display text-title-sm text-on-surface">
+          Upcoming This Month
+        </h3>
+        <div className="flex flex-col gap-2">
+          {reservationsThisMonth.map((res) => (
+            <button
+              key={res.id}
+              onClick={() => navigate(`/admin/reservations/${res.id}`)}
+              className="flex items-center gap-3 rounded-[12px] border border-outline-variant/50 bg-white p-3 text-left"
+            >
+              <div className="flex w-10 flex-col items-center">
+                <span className="text-xs text-on-surface-variant">
+                  {formatShortMonth(res.checkIn)}
+                </span>
+                <span className="text-lg font-medium">
+                  {new Date(res.checkIn + 'T00:00:00').getDate()}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{res.guestName}</p>
+                <p className="text-xs text-on-surface-variant">
+                  {res.villaName}
+                </p>
+              </div>
+              <StatusBadge status={res.status} size="sm" />
+            </button>
+          ))}
         </div>
       </div>
     </motion.div>

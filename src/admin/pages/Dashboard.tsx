@@ -85,7 +85,7 @@ export default function Dashboard() {
 
       <motion.div
         variants={item}
-        className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-4 lg:grid-cols-4"
       >
         <StatCard
           title="Today's Check-ins"
@@ -113,13 +113,13 @@ export default function Dashboard() {
         />
       </motion.div>
 
-      <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-2 xl:grid-cols-3">
         <motion.div
           variants={item}
-          className="lg:col-span-2 overflow-hidden rounded-[16px] bg-white shadow-card"
+          className="overflow-hidden rounded-[16px] bg-white shadow-card lg:col-span-2 xl:col-span-2"
         >
-          <div className="flex items-center justify-between border-b border-outline-variant px-6 py-4">
-            <h2 className="font-display text-title-md font-medium text-on-surface">
+          <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3 sm:px-6 sm:py-4">
+            <h2 className="font-display text-title-sm sm:text-title-md font-medium text-on-surface">
               Recent Reservations
             </h2>
             <button
@@ -129,17 +129,18 @@ export default function Dashboard() {
               View all <ArrowRight size={14} />
             </button>
           </div>
-          <div className="overflow-x-auto">
+
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-outline-variant">
                   <th className="px-6 py-3 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                     Guest
                   </th>
-                  <th className="px-6 py-3 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+                  <th className="hidden lg:table-cell px-6 py-3 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                     Villa
                   </th>
-                  <th className="px-6 py-3 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+                  <th className="hidden lg:table-cell px-6 py-3 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                     Dates
                   </th>
                   <th className="px-6 py-3 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
@@ -169,10 +170,10 @@ export default function Dashboard() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-3.5 font-body text-body-md text-on-surface">
+                    <td className="hidden lg:table-cell px-6 py-3.5 font-body text-body-md text-on-surface">
                       {res.villaName}
                     </td>
-                    <td className="px-6 py-3.5 font-body text-body-sm text-on-surface-variant">
+                    <td className="hidden lg:table-cell px-6 py-3.5 font-body text-body-sm text-on-surface-variant">
                       {formatDate(res.checkIn)} – {formatDate(res.checkOut)}
                     </td>
                     <td className="px-6 py-3.5">
@@ -186,16 +187,35 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
+
+          <div className="md:hidden flex flex-col gap-3 p-4">
+            {recentReservations.map((res) => (
+              <div
+                key={res.id}
+                onClick={() => navigate(`/admin/reservations/${res.id}`)}
+                className="cursor-pointer rounded-[12px] border border-outline-variant/50 p-4 transition-colors hover:bg-surface-container-low"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-medium">{res.guestName}</span>
+                  <StatusBadge status={res.status} size="sm" />
+                </div>
+                <div className="flex justify-between text-sm text-on-surface-variant">
+                  <span>{res.villaName}</span>
+                  <span>{formatCurrency(res.totalAmount)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
         <motion.div
           variants={item}
-          className="rounded-[16px] bg-white p-6 shadow-card"
+          className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
         >
-          <h2 className="mb-5 font-display text-title-md font-medium text-on-surface">
+          <h2 className="mb-5 font-display text-title-sm sm:text-title-md font-medium text-on-surface">
             Today's Activity
           </h2>
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5 sm:gap-6">
             <div>
               <div className="mb-3 flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-container">
@@ -291,7 +311,7 @@ export default function Dashboard() {
               </div>
               <div className="pl-10">
                 <div className="mb-1 flex items-baseline gap-1">
-                  <span className="font-display text-headline-md font-medium text-on-surface">
+                  <span className="font-display text-headline-sm sm:text-headline-md font-medium text-on-surface">
                     {stats.occupancyRate}%
                   </span>
                 </div>
@@ -310,9 +330,9 @@ export default function Dashboard() {
       </div>
 
       <motion.div variants={item}>
-        <div className="rounded-[16px] bg-white p-6 shadow-card">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="font-display text-title-md font-medium text-on-surface">
+        <div className="rounded-[16px] bg-white p-4 shadow-card sm:p-6">
+          <div className="mb-4 flex items-center justify-between sm:mb-5">
+            <h2 className="font-display text-title-sm sm:text-title-md font-medium text-on-surface">
               Upcoming Reservations
             </h2>
             <button
@@ -327,7 +347,7 @@ export default function Dashboard() {
               No upcoming reservations
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
               {upcomingReservations.map((res) => {
                 const daysUntil = getDaysUntil(res.checkIn)
                 return (
@@ -335,7 +355,7 @@ export default function Dashboard() {
                     key={res.id}
                     whileHover={{ y: -2 }}
                     onClick={() => navigate(`/admin/reservations/${res.id}`)}
-                    className="cursor-pointer rounded-[12px] border border-outline-variant/50 p-4 transition-colors hover:bg-surface-container-low"
+                    className="cursor-pointer rounded-[12px] border border-outline-variant/50 p-3.5 transition-colors hover:bg-surface-container-low sm:p-4"
                   >
                     <div className="mb-3 flex items-start justify-between">
                       <StatusBadge status={res.status} size="sm" />

@@ -42,6 +42,14 @@ function formatCurrencyShort(amount: number) {
   }).format(amount)
 }
 
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+}
+
 export default function Guests() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null)
@@ -87,10 +95,7 @@ export default function Guests() {
         </div>
       </motion.div>
 
-      <motion.div
-        variants={item}
-        className="overflow-hidden rounded-[16px] bg-white shadow-card"
-      >
+      <motion.div variants={item} className="hidden md:block overflow-hidden rounded-[16px] bg-white shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -98,7 +103,7 @@ export default function Guests() {
                 <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                   Name
                 </th>
-                <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+                <th className="hidden lg:table-cell px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                   Email
                 </th>
                 <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
@@ -110,7 +115,7 @@ export default function Guests() {
                 <th className="px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                   Total Spending
                 </th>
-                <th className="px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+                <th className="hidden lg:table-cell px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                   Last Visit
                 </th>
               </tr>
@@ -142,18 +147,14 @@ export default function Guests() {
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-container font-body text-body-sm font-medium text-primary">
-                          {guest.name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .slice(0, 2)}
+                          {getInitials(guest.name)}
                         </div>
                         <span className="font-body text-body-md font-medium text-on-surface">
                           {guest.name}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-3.5 font-body text-body-md text-on-surface-variant">
+                    <td className="hidden lg:table-cell px-6 py-3.5 font-body text-body-md text-on-surface-variant">
                       {guest.email}
                     </td>
                     <td className="px-6 py-3.5 font-body text-body-md text-on-surface-variant">
@@ -165,7 +166,7 @@ export default function Guests() {
                     <td className="px-6 py-3.5 text-right font-body text-body-md font-medium text-on-surface">
                       {formatCurrencyShort(guest.totalSpending)}
                     </td>
-                    <td className="px-6 py-3.5 text-right font-body text-body-sm text-on-surface-variant">
+                    <td className="hidden lg:table-cell px-6 py-3.5 text-right font-body text-body-sm text-on-surface-variant">
                       {formatDate(guest.lastVisit)}
                     </td>
                   </tr>
@@ -176,7 +177,43 @@ export default function Guests() {
         </div>
       </motion.div>
 
-      {/* Slide-in Drawer */}
+      <motion.div variants={item} className="md:hidden">
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-high">
+              <User size={24} className="text-on-surface-variant" />
+            </div>
+            <p className="font-body text-body-md text-on-surface-variant">
+              No guests found
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {filtered.map((guest) => (
+              <div
+                key={guest.id}
+                onClick={() => setSelectedGuestId(guest.id)}
+                className="rounded-[12px] border border-outline-variant/50 bg-white p-4 shadow-sm"
+              >
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container font-body text-body-sm font-medium text-primary">
+                    {getInitials(guest.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-on-surface">{guest.name}</p>
+                    <p className="truncate text-sm text-on-surface-variant">{guest.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-on-surface-variant">{guest.totalStays} stays</span>
+                  <span className="font-medium">{formatCurrencyShort(guest.totalSpending)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       <AnimatePresence>
         {selectedGuest && (
           <>
@@ -193,37 +230,31 @@ export default function Guests() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 right-0 top-0 z-50 w-full max-w-md overflow-y-auto bg-white shadow-2xl"
+              className="fixed inset-x-0 bottom-0 top-0 z-50 w-full overflow-y-auto bg-white shadow-2xl md:inset-x-auto md:right-0 md:max-w-md rounded-t-[20px] md:rounded-none"
             >
+              <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-on-surface-variant/30 md:hidden" />
               <div className="flex flex-col p-6">
-                {/* Drawer Header */}
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="font-display text-title-lg font-medium text-on-surface">
                     Guest Profile
                   </h2>
                   <button
                     onClick={() => setSelectedGuestId(null)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-surface-container-low"
+                    className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-surface-container-low md:h-10 md:w-10"
                   >
                     <X size={20} className="text-on-surface" />
                   </button>
                 </div>
 
-                {/* Guest Avatar & Name */}
                 <div className="mb-6 flex flex-col items-center gap-3">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-container font-display text-headline-md font-medium text-primary">
-                    {selectedGuest.name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .slice(0, 2)}
+                    {getInitials(selectedGuest.name)}
                   </div>
                   <h3 className="font-display text-title-lg font-medium text-on-surface">
                     {selectedGuest.name}
                   </h3>
                 </div>
 
-                {/* Contact Info */}
                 <div className="mb-6 rounded-[12px] bg-surface-container-low p-4">
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-3">
@@ -247,7 +278,6 @@ export default function Guests() {
                   </div>
                 </div>
 
-                {/* Spending Summary */}
                 <div className="mb-6 rounded-[12px] bg-surface-container-low p-4">
                   <h4 className="mb-3 font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                     Spending Summary
@@ -272,7 +302,6 @@ export default function Guests() {
                   </div>
                 </div>
 
-                {/* Reservation History */}
                 <div>
                   <h4 className="mb-3 font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                     Reservation History

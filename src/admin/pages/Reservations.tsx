@@ -86,9 +86,9 @@ export default function Reservations() {
 
       <motion.div
         variants={item}
-        className="mb-6 flex flex-col gap-4 rounded-[16px] bg-white p-4 shadow-card sm:flex-row sm:items-center"
+        className="mb-6 flex flex-col gap-4 rounded-[16px] bg-white p-4 shadow-card"
       >
-        <div className="relative flex-1">
+        <div className="relative w-full">
           <Search
             size={18}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
@@ -101,8 +101,8 @@ export default function Reservations() {
             className="w-full rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-10 pr-4 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/60 transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+          <div className="relative w-full sm:w-auto">
             <Filter
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
@@ -110,7 +110,7 @@ export default function Reservations() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as ReservationStatus | 'all')}
-              className="appearance-none rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-9 pr-8 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full appearance-none rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-9 pr-8 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:w-auto"
             >
               <option value="all">All Status</option>
               {RESERVATION_STATUSES.map((s) => (
@@ -120,7 +120,7 @@ export default function Reservations() {
               ))}
             </select>
           </div>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <CalendarDays
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
@@ -128,7 +128,7 @@ export default function Reservations() {
             <select
               value={villaFilter}
               onChange={(e) => setVillaFilter(e.target.value)}
-              className="appearance-none rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-9 pr-8 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full appearance-none rounded-[12px] border border-outline-variant bg-surface-container-low py-2.5 pl-9 pr-8 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:w-auto"
             >
               <option value="all">All Villas</option>
               <option value="krib-1">KRiB 1</option>
@@ -138,9 +138,62 @@ export default function Reservations() {
         </div>
       </motion.div>
 
+      <motion.div variants={item} className="md:hidden">
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-[16px] bg-white p-10 shadow-card">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-high">
+              <CalendarDays size={24} className="text-on-surface-variant" />
+            </div>
+            <p className="font-body text-body-md text-on-surface-variant">
+              No reservations match your filters
+            </p>
+            <button
+              onClick={() => {
+                setStatusFilter('all')
+                setVillaFilter('all')
+                setSearchQuery('')
+              }}
+              className="font-body text-body-sm font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              Clear all filters
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {filtered.map((res) => (
+              <div
+                key={res.id}
+                onClick={() => navigate(`/admin/reservations/${res.id}`)}
+                className="rounded-[12px] border border-outline-variant/50 bg-white p-4 shadow-sm"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-primary">{res.id}</span>
+                  <StatusBadge status={res.status} size="sm" />
+                </div>
+                <p className="font-medium text-on-surface">{res.guestName}</p>
+                <div className="mt-1 flex items-center justify-between">
+                  <div className="flex flex-col text-sm text-on-surface-variant">
+                    <span>{res.villaName}</span>
+                    <span>
+                      {formatShortDate(res.checkIn)} – {formatShortDate(res.checkOut)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-on-surface">
+                      {formatCurrency(res.totalAmount)}
+                    </span>
+                    <ChevronRight size={16} className="text-on-surface-variant" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       <motion.div
         variants={item}
-        className="overflow-hidden rounded-[16px] bg-white shadow-card"
+        className="hidden overflow-hidden rounded-[16px] bg-white shadow-card md:block"
       >
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -152,7 +205,7 @@ export default function Reservations() {
                 <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                   Guest
                 </th>
-                <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+                <th className="hidden px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant xl:table-cell">
                   Villa
                 </th>
                 <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
@@ -216,7 +269,7 @@ export default function Reservations() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-3.5 font-body text-body-md text-on-surface">
+                    <td className="hidden px-6 py-3.5 font-body text-body-md text-on-surface xl:table-cell">
                       {res.villaName}
                     </td>
                     <td className="px-6 py-3.5">

@@ -87,10 +87,10 @@ export default function ReservationDetail() {
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high">
           <AlertCircle size={32} className="text-on-surface-variant" />
         </div>
-        <h2 className="font-display text-headline-md text-on-surface">
+        <h2 className="font-display text-headline-sm md:text-headline-md text-on-surface">
           Reservation not found
         </h2>
-        <p className="font-body text-body-md text-on-surface-variant">
+        <p className="px-4 text-center font-body text-body-sm md:text-body-md text-on-surface-variant">
           The reservation you're looking for doesn't exist or has been removed.
         </p>
         <button
@@ -120,7 +120,7 @@ export default function ReservationDetail() {
           action={
             <button
               onClick={() => navigate('/admin/reservations')}
-              className="flex items-center gap-2 rounded-[12px] border border-outline-variant px-4 py-2 font-body text-body-md text-on-surface transition-colors hover:bg-surface-container-low"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-[12px] border border-outline-variant px-4 py-2 font-body text-body-md text-on-surface transition-colors hover:bg-surface-container-low sm:justify-start"
             >
               <ArrowLeft size={16} /> Back
             </button>
@@ -128,15 +128,13 @@ export default function ReservationDetail() {
         />
       </motion.div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        {/* Left: Main content */}
-        <div className="flex flex-col gap-6 lg:col-span-3">
-          {/* Guest Info */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-5">
+        <div className="flex flex-col gap-4 sm:gap-6 lg:col-span-3">
           <motion.div
             variants={item}
-            className="rounded-[16px] bg-white p-6 shadow-card"
+            className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
           >
-            <h3 className="mb-4 font-display text-title-md font-medium text-on-surface">
+            <h3 className="mb-4 font-display text-title-sm md:text-title-md font-medium text-on-surface">
               Guest Information
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -191,12 +189,11 @@ export default function ReservationDetail() {
             </div>
           </motion.div>
 
-          {/* Reservation Info */}
           <motion.div
             variants={item}
-            className="rounded-[16px] bg-white p-6 shadow-card"
+            className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
           >
-            <h3 className="mb-4 font-display text-title-md font-medium text-on-surface">
+            <h3 className="mb-4 font-display text-title-sm md:text-title-md font-medium text-on-surface">
               Reservation Details
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -225,7 +222,7 @@ export default function ReservationDetail() {
             </div>
 
             <div className="mt-4 rounded-[12px] bg-surface-container-low p-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col">
                   <span className="font-body text-body-sm text-on-surface-variant">Check-in</span>
                   <span className="font-body text-body-md font-medium text-on-surface">
@@ -235,7 +232,7 @@ export default function ReservationDetail() {
                     2:00 PM
                   </span>
                 </div>
-                <div className="flex flex-col text-right">
+                <div className="flex flex-col sm:text-right">
                   <span className="font-body text-body-sm text-on-surface-variant">Check-out</span>
                   <span className="font-body text-body-md font-medium text-on-surface">
                     {formatDate(res.checkOut)}
@@ -248,12 +245,11 @@ export default function ReservationDetail() {
             </div>
           </motion.div>
 
-          {/* Guest Count */}
           <motion.div
             variants={item}
-            className="rounded-[16px] bg-white p-6 shadow-card"
+            className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
           >
-            <h3 className="mb-4 font-display text-title-md font-medium text-on-surface">
+            <h3 className="mb-4 font-display text-title-sm md:text-title-md font-medium text-on-surface">
               Guest Count
             </h3>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -265,9 +261,9 @@ export default function ReservationDetail() {
               ].map((g) => (
                 <div
                   key={g.label}
-                  className="flex flex-col items-center gap-1 rounded-[12px] bg-surface-container-low p-4"
+                  className="flex flex-col items-center gap-1 rounded-[12px] bg-surface-container-low p-3 sm:p-4"
                 >
-                  <span className="font-display text-headline-md font-medium text-on-surface">
+                  <span className="font-display text-headline-sm md:text-headline-md font-medium text-on-surface">
                     {g.count}
                   </span>
                   <span className="font-body text-body-sm text-on-surface-variant">
@@ -278,13 +274,12 @@ export default function ReservationDetail() {
             </div>
           </motion.div>
 
-          {/* Special Requests */}
           {(res.specialRequests || res.message) && (
             <motion.div
               variants={item}
-              className="rounded-[16px] bg-white p-6 shadow-card"
+              className="rounded-[16px] bg-white p-4 shadow-card sm:p-6"
             >
-              <h3 className="mb-4 font-display text-title-md font-medium text-on-surface">
+              <h3 className="mb-4 font-display text-title-sm md:text-title-md font-medium text-on-surface">
                 Message & Special Requests
               </h3>
               {res.message && (
@@ -311,15 +306,13 @@ export default function ReservationDetail() {
           )}
         </div>
 
-        {/* Right: Sticky sidebar */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
+        <div className="flex flex-col gap-4 sm:gap-6 lg:col-span-2">
           <motion.div
             variants={item}
-            className="sticky top-6 flex flex-col gap-6"
+            className="flex flex-col gap-4 sm:gap-6 lg:sticky lg:top-6"
           >
-            {/* Timeline */}
-            <div className="rounded-[16px] bg-white p-6 shadow-card">
-              <h3 className="mb-5 font-display text-title-md font-medium text-on-surface">
+            <div className="rounded-[16px] bg-white p-4 shadow-card sm:p-6">
+              <h3 className="mb-5 font-display text-title-sm md:text-title-md font-medium text-on-surface">
                 Status Timeline
               </h3>
               <div className="flex flex-col">
@@ -406,9 +399,8 @@ export default function ReservationDetail() {
               </div>
             </div>
 
-            {/* Price Summary */}
-            <div className="rounded-[16px] bg-white p-6 shadow-card">
-              <h3 className="mb-4 font-display text-title-md font-medium text-on-surface">
+            <div className="rounded-[16px] bg-white p-4 shadow-card sm:p-6">
+              <h3 className="mb-4 font-display text-title-sm md:text-title-md font-medium text-on-surface">
                 Price Summary
               </h3>
               <div className="flex flex-col gap-3">
@@ -445,7 +437,7 @@ export default function ReservationDetail() {
                     <span className="font-body text-body-md font-medium text-on-surface">
                       Total Amount
                     </span>
-                    <span className="font-display text-title-md font-medium text-on-surface">
+                    <span className="font-display text-title-sm md:text-title-md font-medium text-on-surface">
                       {formatCurrency(res.totalAmount)}
                     </span>
                   </div>
@@ -456,7 +448,7 @@ export default function ReservationDetail() {
                       <span className="font-body text-body-md font-medium text-[#92400e]">
                         Amount Due
                       </span>
-                      <span className="font-display text-title-md font-medium text-[#92400e]">
+                      <span className="font-display text-title-sm md:text-title-md font-medium text-[#92400e]">
                         {formatCurrency(res.amountDue)}
                       </span>
                     </div>
@@ -468,35 +460,34 @@ export default function ReservationDetail() {
               </div>
             </div>
 
-            {/* Action Buttons */}
             {!isCancelledOrRejected && res.status !== 'completed' && (
-              <div className="rounded-[16px] bg-white p-6 shadow-card">
-                <h3 className="mb-4 font-display text-title-md font-medium text-on-surface">
+              <div className="rounded-[16px] bg-white p-4 shadow-card sm:p-6">
+                <h3 className="mb-4 font-display text-title-sm md:text-title-md font-medium text-on-surface">
                   Actions
                 </h3>
                 <div className="flex flex-col gap-3">
                   {res.status === 'pending' && (
                     <>
-                      <button className="flex w-full items-center justify-center gap-2 rounded-[12px] bg-tertiary px-4 py-3 font-body text-body-md font-medium text-white transition-colors hover:bg-tertiary/90">
+                      <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] bg-tertiary px-4 py-3 font-body text-body-md font-medium text-white transition-colors hover:bg-tertiary/90">
                         <CheckCircle2 size={18} /> Approve Reservation
                       </button>
-                      <button className="flex w-full items-center justify-center gap-2 rounded-[12px] border-2 border-error px-4 py-3 font-body text-body-md font-medium text-error transition-colors hover:bg-error/5">
+                      <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border-2 border-error px-4 py-3 font-body text-body-md font-medium text-error transition-colors hover:bg-error/5">
                         <XCircle size={18} /> Reject Reservation
                       </button>
                     </>
                   )}
                   {(res.status === 'approved' || res.status === 'awaiting_payment') && (
-                    <button className="flex w-full items-center justify-center gap-2 rounded-[12px] bg-primary px-4 py-3 font-body text-body-md font-medium text-on-primary transition-colors hover:bg-primary/90">
+                    <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] bg-primary px-4 py-3 font-body text-body-md font-medium text-on-primary transition-colors hover:bg-primary/90">
                       <Send size={18} /> Send Payment Link
                     </button>
                   )}
                   {res.status === 'payment_submitted' && (
-                    <button className="flex w-full items-center justify-center gap-2 rounded-[12px] bg-tertiary px-4 py-3 font-body text-body-md font-medium text-white transition-colors hover:bg-tertiary/90">
+                    <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] bg-tertiary px-4 py-3 font-body text-body-md font-medium text-white transition-colors hover:bg-tertiary/90">
                       <CheckCircle2 size={18} /> Verify Payment
                     </button>
                   )}
                   {res.status === 'confirmed' && (
-                    <button className="flex w-full items-center justify-center gap-2 rounded-[12px] border-2 border-outline-variant px-4 py-3 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low">
+                    <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border-2 border-outline-variant px-4 py-3 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low">
                       <Link2 size={18} /> Contact Guest
                     </button>
                   )}

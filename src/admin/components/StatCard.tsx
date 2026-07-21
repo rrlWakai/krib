@@ -31,17 +31,17 @@ export function StatCard({
     <motion.div
       whileHover={{ y: -2, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
       transition={{ duration: 0.2 }}
-      className="flex items-center justify-between rounded-[16px] bg-white p-5 shadow-card"
+      className="flex items-center justify-between rounded-[16px] bg-white p-4 shadow-card sm:p-5"
     >
-      <div className="flex flex-col gap-1">
-        <span className="font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
+      <div className="min-w-0 flex-1">
+        <span className="block truncate font-body text-[11px] uppercase tracking-widest text-on-surface-variant sm:text-label-caps">
           {title}
         </span>
-        <span className="font-display text-headline-md font-medium text-on-surface">
+        <span className="mt-0.5 block truncate font-display text-headline-sm font-medium text-on-surface sm:text-headline-md">
           {value}
         </span>
         {subtitle && (
-          <span className="font-body text-body-sm text-on-surface-variant">
+          <span className="mt-0.5 block truncate font-body text-body-xs text-on-surface-variant sm:text-body-sm">
             {subtitle}
           </span>
         )}
@@ -65,7 +65,7 @@ export function StatCard({
       </div>
       <div
         className={cn(
-          'flex h-12 w-12 shrink-0 items-center justify-center rounded-full',
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full sm:h-12 sm:w-12',
           accentMap[accent]
         )}
       >

@@ -79,7 +79,7 @@ export default function Villas() {
           >
             <div
               className={cn(
-                'relative flex h-56 items-center justify-center bg-gradient-to-br',
+                'relative flex h-44 items-center justify-center bg-gradient-to-br sm:h-56',
                 villaGradients[i % villaGradients.length],
                 statusConfig[villa.status]?.gradient
               )}
@@ -96,7 +96,7 @@ export default function Villas() {
               </div>
             </div>
 
-            <div className="p-5">
+            <div className="p-4 sm:p-5">
               <div className="mb-3 flex items-start justify-between">
                 <div>
                   <h3 className="font-display text-headline-sm text-on-surface">
@@ -108,7 +108,7 @@ export default function Villas() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-display text-title-lg font-semibold text-primary">
+                  <p className="font-display text-title-md font-semibold text-primary sm:text-title-lg">
                     {formatCurrency(villa.baseRate)}
                   </p>
                   <p className="font-body text-body-xs text-on-surface-variant">per night</p>
@@ -132,11 +132,11 @@ export default function Villas() {
               </div>
 
               <div className="flex items-center gap-3 border-t border-outline-variant/50 pt-4">
-                <button className="flex flex-1 items-center justify-center gap-2 rounded-[12px] border border-outline-variant bg-white py-2 font-body text-body-sm font-medium text-on-surface transition-all duration-200 hover:border-primary hover:text-primary">
+                <button className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] border border-outline-variant bg-white py-2.5 font-body text-body-sm font-medium text-on-surface transition-all duration-200 hover:border-primary hover:text-primary">
                   <Eye size={16} />
                   View Details
                 </button>
-                <button className="flex flex-1 items-center justify-center gap-2 rounded-[12px] bg-surface-container-low py-2 font-body text-body-sm font-medium text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface">
+                <button className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-surface-container-low py-2.5 font-body text-body-sm font-medium text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface">
                   <Pencil size={16} />
                   Edit
                 </button>
@@ -147,15 +147,15 @@ export default function Villas() {
       </motion.div>
 
       <motion.div variants={fadeIn} className="mt-8">
-        <div className="flex items-center gap-3 rounded-[16px] bg-surface-container-low p-5">
+        <div className="flex items-center gap-3 rounded-[16px] bg-surface-container-low p-4 sm:p-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container">
             <Users size={20} className="text-primary" />
           </div>
           <div>
-            <p className="font-body text-body-md font-medium text-on-surface">
+            <p className="font-body text-body-sm font-medium text-on-surface sm:text-body-md">
               {villas.length} Properties · {villas.filter((v) => v.status === 'active').length} Active
             </p>
-            <p className="font-body text-body-sm text-on-surface-variant">
+            <p className="font-body text-body-xs text-on-surface-variant sm:text-body-sm">
               Total combined capacity:{' '}
               {villas.reduce((sum, v) => sum + v.capacity, 0)} guests
             </p>

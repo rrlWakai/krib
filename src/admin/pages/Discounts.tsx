@@ -180,7 +180,7 @@ export default function Discounts() {
         variants={fadeIn}
         className="overflow-hidden rounded-[16px] bg-white shadow-card"
       >
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full min-w-[900px]">
             <thead>
               <tr className="border-b border-outline-variant">
@@ -348,6 +348,78 @@ export default function Discounts() {
             </tbody>
           </table>
         </div>
+
+        <div className="md:hidden p-4 flex flex-col gap-3">
+          {filteredDiscounts.map((discount, i) => (
+            <motion.div
+              key={discount.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              className="rounded-[12px] border border-outline-variant/50 bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-on-surface">{discount.code}</span>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(discount.code)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:text-primary"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+                <StatusBadge status={discount.status} size="sm" />
+              </div>
+              <p className="text-sm text-on-surface-variant mb-2 line-clamp-1">{discount.description}</p>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-1">
+                  {discount.type === 'percentage' ? <Percent size={14} className="text-primary" /> : <PhilippinePeso size={14} className="text-primary" />}
+                  <span className="font-medium">{discount.type === 'percentage' ? `${discount.amount}%` : `₱${discount.amount.toLocaleString()}`}</span>
+                </div>
+                <span className="text-on-surface-variant">{getVillaName(discount.villaId)}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => toggleStatus(discount.id)}
+                  className={cn(
+                    'relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200',
+                    discount.status === 'active' ? 'bg-primary' : 'bg-outline-variant'
+                  )}
+                  title={discount.status === 'active' ? 'Disable' : 'Enable'}
+                >
+                  <span
+                    className={cn(
+                      'inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
+                      discount.status === 'active'
+                        ? 'translate-x-[22px]'
+                        : 'translate-x-1'
+                    )}
+                  />
+                </button>
+                <button
+                  onClick={() => openEditModal(discount)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  onClick={() => handleDelete(discount.id)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error-container hover:text-error"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+          {filteredDiscounts.length === 0 && (
+            <div className="py-16 text-center">
+              <Tag size={40} className="mx-auto mb-3 text-outline-variant" />
+              <p className="font-body text-body-md text-on-surface-variant">
+                No discounts found
+              </p>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       <AnimatePresence>
@@ -356,159 +428,167 @@ export default function Discounts() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            className="fixed inset-0 z-50 bg-black/40"
             onClick={() => setShowModal(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 16 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-lg rounded-[16px] bg-white p-6 shadow-card"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed inset-x-0 bottom-0 z-50 rounded-t-[20px] bg-white p-6 shadow-card md:static md:rounded-[16px] md:flex md:items-center md:justify-center md:p-0"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="font-display text-headline-sm text-on-surface">
-                  {editingId ? 'Edit Discount' : 'Create Discount'}
-                </h2>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-body text-body-sm font-medium text-on-surface">
-                    Code
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. SUMMER2026"
-                    value={form.code}
-                    onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                    className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/50 transition-colors focus:border-primary focus:outline-none"
-                  />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 16 }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-lg rounded-[16px] bg-white p-6 shadow-card md:shadow-none"
+              >
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="font-display text-headline-sm text-on-surface">
+                    {editingId ? 'Edit Discount' : 'Create Discount'}
+                  </h2>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-body text-body-sm font-medium text-on-surface">
-                    Description
-                  </label>
-                  <textarea
-                    placeholder="Brief description of this discount"
-                    rows={2}
-                    value={form.description}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, description: e.target.value }))
-                    }
-                    className="resize-none rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/50 transition-colors focus:border-primary focus:outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="font-body text-body-sm font-medium text-on-surface">
-                      Type
-                    </label>
-                    <select
-                      value={form.type}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          type: e.target.value as DiscountType,
-                        }))
-                      }
-                      className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
-                    >
-                      <option value="fixed">Fixed (₱)</option>
-                      <option value="percentage">Percentage (%)</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-body text-body-sm font-medium text-on-surface">
-                      Amount
+                      Code
                     </label>
                     <input
-                      type="number"
-                      placeholder={form.type === 'fixed' ? '₱ 0' : '0%'}
-                      value={form.amount}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, amount: e.target.value }))
-                      }
+                      type="text"
+                      placeholder="e.g. SUMMER2026"
+                      value={form.code}
+                      onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
                       className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/50 transition-colors focus:border-primary focus:outline-none"
                     />
                   </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-body text-body-sm font-medium text-on-surface">
+                      Description
+                    </label>
+                    <textarea
+                      placeholder="Brief description of this discount"
+                      rows={2}
+                      value={form.description}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, description: e.target.value }))
+                      }
+                      className="resize-none rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/50 transition-colors focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-body text-body-sm font-medium text-on-surface">
+                        Type
+                      </label>
+                      <select
+                        value={form.type}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            type: e.target.value as DiscountType,
+                          }))
+                        }
+                        className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
+                      >
+                        <option value="fixed">Fixed (₱)</option>
+                        <option value="percentage">Percentage (%)</option>
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-body text-body-sm font-medium text-on-surface">
+                        Amount
+                      </label>
+                      <input
+                        type="number"
+                        placeholder={form.type === 'fixed' ? '₱ 0' : '0%'}
+                        value={form.amount}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, amount: e.target.value }))
+                        }
+                        className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/50 transition-colors focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-body text-body-sm font-medium text-on-surface">
+                      Villa
+                    </label>
+                    <select
+                      value={form.villaId}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, villaId: e.target.value }))
+                      }
+                      className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
+                    >
+                      <option value="all">All Villas</option>
+                      {villas.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-body text-body-sm font-medium text-on-surface">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={form.startDate}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, startDate: e.target.value }))
+                        }
+                        className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-body text-body-sm font-medium text-on-surface">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={form.endDate}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, endDate: e.target.value }))
+                        }
+                        className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-body text-body-sm font-medium text-on-surface">
-                    Villa
-                  </label>
-                  <select
-                    value={form.villaId}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, villaId: e.target.value }))
-                    }
-                    className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="rounded-[12px] border border-outline-variant bg-white px-5 py-2.5 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low"
                   >
-                    <option value="all">All Villas</option>
-                    {villas.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className="rounded-[12px] bg-primary px-5 py-2.5 font-body text-body-md font-medium text-on-primary transition-all duration-200 hover:bg-primary/90 hover:shadow-md"
+                  >
+                    {editingId ? 'Save Changes' : 'Create Discount'}
+                  </button>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-body text-body-sm font-medium text-on-surface">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={form.startDate}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, startDate: e.target.value }))
-                      }
-                      className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-body text-body-sm font-medium text-on-surface">
-                      End Date
-                    </label>
-                    <input
-                      type="date"
-                      value={form.endDate}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, endDate: e.target.value }))
-                      }
-                      className="rounded-[12px] border border-outline-variant bg-white px-4 py-2.5 font-body text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="rounded-[12px] border border-outline-variant bg-white px-5 py-2.5 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="rounded-[12px] bg-primary px-5 py-2.5 font-body text-body-md font-medium text-on-primary transition-all duration-200 hover:bg-primary/90 hover:shadow-md"
-                >
-                  {editingId ? 'Save Changes' : 'Create Discount'}
-                </button>
-              </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}

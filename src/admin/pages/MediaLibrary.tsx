@@ -143,7 +143,7 @@ export default function MediaLibrary() {
             <button
               onClick={() => setViewMode('grid')}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-l-[11px] transition-colors',
+                'flex h-11 w-11 items-center justify-center rounded-l-[11px] transition-colors',
                 viewMode === 'grid'
                   ? 'bg-primary text-on-primary'
                   : 'bg-white text-on-surface-variant hover:bg-surface-container-low'
@@ -154,7 +154,7 @@ export default function MediaLibrary() {
             <button
               onClick={() => setViewMode('list')}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-r-[11px] transition-colors',
+                'flex h-11 w-11 items-center justify-center rounded-r-[11px] transition-colors',
                 viewMode === 'list'
                   ? 'bg-primary text-on-primary'
                   : 'bg-white text-on-surface-variant hover:bg-surface-container-low'
@@ -293,7 +293,7 @@ export default function MediaLibrary() {
               {mediaItems.length} files · {totalSize.toFixed(1)} MB of 500 MB used
             </p>
           </div>
-          <div className="h-2 w-32 overflow-hidden rounded-full bg-outline-variant">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-outline-variant sm:w-32">
             <div
               className="h-full rounded-full bg-primary transition-all duration-500"
               style={{ width: `${(totalSize / 500) * 100}%` }}
