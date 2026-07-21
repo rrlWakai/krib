@@ -24,6 +24,47 @@ const MyReservationPage = lazy(() =>
   import("./pages/MyReservationPage").then((m) => ({ default: m.MyReservationPage })),
 );
 
+// Admin pages (lazy loaded)
+const AdminLayout = lazy(() =>
+  import("./admin/layout/AdminLayout").then((m) => ({ default: m.AdminLayout })),
+);
+const AdminDashboard = lazy(() =>
+  import("./admin/pages/Dashboard").then((m) => ({ default: m.default })),
+);
+const AdminReservations = lazy(() =>
+  import("./admin/pages/Reservations").then((m) => ({ default: m.default })),
+);
+const AdminReservationDetail = lazy(() =>
+  import("./admin/pages/ReservationDetail").then((m) => ({ default: m.default })),
+);
+const AdminCalendar = lazy(() =>
+  import("./admin/pages/Calendar").then((m) => ({ default: m.default })),
+);
+const AdminGuests = lazy(() =>
+  import("./admin/pages/Guests").then((m) => ({ default: m.default })),
+);
+const AdminPayments = lazy(() =>
+  import("./admin/pages/Payments").then((m) => ({ default: m.default })),
+);
+const AdminDiscounts = lazy(() =>
+  import("./admin/pages/Discounts").then((m) => ({ default: m.default })),
+);
+const AdminVillas = lazy(() =>
+  import("./admin/pages/Villas").then((m) => ({ default: m.default })),
+);
+const AdminMediaLibrary = lazy(() =>
+  import("./admin/pages/MediaLibrary").then((m) => ({ default: m.default })),
+);
+const AdminMessages = lazy(() =>
+  import("./admin/pages/Messages").then((m) => ({ default: m.default })),
+);
+const AdminReports = lazy(() =>
+  import("./admin/pages/Reports").then((m) => ({ default: m.default })),
+);
+const AdminSettings = lazy(() =>
+  import("./admin/pages/Settings").then((m) => ({ default: m.default })),
+);
+
 function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -110,6 +151,23 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                 <Route path="/gallery" element={<GalleryPage />} />
                 <Route path="/location" element={<LocationPage />} />
                 <Route path="/my-reservation" element={<MyReservationPage />} />
+
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="reservations" element={<AdminReservations />} />
+                  <Route path="reservations/:id" element={<AdminReservationDetail />} />
+                  <Route path="calendar" element={<AdminCalendar />} />
+                  <Route path="guests" element={<AdminGuests />} />
+                  <Route path="payments" element={<AdminPayments />} />
+                  <Route path="discounts" element={<AdminDiscounts />} />
+                  <Route path="villas" element={<AdminVillas />} />
+                  <Route path="media" element={<AdminMediaLibrary />} />
+                  <Route path="messages" element={<AdminMessages />} />
+                  <Route path="reports" element={<AdminReports />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
+
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
