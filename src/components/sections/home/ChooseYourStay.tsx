@@ -16,7 +16,7 @@ export function ChooseYourStay() {
 
   const villaQuickInfo = [
     { icon: 'users', label: (n: number) => `Up to ${n} Guests` },
-    { icon: 'clock', label: () => '22-Hour Stay' },
+    { icon: 'clock', label: () => '21-Hour Stay' },
     { icon: 'pool', label: () => 'Private Swimming Pool' },
     { icon: 'ac', label: () => 'Fully Air-conditioned' },
   ]

@@ -1,3 +1,5 @@
+import { getVillaImageByName } from './images'
+
 export type ReservationStatus =
   | 'awaiting_confirmation'
   | 'awaiting_payment'
@@ -34,13 +36,8 @@ export interface Reservation {
   message?: string
 }
 
-const VILLA_IMAGES: Record<string, string> = {
-  'KRiB 1': 'https://lh3.googleusercontent.com/aida-public/AB6AXuB79-XUS_wZ_ISWK8KWvEbstMr4BMDuLiZdTd5-I3K27p59KgB4BNJ6VZm8TpsDGc9PFr0l5JqufCmViI3PVkFOv_tXSip6RZBLus7sKdfEh64FTB0E_I_x7g-I60OvC8qGW10s59zsqhMPr2XV9mlATb9POcqEh3FlTWuHuKtqTjb06ajMF-prbNHaFv6mcywzBUi5nEO5I3NWzhMAiqfIniB1cFr-XYENmmbJ42F3vb8GEbNYeXK2Z8Qozo2euOgivqgY94CT5kQU',
-  'KRiB 2': 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-dxTrEUzretQIKz4ayr0V4kXgz6kTk0w_dVssvNXb5a8wYwyhKFfVmpJr0pKbd8_no8utHitDUiDKVbwuYmA7U9BxryfL_exRaXqJB8ufueYxjmPw7wf0FE8P9jFeHQupg_kG73ua7BpOq-Mdgc5X0iRNxASebJe3SMinidZhpxVyJr7GLjTEBLI82IAyTdCe5wi2kmOJk3a5kc2xgSZuqCMnhPY1zZ3z9pnN9A8R9_4tBTxWIZejVCRT44DBTe3Zr620nYrPtz78',
-}
-
 export function getVillaImage(villaName: string): string {
-  return VILLA_IMAGES[villaName] ?? VILLA_IMAGES['KRiB 1']
+  return getVillaImageByName(villaName)
 }
 
 export function generateReservationId(): string {
@@ -61,7 +58,7 @@ const mockReservations: Reservation[] = [
     guestName: 'Maria Santos',
     villaId: 'krib-2',
     villaName: 'KRiB 2',
-    maxGuests: 22,
+    maxGuests: 30,
     checkIn: '2026-08-10',
     checkOut: '2026-08-11',
     guests: { adults: 4, children: 2, infants: 0, pets: 0 },
@@ -97,7 +94,7 @@ const mockReservations: Reservation[] = [
     guestName: 'Ana Cruz',
     villaId: 'krib-2',
     villaName: 'KRiB 2',
-    maxGuests: 22,
+    maxGuests: 30,
     checkIn: '2026-09-01',
     checkOut: '2026-09-02',
     guests: { adults: 6, children: 3, infants: 0, pets: 1 },
@@ -134,7 +131,7 @@ const mockReservations: Reservation[] = [
     guestName: 'Sample Guest',
     villaId: 'krib-2',
     villaName: 'KRiB 2',
-    maxGuests: 22,
+    maxGuests: 30,
     checkIn: '2026-08-20',
     checkOut: '2026-08-21',
     guests: { adults: 8, children: 4, infants: 2, pets: 0 },
@@ -352,6 +349,6 @@ export function getStayDuration(checkIn: string, checkOut: string): string {
   const start = new Date(checkIn + 'T12:00:00')
   const end = new Date(checkOut + 'T12:00:00')
   const hours = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60))
-  if (hours === 22) return '22-Hour Stay'
+  if (hours === 21) return '21-Hour Stay'
   return `${hours}-Hour Stay`
 }

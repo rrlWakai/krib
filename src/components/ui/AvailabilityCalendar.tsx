@@ -50,7 +50,7 @@ export function AvailabilityCalendar({ villaId, onDateSelect }: AvailabilityCale
   }
 
   const departureDate = selectedDate
-    ? new Date(new Date(selectedDate).getTime() + 22 * 60 * 60 * 1000)
+    ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000)
     : null
 
   return (
@@ -133,7 +133,7 @@ export function AvailabilityCalendar({ villaId, onDateSelect }: AvailabilityCale
               <div className="bg-surface-container-low rounded-default p-4 space-y-3">
                 <div className="flex items-center gap-2 mb-3">
                   <Clock size={16} className="text-on-surface-variant" />
-                  <span className="font-body text-body-md font-medium text-on-surface">22-Hour Stay</span>
+                  <span className="font-body text-body-md font-medium text-on-surface">21-Hour Stay</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-body text-body-md text-on-surface-variant">Arrival</span>
@@ -154,7 +154,7 @@ export function AvailabilityCalendar({ villaId, onDateSelect }: AvailabilityCale
                       month: 'short',
                       day: 'numeric',
                     })}{' '}
-                    · 12:00 PM
+                    · 11:00 AM
                   </span>
                 </div>
               </div>

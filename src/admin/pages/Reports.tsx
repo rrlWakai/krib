@@ -1,20 +1,20 @@
 import { motion } from 'framer-motion'
 import {
-  PhilippinePeso,
   BedDouble,
   CalendarCheck,
-  TrendingUp,
   Users,
+  TrendingUp,
   Clock,
   BarChart3,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatCard } from '../components/StatCard'
 import {
-  revenueByMonth,
   occupancyData,
   villaPopularity,
-  formatCurrency,
+  reservationTrends,
+  guestStats,
+  statusDistribution,
 } from '../data/mockData'
 import { cn } from '../../lib/cn'
 
@@ -28,15 +28,14 @@ const staggerContainer = {
   visible: { transition: { staggerChildren: 0.08 } },
 }
 
-const maxRevenue = Math.max(...revenueByMonth.map((d) => d.revenue))
 const maxOccupancy = 100
+const maxTrend = Math.max(...reservationTrends.map((d) => d.total))
 
 export default function Reports() {
-  const totalRevenue = revenueByMonth.reduce((sum, d) => sum + d.revenue, 0)
   const avgOccupancy =
     occupancyData.reduce((sum, d) => sum + d.rate, 0) / occupancyData.length
-  const totalBookings = revenueByMonth.reduce(
-    (sum, d) => sum + d.reservations,
+  const totalBookings = reservationTrends.reduce(
+    (sum, d) => sum + d.total,
     0
   )
 
@@ -59,16 +58,6 @@ export default function Reports() {
       >
         <motion.div variants={fadeIn}>
           <StatCard
-            title="Total Revenue"
-            value={formatCurrency(totalRevenue)}
-            subtitle="Jan – Jul 2026"
-            icon={<PhilippinePeso size={22} />}
-            accent="green"
-            trend={{ value: 12.5, isPositive: true }}
-          />
-        </motion.div>
-        <motion.div variants={fadeIn}>
-          <StatCard
             title="Average Occupancy"
             value={`${avgOccupancy.toFixed(1)}%`}
             subtitle="Across both villas"
@@ -81,10 +70,20 @@ export default function Reports() {
           <StatCard
             title="Total Bookings"
             value={totalBookings}
-            subtitle={`${revenueByMonth.length} months tracked`}
+            subtitle={`${reservationTrends.length} months tracked`}
             icon={<CalendarCheck size={22} />}
             accent="purple"
             trend={{ value: 15, isPositive: true }}
+          />
+        </motion.div>
+        <motion.div variants={fadeIn}>
+          <StatCard
+            title="Total Guests"
+            value={guestStats[0].value}
+            subtitle="Unique guests served"
+            icon={<Users size={22} />}
+            accent="green"
+            trend={{ value: 10, isPositive: true }}
           />
         </motion.div>
       </motion.div>
@@ -97,23 +96,23 @@ export default function Reports() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="font-display text-title-sm text-on-surface sm:text-title-md">
-                Revenue by Month
+                Reservation Trends
               </h2>
               <p className="mt-1 font-body text-body-sm text-on-surface-variant">
-                Monthly revenue breakdown for 2026
+                Monthly reservation activity for 2026
               </p>
             </div>
             <div className="flex h-9 items-center gap-1.5 rounded-full bg-tertiary-container px-3">
               <TrendingUp size={14} className="text-tertiary" />
               <span className="font-body text-body-sm font-medium text-on-tertiary-container">
-                +12.5%
+                +15%
               </span>
             </div>
           </div>
 
           <div className="flex h-[180px] items-end gap-2 sm:h-[220px] sm:gap-3">
-            {revenueByMonth.map((d, i) => {
-              const height = (d.revenue / maxRevenue) * 180
+            {reservationTrends.map((d, i) => {
+              const height = (d.total / maxTrend) * 180
               return (
                 <div
                   key={d.month}
@@ -131,7 +130,7 @@ export default function Reports() {
                       className="mx-auto w-full max-w-[24px] rounded-t-[4px] bg-primary transition-all duration-200 group-hover:bg-primary/80 sm:max-w-[36px]"
                     />
                     <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap overflow-hidden rounded-[8px] bg-on-surface px-2 py-1 font-body text-body-xs text-on-primary opacity-0 transition-opacity group-hover:opacity-100">
-                      {formatCurrency(d.revenue)}
+                      {d.total} reservations
                     </div>
                   </div>
                   <span className="font-body text-[10px] text-on-surface-variant sm:text-body-xs">
@@ -146,12 +145,12 @@ export default function Reports() {
             <div className="flex items-center gap-1.5">
               <div className="h-2.5 w-2.5 rounded-full bg-primary" />
               <span className="font-body text-body-xs text-on-surface-variant">
-                Revenue
+                Total Reservations
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="font-body text-body-xs text-on-surface-variant">
-                Total: {formatCurrency(totalRevenue)}
+                Total: {totalBookings}
               </span>
             </div>
           </div>
@@ -330,21 +329,6 @@ export default function Reports() {
 
                 <div className="flex flex-col">
                   <div className="mb-1 flex items-center gap-1">
-                    <PhilippinePeso
-                      size={12}
-                      className="text-on-surface-variant"
-                    />
-                    <span className="font-body text-[11px] uppercase tracking-wider text-on-surface-variant">
-                      Revenue
-                    </span>
-                  </div>
-                  <span className="font-display text-headline-sm font-medium text-on-surface">
-                    {formatCurrency(villa.totalRevenue)}
-                  </span>
-                </div>
-
-                <div className="flex flex-col">
-                  <div className="mb-1 flex items-center gap-1">
                     <Clock size={12} className="text-on-surface-variant" />
                     <span className="font-body text-[11px] uppercase tracking-wider text-on-surface-variant">
                       Avg Stay
@@ -359,13 +343,13 @@ export default function Reports() {
               <div className="mt-4">
                 <div className="mb-1 flex items-center justify-between">
                   <span className="font-body text-body-xs text-on-surface-variant">
-                    Revenue share
+                    Booking share
                   </span>
                   <span className="font-body text-body-xs font-medium text-on-surface">
                     {(
-                      (villa.totalRevenue /
+                      (villa.totalBookings /
                         villaPopularity.reduce(
-                          (s, v) => s + v.totalRevenue,
+                          (s, v) => s + v.totalBookings,
                           0
                         )) *
                       100
@@ -378,9 +362,9 @@ export default function Reports() {
                     initial={{ width: 0 }}
                     animate={{
                       width: `${
-                        (villa.totalRevenue /
+                        (villa.totalBookings /
                           villaPopularity.reduce(
-                            (s, v) => s + v.totalRevenue,
+                            (s, v) => s + v.totalBookings,
                             0
                           )) *
                         100
@@ -396,6 +380,74 @@ export default function Reports() {
               </div>
             </motion.div>
           ))}
+        </div>
+      </motion.div>
+
+      <motion.div variants={fadeIn} className="mt-8">
+        <h2 className="mb-4 font-display text-title-sm text-on-surface sm:text-title-md">
+          Guest Statistics
+        </h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {guestStats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 + i * 0.1 }}
+              className="rounded-[16px] bg-white p-4 shadow-card sm:p-5"
+            >
+              <span className="font-body text-body-sm text-on-surface-variant">
+                {stat.label}
+              </span>
+              <div className="mt-1 font-display text-headline-sm font-medium text-on-surface">
+                {stat.value}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      <motion.div variants={fadeIn} className="mt-8">
+        <h2 className="mb-4 font-display text-title-sm text-on-surface sm:text-title-md">
+          Reservation Status Distribution
+        </h2>
+        <div className="rounded-[16px] bg-white p-4 shadow-card sm:p-6">
+          <div className="flex flex-col gap-3">
+            {statusDistribution.map((item, i) => {
+              const percentage = (item.count / 15) * 100
+              return (
+                <motion.div
+                  key={item.status}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1 + i * 0.08 }}
+                  className="flex items-center gap-3"
+                >
+                  <div
+                    className="h-3 w-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="w-32 font-body text-body-sm text-on-surface">
+                    {item.status}
+                  </span>
+                  <div className="flex-1">
+                    <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        transition={{ delay: 1.2 + i * 0.1, duration: 0.6 }}
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                    </div>
+                  </div>
+                  <span className="w-8 text-right font-body text-body-sm font-medium text-on-surface">
+                    {item.count}
+                  </span>
+                </motion.div>
+              )
+            })}
+          </div>
         </div>
       </motion.div>
     </motion.div>

@@ -8,13 +8,14 @@ import {
   CheckCircle2,
   Clock,
   Send,
-  CreditCard,
   AlertCircle,
   FileText,
   ArrowLeft,
-  Link2,
   XCircle,
   Ban,
+  MessageSquare,
+  Eye,
+  Info,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import {
@@ -54,8 +55,6 @@ function getNightCount(checkIn: string, checkOut: string) {
 const TIMELINE_STEPS: { key: ReservationStatus; label: string; icon: React.ReactNode }[] = [
   { key: 'pending', label: 'Reservation Submitted', icon: <Clock size={16} /> },
   { key: 'approved', label: 'Approved', icon: <CheckCircle2 size={16} /> },
-  { key: 'awaiting_payment', label: 'Awaiting Payment', icon: <CreditCard size={16} /> },
-  { key: 'payment_submitted', label: 'Payment Submitted', icon: <Send size={16} /> },
   { key: 'confirmed', label: 'Confirmed', icon: <CheckCircle2 size={16} /> },
 ]
 
@@ -63,8 +62,6 @@ function getStatusIndex(status: ReservationStatus): number {
   const order: ReservationStatus[] = [
     'pending',
     'approved',
-    'awaiting_payment',
-    'payment_submitted',
     'confirmed',
     'completed',
   ]
@@ -238,7 +235,7 @@ export default function ReservationDetail() {
                     {formatDate(res.checkOut)}
                   </span>
                   <span className="font-body text-body-sm text-on-surface-variant">
-                    12:00 PM
+                    11:00 AM
                   </span>
                 </div>
               </div>
@@ -442,21 +439,6 @@ export default function ReservationDetail() {
                     </span>
                   </div>
                 </div>
-                {res.amountDue > 0 && (
-                  <div className="rounded-[12px] bg-[#fef3c7] p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-body text-body-md font-medium text-[#92400e]">
-                        Amount Due
-                      </span>
-                      <span className="font-display text-title-sm md:text-title-md font-medium text-[#92400e]">
-                        {formatCurrency(res.amountDue)}
-                      </span>
-                    </div>
-                    <span className="mt-1 block font-body text-body-sm text-[#92400e]/80">
-                      Due by {formatDate(res.paymentDeadline)}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -476,21 +458,21 @@ export default function ReservationDetail() {
                       </button>
                     </>
                   )}
-                  {(res.status === 'approved' || res.status === 'awaiting_payment') && (
-                    <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] bg-primary px-4 py-3 font-body text-body-md font-medium text-on-primary transition-colors hover:bg-primary/90">
-                      <Send size={18} /> Send Payment Link
-                    </button>
-                  )}
-                  {res.status === 'payment_submitted' && (
-                    <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] bg-tertiary px-4 py-3 font-body text-body-md font-medium text-white transition-colors hover:bg-tertiary/90">
-                      <CheckCircle2 size={18} /> Verify Payment
-                    </button>
-                  )}
-                  {res.status === 'confirmed' && (
-                    <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border-2 border-outline-variant px-4 py-3 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low">
-                      <Link2 size={18} /> Contact Guest
-                    </button>
-                  )}
+                  <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border-2 border-outline-variant px-4 py-3 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low">
+                    <Send size={18} /> Send SMS Notification
+                  </button>
+                  <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border-2 border-outline-variant px-4 py-3 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low">
+                    <MessageSquare size={18} /> Contact Guest
+                  </button>
+                  <button className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[12px] border-2 border-outline-variant px-4 py-3 font-body text-body-md font-medium text-on-surface transition-colors hover:bg-surface-container-low">
+                    <Eye size={18} /> View Guest Profile
+                  </button>
+                </div>
+                <div className="mt-4 flex items-start gap-2 rounded-[12px] bg-surface-container-low p-3">
+                  <Info size={16} className="mt-0.5 shrink-0 text-on-surface-variant" />
+                  <p className="font-body text-body-sm text-on-surface-variant">
+                    Online payment integration will be available in a future release.
+                  </p>
                 </div>
               </div>
             )}

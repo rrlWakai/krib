@@ -71,7 +71,7 @@ export function StickyReservationCard({
               <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1">
                 Departure (auto)
               </label>
-              <span className="font-body text-body-md text-primary font-medium">22 hours after arrival</span>
+              <span className="font-body text-body-md text-primary font-medium">21 hours after arrival</span>
             </div>
             <div className="p-4 relative">
               <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1">

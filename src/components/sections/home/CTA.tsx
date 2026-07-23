@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { Reveal } from '../../ui/Reveal'
-import ctaBackground from '../../../assets/finalcta.png'
+import { images } from '../../../lib/images'
 
 function scrollToVillas() {
   const el = document.getElementById('villas')
@@ -16,7 +16,7 @@ export function CTA() {
   return (
     <section className="relative overflow-hidden bg-[#0f172a] py-20 md:py-40 lg:py-48">
       <motion.img
-        src={ctaBackground}
+        src={images.cta}
         alt=""
         style={{ y, scale }}
         className="absolute inset-0 h-[112%] w-full object-cover"

@@ -160,7 +160,7 @@ export function ReservationModal({
   }, [contactMethod]);
 
   const checkOut = checkIn
-    ? new Date(new Date(checkIn).getTime() + 22 * 60 * 60 * 1000)
+    ? new Date(new Date(checkIn).getTime() + 21 * 60 * 60 * 1000)
         .toISOString()
         .split("T")[0]
     : "";
@@ -318,7 +318,7 @@ export function ReservationModal({
                         <div className="flex items-center gap-2">
                           <Clock size={14} className="text-primary" />
                           <span className="font-body text-body-md text-primary font-medium">
-                            22-Hour Stay
+                            21-Hour Stay
                           </span>
                         </div>
                       </div>

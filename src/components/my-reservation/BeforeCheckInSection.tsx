@@ -5,8 +5,8 @@ const GUIDE_ITEMS = [
   {
     icon: Clock,
     label: "Check-in / Check-out",
-    value: "2:00 PM — 12:00 PM",
-    detail: "Your stay is a full 22-hour experience.",
+    value: "2:00 PM — 11:00 AM",
+    detail: "Your stay is a full 21-hour experience.",
   },
   {
     icon: Shield,

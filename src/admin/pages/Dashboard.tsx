@@ -2,12 +2,13 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   CalendarClock,
-  CreditCard,
-  DollarSign,
   LogIn,
   LogOut,
   Clock,
   ArrowRight,
+  CheckCircle2,
+  Users,
+  BedDouble,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatCard } from '../components/StatCard'
@@ -77,6 +78,11 @@ export default function Dashboard() {
     (r) => isToday(r.checkOut) && r.status === 'completed'
   )
 
+  const recentlyApproved = reservations
+    .filter((r) => r.status === 'approved' || r.status === 'confirmed')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5)
+
   return (
     <motion.div variants={container} initial="hidden" animate="show">
       <motion.div variants={item}>
@@ -94,21 +100,21 @@ export default function Dashboard() {
           accent="blue"
         />
         <StatCard
-          title="Pending Reservations"
-          value={stats.pendingReservations}
-          icon={<CalendarClock size={22} />}
+          title="Today's Check-outs"
+          value={stats.todayCheckouts}
+          icon={<LogOut size={22} />}
           accent="amber"
         />
         <StatCard
-          title="Pending Payments"
-          value={stats.pendingPayments}
-          icon={<CreditCard size={22} />}
+          title="Pending Reservations"
+          value={stats.pendingReservations}
+          icon={<CalendarClock size={22} />}
           accent="red"
         />
         <StatCard
-          title="Total Revenue"
-          value={formatCurrency(stats.totalRevenue)}
-          icon={<DollarSign size={22} />}
+          title="Occupancy Rate"
+          value={`${stats.occupancyRate}%`}
+          icon={<BedDouble size={22} />}
           accent="green"
         />
       </motion.div>
@@ -146,9 +152,6 @@ export default function Dashboard() {
                   <th className="px-6 py-3 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                    Amount
-                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -178,9 +181,6 @@ export default function Dashboard() {
                     </td>
                     <td className="px-6 py-3.5">
                       <StatusBadge status={res.status} size="sm" />
-                    </td>
-                    <td className="px-6 py-3.5 text-right font-body text-body-md font-medium text-on-surface">
-                      {formatCurrency(res.totalAmount)}
                     </td>
                   </tr>
                 ))}

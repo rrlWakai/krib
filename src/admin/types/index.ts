@@ -66,20 +66,6 @@ export interface Guest {
   createdAt: string;
 }
 
-export interface Payment {
-  id: string;
-  reservationId: string;
-  guestName: string;
-  villaName: string;
-  amount: number;
-  status: PaymentStatus;
-  method: string;
-  reference: string;
-  createdAt: string;
-  verifiedAt: string | null;
-  notes: string;
-}
-
 export interface Villa {
   id: string;
   name: string;
@@ -92,6 +78,7 @@ export interface Villa {
   image: string;
   gallery: string[];
   capacity: number;
+  bedrooms?: { name: string; capacity: number }[];
 }
 
 export interface Discount {
@@ -125,12 +112,6 @@ export interface Message {
   messages: ChatMessage[];
 }
 
-export interface RevenueByMonth {
-  month: string;
-  revenue: number;
-  reservations: number;
-}
-
 export interface OccupancyData {
   month: string;
   rate: number;
@@ -143,6 +124,26 @@ export interface VillaPopularity {
   totalBookings: number;
   totalRevenue: number;
   averageStay: number;
+}
+
+export interface ReservationTrend {
+  month: string;
+  total: number;
+  confirmed: number;
+  pending: number;
+  cancelled: number;
+}
+
+export interface GuestStat {
+  label: string;
+  value: number;
+  total: number;
+}
+
+export interface StatusDistribution {
+  status: string;
+  count: number;
+  color: string;
 }
 
 export interface BusinessInfo {
@@ -182,10 +183,10 @@ export interface DashboardStats {
   pendingReservations: number;
   todayCheckins: number;
   todayCheckouts: number;
-  totalRevenue: number;
-  pendingPayments: number;
   occupancyRate: number;
   confirmedUpcoming: number;
+  recentlyApproved: number;
+  totalGuests: number;
 }
 
 export interface NavItem {

@@ -71,7 +71,7 @@ export function StickyBookingBar({
                   </span>
                 </div>
                 <p className="font-body text-[11px] text-on-surface-variant/50 mt-1">
-                  22 Hours &bull; Up to {maxGuests} Guests
+                  21 Hours &bull; Up to {maxGuests} Guests
                 </p>
 
                 {/* Party Fee Toggle */}

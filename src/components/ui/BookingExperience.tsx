@@ -105,12 +105,12 @@ function formatDateShort(d: Date) {
 }
 
 function getVillaImage(villaId: string): string {
-  if (villaId === 'krib-2') return images.k2 || images.krib2
+  if (villaId === 'krib-2') return images.krib2Exterior
   return images.krib1
 }
 
 const STEP_META: { label: string; icon: typeof CalendarDays; heading: string; subheading: string }[] = [
-  { label: 'Date', icon: CalendarDays, heading: 'Choose your stay date', subheading: 'Select your preferred arrival date. Your stay includes a full 22-hour experience.' },
+  { label: 'Date', icon: CalendarDays, heading: 'Choose your stay date', subheading: 'Select your preferred arrival date. Your stay includes a full 21-hour experience.' },
   { label: 'Guests', icon: Users, heading: 'Who\'s joining your stay?', subheading: 'Tell us who will be enjoying the villa.' },
   { label: 'Details', icon: User, heading: 'A few details about you', subheading: 'So we can prepare for your arrival.' },
   { label: 'Review', icon: Check, heading: 'Review your reservation', subheading: 'Everything look good? Submit your request.' },
@@ -240,7 +240,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
     const reservationData = {
       id: newId, email, villaId: property.id, villaName: property.name,
       maxGuests: property.maxGuests, checkIn: selectedDate!,
-      checkOut: new Date(new Date(selectedDate!).getTime() + 22 * 60 * 60 * 1000).toISOString().split('T')[0],
+      checkOut: new Date(new Date(selectedDate!).getTime() + 21 * 60 * 60 * 1000).toISOString().split('T')[0],
       guests, createdAt: new Date().toISOString().split('T')[0], status: 'awaiting_confirmation' as const,
     }
     localStorage.setItem('krib_last_reservation', JSON.stringify({ id: newId, email }))
@@ -249,7 +249,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
     setTimeout(() => setSubmitState('success'), 1800)
   }
 
-  const departureDate = selectedDate ? new Date(new Date(selectedDate).getTime() + 22 * 60 * 60 * 1000) : null
+  const departureDate = selectedDate ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000) : null
   const totalGuests = guests.adults + guests.children
   const hasDate = !!selectedDate
   const meta = STEP_META[step - 1]
@@ -274,7 +274,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
       <div className="flex-1 p-5 lg:p-6 space-y-0">
         <SummaryItem
           label="Stay Duration"
-          value="22 Hours"
+          value="21 Hours"
           icon={<Clock size={14} className="text-on-surface-variant/50" />}
         />
 
@@ -286,7 +286,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
             />
             <SummaryItem
               label="Departure"
-              value={`${formatDateShort(departureDate)} · 12:00 PM`}
+              value={`${formatDateShort(departureDate)} · 11:00 AM`}
               valueClassName="text-primary"
             />
           </>
@@ -839,7 +839,7 @@ function StepDate({
   error?: string
 }) {
   const depDate = selectedDate
-    ? new Date(new Date(selectedDate).getTime() + 22 * 60 * 60 * 1000)
+    ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000)
     : null
 
   return (
@@ -855,7 +855,7 @@ function StepDate({
           <div className="flex items-center gap-2 mb-3">
             <Clock size={14} className="text-primary" />
             <span className="font-body text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
-              Your 22-Hour Stay
+              Your 21-Hour Stay
             </span>
           </div>
           <div className="flex justify-between text-sm">
@@ -867,7 +867,7 @@ function StepDate({
           <div className="flex justify-between text-sm mt-1.5">
             <span className="font-body text-on-surface-variant">Departure</span>
             <span className="font-body text-primary font-medium">
-              {depDate ? formatDateShort(depDate) : '—'} · 12:00 PM
+              {depDate ? formatDateShort(depDate) : '—'} · 11:00 AM
             </span>
           </div>
         </motion.div>
@@ -1123,7 +1123,7 @@ function StepReview({
         )}
         <ReviewRow
           label="Stay"
-          value="22 Hours"
+          value="21 Hours"
           valueIcon={<Clock size={12} className="text-primary" />}
         />
         <ReviewRow

@@ -1,40 +1,109 @@
+import heroImage from '../assets/hero.png'
 import krib1Portrait from '../assets/05.png'
-import krib2Portrait from '../assets/bbx.png'
 import k2Image from '../assets/k2.webp'
-import kk2Image from '../assets/kk2.webp'
+
+// ── KRiB 2 Production Images ────────────────────────────────────────
+import krib2Exterior from '../assets/Krib2/exterior.jpg'
+import krib2Pool from '../assets/Krib2/pool.jpg'
+import krib2Living from '../assets/Krib2/living.jpg'
+import krib2Balcony from '../assets/Krib2/balcony.jpg'
+import krib2Dining from '../assets/Krib2/dining.avif'
+import krib2Kitchen from '../assets/Krib2/kit.avif'
+import krib2KitchenAlt from '../assets/Krib2/kitc.avif'
+import krib2Gal from '../assets/Krib2/gal.avif'
+import krib2Gal2 from '../assets/Krib2/gal2.avif'
+import krib2Gal3 from '../assets/Krib2/gal3.avif'
+import krib2Gal4 from '../assets/Krib2/gal4.avif'
+import krib2Bed1 from '../assets/Krib2/bed1.avif'
+import krib2Bed2 from '../assets/Krib2/bed2.avif'
+import krib2Bed3 from '../assets/Krib2/bed3.avif'
+import krib2Bath from '../assets/Krib2/bath.avif'
+import krib2Bath2 from '../assets/Krib2/bath2.avif'
+import krib2Shower from '../assets/Krib2/shower.avif'
+import krib2Toil from '../assets/Krib2/toil.avif'
+import krib2Toil2 from '../assets/Krib2/toil2.avif'
+import krib2Toil3 from '../assets/Krib2/toil3.avif'
+import krib2Toil4 from '../assets/Krib2/toil4.avif'
+import krib2Toil5 from '../assets/Krib2/toil5.avif'
+
+// ─── PREMIUM HOSPITALITY PLACEHOLDERS ────────────────────────────────
+// KRiB 2 images have been replaced with production assets.
+// KRiB 1 and shared images still use Unsplash placeholders.
+// Replace remaining URLs with the owner's real images.
+// ──────────────────────────────────────────────────────────────────────
+
+const UNSPLASH = 'https://images.unsplash.com'
 
 export const images = {
-  // Hero
-  hero: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB79-XUS_wZ_ISWK8KWvEbstMr4BMDuLiZdTd5-I3K27p59KgB4BNJ6VZm8TpsDGc9PFr0l5JqufCmViI3PVkFOv_tXSip6RZBLus7sKdfEh64FTB0E_I_x7g-I60OvC8qGW10s59zsqhMPr2XV9mlATb9POcqEh3FlTWuHuKtqTjb06ajMF-prbNHaFv6mcywzBUi5nEO5I3NWzhMAiqfIniB1cFr-XYENmmbJ42F3vb8GEbNYeXK2Z8Qozo2euOgivqgY94CT5kQU',
+  // ── Hero ──────────────────────────────────────────────────────────
+  hero: heroImage,
 
-  // KRiB 1
+  // ── KRiB 1 ────────────────────────────────────────────────────────
   krib1: krib1Portrait,
-  krib1Bedroom: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD8DEJMl7q5lQ71rwYdsXaxktbmnmxvayP1atdzFKzEgMNNIXqVqM-EtqRm0tQbIP0HAv-XGkhoMnh2lqZ8SgjnJfwfgQak8E7NeiILgBXeac1WwLnSoEpjKMY8d8-eQ0469CUUSeMGbqU5LagjShvoIk6CQhtk-WNpvfq1wipEk4Rq0da9n158Jk6tBIIYMAQr_7aEVlmKU3ZvEaRSEHuaPFWN-QKIYbIlu1KylnQA2Fzh3yKQbTTZclKVM4th2LK6_63d312JJlsE',
-  krib1Pool: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCOe5RHEFfMcOJgBlzVQ7kb7POqlrifUkkg7FO6UXl_lFhlaJQyo7GuA_Xk_ugieTwCKH-AN_9QwKeHPjar_yRQIbIEM9PymEM29j9UyICOwX9YajzSBRnOUUrr0jP9UG1mObrqRT27RncjAgNNARd8QBj4t75_B5gJ4bEtEpDtBqefnt-AXCc6L4EkERUnsjHsGWPmonp5lOga6jRjNJL7OV_ClUY5zisAin-BxwSIu0bG1WypkyMoGHznIm4mG_TBJtbZoseU132p',
+  krib1Bedroom: `${UNSPLASH}/photo-1618773928121-c32242e63f39?w=1200&q=80&auto=format&fit=crop`,
+  krib1Pool: `${UNSPLASH}/photo-1572331165267-854da2b021b1?w=1200&q=80&auto=format&fit=crop`,
 
-  // KRiB 2
-  krib2: krib2Portrait,
-  krib2Living: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-dxTrEUzretQIKz4ayr0V4kXgz6kTk0w_dVssvNXb5a8wYwyhKFfVmpJr0pKbd8_no8utHitDUiDKVbwuYmA7U9BxryfL_exRaXqJB8ufueYxjmPw7wf0FE8P9jFeHQupg_kG73ua7BpOq-Mdgc5X0iRNxASebJe3SMinidZhpxVyJr7GLjTEBLI82IAyTdCe5wi2kmOJk3a5kc2xgSZuqCMnhPY1zZ3z9pnN9A8R9_4tBTxWIZejVCRT44DBTe3Zr620nYrPtz78',
-  krib2Pool: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA7JlebJ1A2HQS9lUNfblZntsiDLExGy7FqFQOuybkjGHRozgP-F-CmecJsh6OIaid1ol0LbvPcOyhFecr5Dz9OzIRjdRIlzh8LO15yGfd1xXaWwrBwhvWH1knbu0rziDUUOW8VTsNxmXJfSxeGgLk6CXJx4hR67CxbCUtiPOC78yvpfw6tnW1yjFvYV7S_Goz8FqnPzQE4D-1n--6LQVSD_f6bm__jHqbI6XPpwNT1bXkJ6HcZdaM2kIu6b631nMXe3kwlabcS37h',
+  // ── KRiB 2 (Production) ───────────────────────────────────────────
+  krib2: krib2Exterior,
+  krib2Living: krib2Living,
+  krib2Pool: krib2Pool,
   k2: k2Image,
-  kk2: kk2Image,
+  krib2Exterior,
+  krib2Balcony,
+  krib2Dining,
+  krib2Kitchen,
+  krib2KitchenAlt,
+  krib2Gal,
+  krib2Gal2,
+  krib2Gal3,
+  krib2Gal4,
+  krib2Bed1,
+  krib2Bed2,
+  krib2Bed3,
+  krib2Bath,
+  krib2Bath2,
+  krib2Shower,
+  krib2Toil,
+  krib2Toil2,
+  krib2Toil3,
+  krib2Toil4,
+  krib2Toil5,
 
-  // Experiences
-  morningCoffee: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCOe5RHEFfMcOJgBlzVQ7kb7POqlrifUkkg7FO6UXl_lFhlaJQyo7GuA_Xk_ugieTwCKH-AN_9QwKeHPjar_yRQIbIEM9PymEM29j9UyICOwX9YajzSBRnOUUrr0jP9UG1mObrqRT27RncjAgNNARd8QBj4t75_B5gJ4bEtEpDtBqefnt-AXCc6L4EkERUnsjHsGWPmonp5lOga6jRjNJL7OV_ClUY5zisAin-BxwSIu0bG1WypkyMoGHznIm4mG_TBJtbZoseU132p',
-  familyBbq: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA2HvzEN8gkSQyavA0g2052sOtylhuOXWuMz60Hu1BhjZWd_Qe7m6VwjD3-yk3EbTc1uEAc52_yHrikpRXbaSNf63uT6ukngdSdW5RG0clrpLzJjT99espCrTZVOJ9IgflIux1-6kyHRKjbfR4jXqpyTM5e8nxOLqJS2J4dRzMbPSsgvCySZktpXfr-_pG7rDv_FI5LQ9ZF69B0iixkA38pA6aOR-3veV9m6Pdl0SbIzp9tu-WU2zvWgJaLmlGHzM3bFZDgESce_1m',
-  sunsetGatherings: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC0Ud04ZcXTT0O1JMmXXwsXllYs9-hoOJ-c_mEZ7QAX8GMhq7R3Hbpti_547DebZfRtS3Gc9Ofd99dzHGs0thfkUB_sXCX6CDtRnsUPvklEf0vRJe1eXQ1PW-BtbPGKXTBdKSCQP9VxPgshde_nE3n_4pAGhNcSUCfd_gYvqQqdaSANi6JMJuoVvETgPhYeId-CLjMFSkr8a1JfzbgGorg4Kk3_6aiDebRed8NQdmXYAiFFfiIEzcY5t0ynqeX-3RkAb3yLQQ9ypah3',
+  // ── Experiences ────────────────────────────────────────────────────
+  morningCoffee: `${UNSPLASH}/photo-1495474472287-4d71bcdd2085?w=1200&q=80&auto=format&fit=crop`,
+  familyBbq: `${UNSPLASH}/photo-1529543544282-ea99407407c1?w=1200&q=80&auto=format&fit=crop`,
+  sunsetGatherings: `${UNSPLASH}/photo-1507525428034-b723cf961d3e?w=1200&q=80&auto=format&fit=crop`,
 
-  // Gallery
-  galleryBathroom: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA3giqtRZY_9_P8oC95aDuEvwMciNGT1OBP2a6SVcfi9MqFBjlX2x5S4w9JoJcy7Qcnb74gEglyfwM8wqHrHSGBvOTWnKDShTsMa4rOIuN6ZAl6UWtfNKvDuTdJjTe1XYPRO0AlHrm81BaaCVNCTFD2Ew5fS0bgbPWCZjYr60R_V5N7OaTtJbXyPdD4eUIy_aARb9hVALk1piR1lD8H_GbNc90MC7Kzz8wPOvkHVR77IWfBler08Ju7rsZjGKR8HvPHE-ikP0WGH71f',
-  galleryStairs: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDCcNxNXdTVzoqiQnWYWKf9RsOdC39DVsvGEDD-OGvJqRGa7c439c1rPpAmcRV5nIVrxgtRLHg33Visy0P--thm4oU_BKbuFDGc_hVkcofHDxTM1FwvSKDy6gpqfVex4jeYNNVO3wmOsyFXlpooJIU6ZMvjA62uDdgnKQWYvxkbX_qvU5r0LWmQNt87SacJEFd5pa5SaGJ_9DsGHhpq-xbUGYyQ_UeshZP-LeyMup26UHYz-bYNWGMcmOak9Dhq9QChnqrYWI8_Ku-z',
-  galleryBreakfast: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDdfi0DyKrUHmG3DH_i5jEC_0ZfYUpv24JpOvWP29zSXBFghDg5FHYONGyMa6kki4GHUv_JlxEtrFfwh68zwnPqPmJjlSBW0EVr5w4DBJUIN_S21jtc5zGBGKpApgPz5DjwbUaPd9Ga4OvTwIDMsYfDcu9J8N-GVnhA_fvhNi5B2-9BRBxvI_TFlmhOcgXxWx8KMnJnBt7agUHYpEzj3OVP_BGHCZmfUnMPdi4CK0LQeYWLIHsQWT8Ge5Rq75toHRzaRAGdchYx0LyU',
-  galleryTextile: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD8DEJMl7q5lQ71rwYdsXaxktbmnmxvayP1atdzFKzEgMNNIXqVqM-EtqRm0tQbIP0HAv-XGkhoMnh2lqZ8SgjnJfwfgQak8E7NeiILgBXeac1WwLnSoEpjKMY8d8-eQ0469CUUSeMGbqU5LagjShvoIk6CQhtk-WNpvfq1wipEk4Rq0da9n158Jk6tBIIYMAQr_7aEVlmKU3ZvEaRSEHuaPFWN-QKIYbIlu1KylnQA2Fzh3yKQbTTZclKVM4th2LK6_63d312JJlsE',
-  galleryEstateNight: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDN_sRet8EGnGtaGn3KfKLzPm_-u_6wUInuB8xfI1NUa2ubTzrshp2Ba0cOhp08BnokaVIIBwcKAnI1vbdTvv8T4m0r4kWQcwNAM4zprVV2sww60vekLE2flBpgz5BIxzS1U4f74mI6lDnFOB1KHE3ww4mfrM_S8jFmwSt7jpClkClV9f4TznovOe2DYWI8l4A4Ymyizk7JTQil-ZctyqpTeARiJ4aDYkWZPxJUaq0e4nWmY584FaU-2mzeBqNPkRpk_EEpyDo9PE3R',
+  // ── Gallery ────────────────────────────────────────────────────────
+  galleryBathroom: `${UNSPLASH}/photo-1552321554-5fefe8c9ef14?w=1200&q=80&auto=format&fit=crop`,
+  galleryStairs: `${UNSPLASH}/photo-1600585154340-be6161a56a0c?w=1200&q=80&auto=format&fit=crop`,
+  galleryBreakfast: `${UNSPLASH}/photo-1504674900247-0877df9cc836?w=1200&q=80&auto=format&fit=crop`,
+  galleryTextile: `${UNSPLASH}/photo-1616137466211-f73a09f13e16?w=1200&q=80&auto=format&fit=crop`,
+  galleryEstateNight: `${UNSPLASH}/photo-1564013799919-ab600027ffc6?w=1200&q=80&auto=format&fit=crop`,
 
-  // Map
-  map: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBe6kCBTRS9z6V1PL8QZaYr36Wx0p5wteflEcQaYtzjIY7z3EDjtvbENIupKecNHSV2MNNRoNtUmRW_qrUtgZNtsLW1tyvEp3fSu84hriaguodyTqbUiEJ-qIg2utAvGzxpVtt2Fr8B2TTcvy4JKChKu9hB9f031F4VKCrn6z-jcnuHGx6a06hy7CD1S0ahmGcr795T7QdguTciJu-8YgecdqUEmmLQfEInNmWp6F4Cuh4OmBI8KQlW4eWyD03O0NianR9EIax24y44',
+  // ── Map ────────────────────────────────────────────────────────────
+  map: `${UNSPLASH}/photo-1524661135-423995f22d0b?w=1200&q=80&auto=format&fit=crop`,
 
-  // Food / lifestyle
-  alFresco: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB722NwwEJ0a34eeJJWPBNMaOhufT7_9hYjGC22HsQHczwkg0iKt90SFbd0LqiHmuVk11G16jVW_NDEilirGEDtXH49ZvvkqN3kqKkNKVXo4Qgz_piKv8jhwZdkXfg73ELUcfN3C-LIiqvcNVJ-i7CKZnXeRYhfvtYJTPlZiMKOdOxZf212lXAV14ff75uLJ1N3oSomT70CiYkfBHUcWBBxfF3NwCp43v42oT7-NGGJSzio4klDk5gZ0rohTx2w_9DjSGNiJillH4tG',
-  yogaTerrace: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBa4HvLvZCLxaF09W7PB6RF4L0XB9k4-vGNPhvcB2w2C4xJ1p44Ny-Hd8DhKvarZ9cKCboCI0ZIw_J7cx4lVzuk1V52V_LU35Ps1iqMNPRKtujexl-JLlFmS0jixuZmHChyjZyZ1ejCoPrHqQbnusAL2J7qcjcmnpzotDKmY2Gn5FFyQbTTE4-bSZ7lJhi9c9oq_0QYBJ7DbCmWYg7hEdVAuatpl_piXYU3OljhgrdUp9qmz0wQY0sIlcjgCLDImX-YKgkotSEb8RQk',
+  // ── Food / Lifestyle ──────────────────────────────────────────────
+  alFresco: `${UNSPLASH}/photo-1414235077428-338989a2e8c0?w=1200&q=80&auto=format&fit=crop`,
+  yogaTerrace: `${UNSPLASH}/photo-1506126613408-eca07ce68773?w=1200&q=80&auto=format&fit=crop`,
+
+  // ── About / Story ──────────────────────────────────────────────────
+  about: `${UNSPLASH}/photo-1469854523086-cc02fe5d8800?w=1200&q=80&auto=format&fit=crop`,
+
+  // ── CTA Background ─────────────────────────────────────────────────
+  cta: `${UNSPLASH}/photo-1540541338287-41700207dee6?w=1920&q=85&auto=format&fit=crop`,
+
+  // ── Social / Connect ───────────────────────────────────────────────
+  social: `${UNSPLASH}/photo-1510798831971-661eb04b3739?w=1200&q=80&auto=format&fit=crop`,
+
+  // ── Location ───────────────────────────────────────────────────────
+  locationHero: `${UNSPLASH}/photo-1500382017468-9049fed747ef?w=1920&q=85&auto=format&fit=crop`,
 } as const
+
+// ── Helper: Get villa image by name ──────────────────────────────────
+// Used by reservationData.ts and BookingExperience
+export function getVillaImageByName(villaName: string): string {
+  if (villaName.includes('2')) return images.krib2Exterior
+  return images.hero
+}

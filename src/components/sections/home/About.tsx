@@ -1,6 +1,6 @@
 import { Reveal } from '../../ui/Reveal'
 import { siteContent } from '../../../lib/data'
-import aboutImage from '../../../assets/about.png'
+import { images } from '../../../lib/images'
 
 export function About() {
   return (
@@ -24,7 +24,7 @@ export function About() {
           <div className="relative">
             <img
               className="w-full aspect-4/5 object-cover rounded-default shadow-elevated"
-              src={aboutImage}
+              src={images.about}
               alt="Family gathering at KRiB Beverly Place"
             />
             <div className="absolute -bottom-6 -left-6 w-48 h-48 bg-primary-container/30 rounded-default hidden md:block" />

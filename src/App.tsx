@@ -43,17 +43,11 @@ const AdminCalendar = lazy(() =>
 const AdminGuests = lazy(() =>
   import("./admin/pages/Guests").then((m) => ({ default: m.default })),
 );
-const AdminPayments = lazy(() =>
-  import("./admin/pages/Payments").then((m) => ({ default: m.default })),
-);
 const AdminDiscounts = lazy(() =>
   import("./admin/pages/Discounts").then((m) => ({ default: m.default })),
 );
 const AdminVillas = lazy(() =>
   import("./admin/pages/Villas").then((m) => ({ default: m.default })),
-);
-const AdminMediaLibrary = lazy(() =>
-  import("./admin/pages/MediaLibrary").then((m) => ({ default: m.default })),
 );
 const AdminMessages = lazy(() =>
   import("./admin/pages/Messages").then((m) => ({ default: m.default })),
@@ -159,10 +153,8 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                   <Route path="reservations/:id" element={<AdminReservationDetail />} />
                   <Route path="calendar" element={<AdminCalendar />} />
                   <Route path="guests" element={<AdminGuests />} />
-                  <Route path="payments" element={<AdminPayments />} />
                   <Route path="discounts" element={<AdminDiscounts />} />
                   <Route path="villas" element={<AdminVillas />} />
-                  <Route path="media" element={<AdminMediaLibrary />} />
                   <Route path="messages" element={<AdminMessages />} />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="settings" element={<AdminSettings />} />

@@ -149,7 +149,7 @@ export function ReservationOverviewCard({ reservation }: Props) {
 
           <div className="space-y-3">
             <PricingRow
-              label="Base Rate (22-Hour Stay)"
+              label="Base Rate (21-Hour Stay)"
               value={reservation.baseRate ? formatPrice(reservation.baseRate) : "—"}
             />
 

@@ -1,5 +1,5 @@
 import { siteContent } from "../../../lib/data";
-import heroImage from "../../../assets/hero.png";
+import { images } from "../../../lib/images";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "../../ui/Reveal";
 
@@ -9,7 +9,7 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         <div
           className="w-full h-full bg-cover bg-center scale-105"
-          style={{ backgroundImage: `url(${heroImage})` }}
+          style={{ backgroundImage: `url(${images.hero})` }}
         />
         <div className="absolute inset-0 bg-black/35" />
       </div>

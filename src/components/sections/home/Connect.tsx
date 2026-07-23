@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, Facebook, Instagram } from "lucide-react";
 import { Reveal } from "../../ui/Reveal";
-import socialImage from "../../../assets/soc.png";
+import { images } from "../../../lib/images";
 
 const socialPlatforms = [
   {
@@ -72,7 +72,7 @@ export function Connect() {
 
             <div className="relative min-h-80 md:min-h-120 overflow-hidden">
               <img
-                src={socialImage}
+                src={images.social}
                 alt="A lifestyle image of KRiB Beverly Place"
                 className="h-full w-full object-cover"
               />

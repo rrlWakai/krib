@@ -27,7 +27,6 @@ import { VillaAmenities } from "../components/sections/villa/VillaAmenities";
 import { BookingExperience } from "../components/ui/BookingExperience";
 import { getIcon } from "../lib/iconMap";
 import { cn } from "../lib/cn";
-import { images } from "../lib/images";
 
 function ParallaxImg({
   src,
@@ -70,30 +69,13 @@ export function VillaDetailPage() {
 
   const allImages = useMemo(() => {
     if (!villa) return [];
-    return villa.images.length >= 5
-      ? villa.images
-      : [
-          ...villa.images,
-          images.krib1Pool,
-          images.krib2Pool,
-          images.galleryBathroom,
-          images.galleryBreakfast,
-          images.galleryStairs,
-        ].slice(0, 5);
+    return villa.images;
   }, [villa]);
 
   const openGallery = useCallback((index: number) => {
     setGalleryIndex(index);
     setGalleryOpen(true);
   }, []);
-
-  const handlePrevious = useCallback(() => {
-    setGalleryIndex((i) => (i > 0 ? i - 1 : allImages.length - 1));
-  }, [allImages.length]);
-
-  const handleNext = useCallback(() => {
-    setGalleryIndex((i) => (i < allImages.length - 1 ? i + 1 : 0));
-  }, [allImages.length]);
 
   if (!villa) {
     return (
@@ -590,7 +572,7 @@ export function VillaDetailPage() {
           <div className="md:hidden">
             {allImages.slice(1).map((img, i) => {
               const heights = ['52vh', '42vh', '56vh', '42vh', '50vh']
-              const labels = ['Pool & garden', 'Living area', 'Bedroom', 'Bathroom', 'Exterior']
+              const labels = ['Pool & garden', 'Living area', 'Balcony', 'Interior', 'Exterior']
               return (
                 <Reveal key={i} delay={i * 60}>
                   <div
@@ -722,8 +704,7 @@ export function VillaDetailPage() {
         currentIndex={galleryIndex}
         isOpen={galleryOpen}
         onClose={() => setGalleryOpen(false)}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
+        onIndexChange={setGalleryIndex}
       />
       {villa && (
         <BookingExperience

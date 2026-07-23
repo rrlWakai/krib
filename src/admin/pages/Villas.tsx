@@ -13,6 +13,7 @@ import {
   Tv,
   PartyPopper,
   Home,
+  Bed,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
@@ -130,6 +131,29 @@ export default function Villas() {
                   </span>
                 ))}
               </div>
+
+              {villa.bedrooms && villa.bedrooms.length > 0 && (
+                <div className="mb-4 rounded-[12px] bg-surface-container-low p-3">
+                  <p className="mb-2 font-body text-body-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    Bedroom Configuration
+                  </p>
+                  <div className="space-y-1.5">
+                    {villa.bedrooms.map((bedroom) => (
+                      <div key={bedroom.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Bed size={12} className="text-primary/60" />
+                          <span className="font-body text-body-sm text-on-surface">
+                            {bedroom.name}
+                          </span>
+                        </div>
+                        <span className="font-body text-body-sm font-medium text-on-surface">
+                          {bedroom.capacity} Guests
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center gap-3 border-t border-outline-variant/50 pt-4">
                 <button className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] border border-outline-variant bg-white py-2.5 font-body text-body-sm font-medium text-on-surface transition-all duration-200 hover:border-primary hover:text-primary">
