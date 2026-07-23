@@ -6,8 +6,6 @@ import {
   LogOut,
   Clock,
   ArrowRight,
-  CheckCircle2,
-  Users,
   BedDouble,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
@@ -77,11 +75,6 @@ export default function Dashboard() {
   const todayCheckouts = reservations.filter(
     (r) => isToday(r.checkOut) && r.status === 'completed'
   )
-
-  const recentlyApproved = reservations
-    .filter((r) => r.status === 'approved' || r.status === 'confirmed')
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5)
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
