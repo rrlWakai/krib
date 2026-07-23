@@ -66,6 +66,7 @@ export function VillaDetailPage() {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [reservationOpen, setReservationOpen] = useState(false);
   const [partyFeeActive, setPartyFeeActive] = useState(false);
+  const heroTouchStartRef = useRef({ x: 0, swiped: false });
 
   const allImages = useMemo(() => {
     if (!villa) return [];
@@ -111,7 +112,7 @@ export function VillaDetailPage() {
         {/* ===== 1. HERO GALLERY ===== */}
         <section className="relative bg-on-surface">
           {/* Desktop Grid Layout */}
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 h-[50vh] md:h-[70vh] overflow-hidden gap-1">
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 h-[50vh] md:h-[70vh] overflow-hidden gap-2">
             <div
               className="md:col-span-2 md:row-span-2 relative overflow-hidden cursor-pointer group"
               onClick={() => openGallery(0)}
@@ -161,7 +162,7 @@ export function VillaDetailPage() {
 
           {/* Mobile Gallery Carousel */}
           <div className="md:hidden relative">
-            <div className="aspect-video overflow-hidden">
+            <div className="relative aspect-[4/3] overflow-hidden">
               <motion.img
                 key={galleryIndex}
                 initial={{ opacity: 0 }}
@@ -170,21 +171,70 @@ export function VillaDetailPage() {
                 className="w-full h-full object-cover cursor-pointer"
                 src={allImages[galleryIndex]}
                 alt={`${villa.name} image ${galleryIndex + 1}`}
-                onClick={() => openGallery(galleryIndex)}
+                onClick={() => {
+                  if (!heroTouchStartRef.current.swiped) openGallery(galleryIndex);
+                }}
+                onTouchStart={(e) => {
+                  heroTouchStartRef.current = { x: e.touches[0].clientX, swiped: false };
+                }}
+                onTouchEnd={(e) => {
+                  const dx = e.changedTouches[0].clientX - heroTouchStartRef.current.x;
+                  if (Math.abs(dx) > 50) {
+                    heroTouchStartRef.current.swiped = true;
+                    if (dx < 0) setGalleryIndex((p) => Math.min(p + 1, allImages.length - 1));
+                    else setGalleryIndex((p) => Math.max(p - 1, 0));
+                  }
+                }}
               />
+
+              {/* Image Indicators — tiny pills overlaid on image */}
+              {allImages.length <= 7 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
+                  {allImages.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setGalleryIndex(i);
+                      }}
+                      className={cn(
+                        "rounded-full transition-all duration-300 ease-[0.22,1,0.36,1]",
+                        galleryIndex === i
+                          ? "w-5 h-1.5 bg-white"
+                          : "w-1.5 h-1.5 bg-white/40 hover:bg-white/60"
+                      )}
+                      aria-label={`Go to image ${i + 1}`}
+                      aria-current={galleryIndex === i}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Gallery Button — overlaid bottom-right, independent of indicators */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openGallery(galleryIndex);
+                }}
+                className="absolute bottom-4 right-4 z-10 bg-black/40 backdrop-blur-sm text-white/90 px-3.5 py-2 rounded-full font-body text-[11px] uppercase tracking-wider hover:bg-black/60 transition-all duration-300 cursor-pointer flex items-center gap-1.5 border border-white/15"
+                aria-label="View all photos in gallery"
+              >
+                <Image size={13} />
+                <span>Gallery</span>
+              </button>
             </div>
 
-            {/* Mobile Thumbnails */}
-            <div className="flex gap-2 p-3 overflow-x-auto">
+            {/* Mobile Thumbnails — refined, compact */}
+            <div className="flex gap-1.5 p-3 overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {allImages.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setGalleryIndex(i)}
                   className={cn(
-                    "shrink-0 w-16 h-16 overflow-hidden border-2 transition-all duration-200",
+                    "shrink-0 w-12 h-12 overflow-hidden rounded-sm transition-all duration-200 snap-start cursor-pointer",
                     galleryIndex === i
-                      ? "border-primary ring-2 ring-primary ring-offset-2"
-                      : "border-outline hover:border-primary/50",
+                      ? "border-2 border-white/80"
+                      : "border border-white/10 opacity-50 hover:opacity-80"
                   )}
                   aria-label={`View image ${i + 1}`}
                   aria-current={galleryIndex === i}
@@ -195,24 +245,6 @@ export function VillaDetailPage() {
                     className="w-full h-full object-cover"
                   />
                 </button>
-              ))}
-            </div>
-
-            {/* Mobile Navigation Dots */}
-            <div className="flex justify-center gap-2 py-3 bg-on-surface/5">
-              {allImages.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setGalleryIndex(i)}
-                  className={cn(
-                    "w-3 h-3 min-w-11 min-h-11 flex items-center justify-center rounded-full transition-all duration-300",
-                    galleryIndex === i
-                      ? "bg-primary w-6"
-                      : "bg-primary/30 hover:bg-primary/60",
-                  )}
-                  aria-label={`Go to image ${i + 1}`}
-                  aria-current={galleryIndex === i}
-                />
               ))}
             </div>
           </div>
@@ -234,20 +266,19 @@ export function VillaDetailPage() {
             </nav>
           </div>
 
-          {/* Call-to-action Button */}
+          {/* Gallery Button — Desktop */}
           <button
             onClick={() => openGallery(0)}
-            className="absolute bottom-4 right-4 md:bottom-6 md:right-6 bg-white/90 text-on-surface px-4 md:px-5 py-2.5 rounded-default font-body text-label-caps uppercase tracking-widest shadow-card hover:bg-white hover:shadow-elevated transition-all duration-300 cursor-pointer text-xs md:text-sm z-10 flex items-center gap-2 backdrop-blur-sm"
+            className="hidden md:flex absolute bottom-6 right-6 bg-black/30 backdrop-blur-sm text-white/90 px-5 py-3 rounded-full font-body text-label-caps uppercase tracking-widest hover:bg-black/50 transition-all duration-300 cursor-pointer text-xs z-10 items-center gap-2 border border-white/15"
             aria-label="View all photos in gallery"
           >
-            <Image size={16} />
-            <span className="hidden sm:inline">Show all photos</span>
-            <span className="sm:hidden">Gallery</span>
+            <Image size={15} />
+            <span>Show all {allImages.length} photos</span>
           </button>
 
-          {/* Image Counter - Desktop */}
-          <div className="hidden md:block absolute bottom-6 left-6 font-body text-body-sm text-white/80 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-default z-10">
-            {galleryIndex + 1} / {allImages.length}
+          {/* Photo Count — Desktop */}
+          <div className="hidden md:block absolute bottom-6 left-6 font-body text-body-sm text-white/70 bg-black/25 backdrop-blur-sm px-4 py-2 rounded-full z-10 tabular-nums">
+            {allImages.length} photos
           </div>
         </section>
 
