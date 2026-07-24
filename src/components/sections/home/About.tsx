@@ -27,7 +27,11 @@ export function About() {
               src={images.about}
               alt="Family gathering at KRiB Beverly Place"
             />
-            <div className="absolute -bottom-6 -left-6 w-48 h-48 bg-primary-container/30 rounded-default hidden md:block" />
+            <img
+              src={images.krib2}
+              alt="KRiB Beverly Place"
+              className="absolute -bottom-6 -left-6 w-48 h-48 object-cover rounded-default shadow-elevated hidden md:block"
+            />
           </div>
         </Reveal>
       </div>

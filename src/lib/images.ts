@@ -1,8 +1,24 @@
 import heroImage from '../assets/hero.png'
 import krib1Portrait from '../assets/05.png'
+import krib2Portrait from '../assets/bbx.png'
 import k2Image from '../assets/k2.webp'
+import kk2Image from '../assets/kk2.webp'
+import aboutImage from '../assets/about.png'
+import finalctaImage from '../assets/finalcta.png'
+import socImage from '../assets/soc.png'
 
-// ── KRiB 2 Production Images ────────────────────────────────────────
+import krib1Pool from '../assets/Krib1/pool.jpg'
+import krib1Living from '../assets/Krib1/living.jpg'
+import krib1LivingAlt from '../assets/Krib1/kara.jpg'
+import krib1Dining from '../assets/Krib1/dining1.jpg'
+import krib1DiningAlt from '../assets/Krib1/diningg.jpg'
+import krib1Kitchen from '../assets/Krib1/tab.jpg'
+import krib1Balcony from '../assets/Krib1/balcon.jpg'
+import krib1MasterBed from '../assets/Krib1/masterbed.jpg'
+import krib1Bed from '../assets/Krib1/bed.jpg'
+import krib1BedAlt from '../assets/Krib1/bedd.jpg'
+import krib1Bed1 from '../assets/Krib1/bed1.jpg'
+
 import krib2Exterior from '../assets/Krib2/exterior.jpg'
 import krib2Pool from '../assets/Krib2/pool.jpg'
 import krib2Living from '../assets/Krib2/living.jpg'
@@ -27,9 +43,12 @@ import krib2Toil4 from '../assets/Krib2/toil4.avif'
 import krib2Toil5 from '../assets/Krib2/toil5.avif'
 
 // ─── PREMIUM HOSPITALITY PLACEHOLDERS ────────────────────────────────
-// KRiB 2 images have been replaced with production assets.
-// KRiB 1 and shared images still use Unsplash placeholders.
-// Replace remaining URLs with the owner's real images.
+// All placeholder URLs use Unsplash Source for reliable, high-quality
+// hospitality photography. Replace these URLs with the owner's real
+// images by editing only this file.
+//
+// TO REPLACE: Swap the URL string for each key with the real image path.
+// Example: hero: '/images/hero-real.jpg' or import from assets.
 // ──────────────────────────────────────────────────────────────────────
 
 const UNSPLASH = 'https://images.unsplash.com'
@@ -40,17 +59,25 @@ export const images = {
 
   // ── KRiB 1 ────────────────────────────────────────────────────────
   krib1: krib1Portrait,
-  krib1Bedroom: `${UNSPLASH}/photo-1618773928121-c32242e63f39?w=1200&q=80&auto=format&fit=crop`,
-  krib1Pool: `${UNSPLASH}/photo-1572331165267-854da2b021b1?w=1200&q=80&auto=format&fit=crop`,
+  krib1Pool,
+  krib1Living,
+  krib1LivingAlt,
+  krib1Dining,
+  krib1DiningAlt,
+  krib1Kitchen,
+  krib1Balcony,
+  krib1MasterBed,
+  krib1Bed,
+  krib1BedAlt,
+  krib1Bed1,
 
-  // ── KRiB 2 (Production) ───────────────────────────────────────────
-  krib2: krib2Exterior,
-  krib2Living: krib2Living,
-  krib2Pool: krib2Pool,
-  k2: k2Image,
+  // ── KRiB 2 ────────────────────────────────────────────────────────
+  krib2: krib2Portrait,
   krib2Exterior,
-  krib2Balcony,
+  krib2Pool,
+  krib2Living,
   krib2Dining,
+  krib2Balcony,
   krib2Kitchen,
   krib2KitchenAlt,
   krib2Gal,
@@ -68,6 +95,8 @@ export const images = {
   krib2Toil3,
   krib2Toil4,
   krib2Toil5,
+  k2: k2Image,
+  kk2: kk2Image,
 
   // ── Experiences ────────────────────────────────────────────────────
   morningCoffee: `${UNSPLASH}/photo-1495474472287-4d71bcdd2085?w=1200&q=80&auto=format&fit=crop`,
@@ -89,13 +118,13 @@ export const images = {
   yogaTerrace: `${UNSPLASH}/photo-1506126613408-eca07ce68773?w=1200&q=80&auto=format&fit=crop`,
 
   // ── About / Story ──────────────────────────────────────────────────
-  about: `${UNSPLASH}/photo-1469854523086-cc02fe5d8800?w=1200&q=80&auto=format&fit=crop`,
+  about: aboutImage,
 
   // ── CTA Background ─────────────────────────────────────────────────
-  cta: `${UNSPLASH}/photo-1540541338287-41700207dee6?w=1920&q=85&auto=format&fit=crop`,
+  cta: finalctaImage,
 
   // ── Social / Connect ───────────────────────────────────────────────
-  social: `${UNSPLASH}/photo-1510798831971-661eb04b3739?w=1200&q=80&auto=format&fit=crop`,
+  social: socImage,
 
   // ── Location ───────────────────────────────────────────────────────
   locationHero: `${UNSPLASH}/photo-1500382017468-9049fed747ef?w=1920&q=85&auto=format&fit=crop`,
@@ -104,6 +133,7 @@ export const images = {
 // ── Helper: Get villa image by name ──────────────────────────────────
 // Used by reservationData.ts and BookingExperience
 export function getVillaImageByName(villaName: string): string {
-  if (villaName.includes('2')) return images.krib2Exterior
-  return images.hero
+  if (villaName.includes('2')) return images.krib2Living
+  return images.krib1Pool
 }
+ 
