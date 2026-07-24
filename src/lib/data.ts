@@ -35,6 +35,7 @@ export const villas: VillaDetail[] = [
     image: images.krib1,
     images: [
       images.krib1Pool,
+      images.krib1,
       images.krib1Living,
       images.krib1Balcony,
       images.krib1Dining,
