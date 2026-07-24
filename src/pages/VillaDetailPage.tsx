@@ -713,7 +713,7 @@ export function VillaDetailPage() {
         </section>
 
         {/* ===== 9. HOUSE POLICIES ===== */}
-        <section className="bg-surface-container-low py-section-gap max-md:py-section-gap-mobile">
+        <section className="bg-surface-container-low py-section-gap max-md:py-section-gap-mobile max-md:pb-32">
           <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile">
             <Reveal>
               <SectionLabel>HOUSE POLICIES</SectionLabel>

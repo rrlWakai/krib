@@ -34,8 +34,8 @@ export const villas: VillaDetail[] = [
       'KRiB 1 was born from a simple idea — that the best weekends are spent with the people who matter most. Every corner of this home was designed to bring families closer, from the open living area where stories are shared to the private garden where memories take root.',
     image: images.krib1,
     images: [
-      images.krib1Pool,
       images.krib1,
+      images.krib1Pool,
       images.krib1Living,
       images.krib1Balcony,
       images.krib1Dining,
@@ -127,7 +127,6 @@ export const villas: VillaDetail[] = [
       { icon: 'logout', label: 'Check-out', value: '11:00 AM' },
       { icon: 'people', label: 'Maximum Guests', value: 'Up to 20 guests' },
       { icon: 'smoke_free', label: 'Smoking', value: 'Outdoor areas only' },
-      { icon: 'pets', label: 'Pets', value: 'Not allowed' },
       { icon: 'camera', label: 'CCTV', value: 'Active in common areas' },
       { icon: 'party', label: 'Party Policy', value: '₱5,000 party fee applies' },
       { icon: 'volume_up', label: 'Quiet Hours', value: 'After 10:00 PM' },
