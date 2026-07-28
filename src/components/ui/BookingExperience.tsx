@@ -1091,7 +1091,6 @@ function StepDetails({
   message,
   onMessageChange,
   agreed,
-  onAgreedChange,
   onOpenTerms,
   errors,
 }: {
