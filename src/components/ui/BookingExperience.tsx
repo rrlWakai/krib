@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
   X,
   ChevronLeft,
@@ -12,40 +12,47 @@ import {
   ArrowRight,
   Shield,
   Sparkles,
-} from 'lucide-react'
-import { GuestSelector } from './GuestSelector'
-import type { GuestCount } from './GuestSelector'
-import { AvailabilityCalendar } from './AvailabilityCalendar'
-import { cn } from '../../lib/cn'
-import { generateReservationId } from '../../lib/reservationData'
-import { images } from '../../lib/images'
+} from "lucide-react";
+import { GuestSelector } from "./GuestSelector";
+import type { GuestCount } from "./GuestSelector";
+import { AvailabilityCalendar } from "./AvailabilityCalendar";
+import { TermsModal } from "./TermsModal";
+import { cn } from "../../lib/cn";
+import { generateReservationId } from "../../lib/reservationData";
+import { images } from "../../lib/images";
 
 interface PropertyInfo {
-  id: string
-  name: string
-  priceDetails: { perNight: string; rateType: string }
-  maxGuests: number
-  partyFeeLabel?: string
+  id: string;
+  name: string;
+  priceDetails: { perNight: string; rateType: string };
+  maxGuests: number;
+  partyFeeLabel?: string;
 }
 
 interface BookingExperienceProps {
-  isOpen: boolean
-  onClose: () => void
-  property: PropertyInfo
-  partyFeeActive?: boolean
-  onPartyFeeToggle?: (active: boolean) => void
+  isOpen: boolean;
+  onClose: () => void;
+  property: PropertyInfo;
+  partyFeeActive?: boolean;
+  onPartyFeeToggle?: (active: boolean) => void;
 }
 
-type Step = 1 | 2 | 3 | 4
-type SubmitState = 'idle' | 'submitting' | 'success'
+type Step = 1 | 2 | 3 | 4;
+type SubmitState = "idle" | "submitting" | "success";
 
-const STEP_COUNT = 4
+const STEP_COUNT = 4;
 
 const overlayVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const } },
-  exit: { opacity: 0, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] as const } },
-}
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
 
 const panelDesktopVariants = {
   hidden: { opacity: 0, y: 24, scale: 0.98 },
@@ -61,19 +68,19 @@ const panelDesktopVariants = {
     scale: 0.98,
     transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] as const },
   },
-}
+};
 
 const panelMobileVariants = {
-  hidden: { y: '100%' },
+  hidden: { y: "100%" },
   visible: {
     y: 0,
-    transition: { type: 'spring' as const, stiffness: 320, damping: 34 },
+    transition: { type: "spring" as const, stiffness: 320, damping: 34 },
   },
   exit: {
-    y: '100%',
+    y: "100%",
     transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const },
   },
-}
+};
 
 const stepContentVariants = {
   enter: (direction: number) => ({
@@ -90,169 +97,239 @@ const stepContentVariants = {
     opacity: 0,
     transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const },
   }),
-}
+};
 
 function parsePrice(priceStr: string): number {
-  return parseInt(priceStr.replace(/[^0-9]/g, ''), 10)
+  return parseInt(priceStr.replace(/[^0-9]/g, ""), 10);
 }
 
 function formatPrice(amount: number): string {
-  return '₱' + amount.toLocaleString('en-PH')
+  return "₱" + amount.toLocaleString("en-PH");
 }
 
 function formatDateShort(d: Date) {
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  return d.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function getVillaImage(villaId: string): string {
-  if (villaId === 'krib-2') return images.krib2Exterior
-  return images.krib1
+  if (villaId === "krib-2") return images.krib2Exterior;
+  return images.krib1;
 }
 
-const STEP_META: { label: string; icon: typeof CalendarDays; heading: string; subheading: string }[] = [
-  { label: 'Date', icon: CalendarDays, heading: 'Choose your stay date', subheading: 'Select your preferred arrival date. Your stay includes a full 21-hour experience.' },
-  { label: 'Guests', icon: Users, heading: 'Who\'s joining your stay?', subheading: 'Tell us who will be enjoying the villa.' },
-  { label: 'Details', icon: User, heading: 'A few details about you', subheading: 'So we can prepare for your arrival.' },
-  { label: 'Review', icon: Check, heading: 'Review your reservation', subheading: 'Everything look good? Submit your request.' },
-]
+const STEP_META: {
+  label: string;
+  icon: typeof CalendarDays;
+  heading: string;
+  subheading: string;
+}[] = [
+  {
+    label: "Date",
+    icon: CalendarDays,
+    heading: "Choose your stay date",
+    subheading:
+      "Select your preferred arrival date. Your stay includes a full 21-hour experience.",
+  },
+  {
+    label: "Guests",
+    icon: Users,
+    heading: "Who's joining your stay?",
+    subheading: "Tell us who will be enjoying the villa.",
+  },
+  {
+    label: "Details",
+    icon: User,
+    heading: "A few details about you",
+    subheading: "So we can prepare for your arrival.",
+  },
+  {
+    label: "Review",
+    icon: Check,
+    heading: "Review your reservation",
+    subheading: "Everything look good? Submit your request.",
+  },
+];
 
-export function BookingExperience({ isOpen, onClose, property, partyFeeActive, onPartyFeeToggle }: BookingExperienceProps) {
-  const [step, setStep] = useState<Step>(1)
-  const [direction, setDirection] = useState(1)
-  const [submitState, setSubmitState] = useState<SubmitState>('idle')
-  const [reservationId, setReservationId] = useState('')
+export function BookingExperience({
+  isOpen,
+  onClose,
+  property,
+  partyFeeActive,
+  onPartyFeeToggle,
+}: BookingExperienceProps) {
+  const [step, setStep] = useState<Step>(1);
+  const [direction, setDirection] = useState(1);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [reservationId, setReservationId] = useState("");
 
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [guests, setGuests] = useState<GuestCount>({ adults: 2, children: 0, infants: 0, pets: 0 })
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [message, setMessage] = useState('')
-  const [agreed, setAgreed] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [guests, setGuests] = useState<GuestCount>({
+    adults: 2,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const panelRef = useRef<HTMLDivElement>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const agreementRowRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      previousFocusRef.current = document.activeElement as HTMLElement
-      setStep(1)
-      setDirection(1)
-      setSubmitState('idle')
-      setReservationId('')
-      setSelectedDate(null)
-      setGuests({ adults: 2, children: 0, infants: 0, pets: 0 })
-      setFullName('')
-      setEmail('')
-      setPhone('')
-      setMessage('')
-      setAgreed(false)
-      setErrors({})
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      setStep(1);
+      setDirection(1);
+      setSubmitState("idle");
+      setReservationId("");
+      setSelectedDate(null);
+      setGuests({ adults: 2, children: 0, infants: 0, pets: 0 });
+      setFullName("");
+      setEmail("");
+      setPhone("");
+      setMessage("");
+      setAgreed(false);
+      setTermsOpen(false);
+      setErrors({});
     } else {
-      previousFocusRef.current?.focus()
+      previousFocusRef.current?.focus();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return
-    const scrollY = window.scrollY
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.left = '0'
-    document.body.style.right = '0'
-    document.body.style.width = '100%'
-    document.body.style.paddingRight = `${scrollbarWidth}px`
-    document.body.style.overflow = 'hidden'
+    if (!isOpen) return;
+    const scrollY = window.scrollY;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.left = ''
-      document.body.style.right = ''
-      document.body.style.width = ''
-      document.body.style.paddingRight = ''
-      document.body.style.overflow = ''
-      window.scrollTo(0, scrollY)
-    }
-  }, [isOpen])
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      document.body.style.paddingRight = "";
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && submitState === 'idle') onClose()
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose, submitState])
+      if (e.key === "Escape" && submitState === "idle") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose, submitState]);
 
-  const basePrice = parsePrice(property.priceDetails.perNight)
-  const partyFee = partyFeeActive ? 5000 : 0
-  const total = basePrice + partyFee
+  const basePrice = parsePrice(property.priceDetails.perNight);
+  const partyFee = partyFeeActive ? 5000 : 0;
+  const total = basePrice + partyFee;
 
   const goNext = useCallback(() => {
     if (step < STEP_COUNT) {
-      setDirection(1)
-      setStep((s) => (s + 1) as Step)
-      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+      setDirection(1);
+      setStep((s) => (s + 1) as Step);
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [step])
+  }, [step]);
 
   const goBack = useCallback(() => {
     if (step > 1) {
-      setDirection(-1)
-      setStep((s) => (s - 1) as Step)
-      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+      setDirection(-1);
+      setStep((s) => (s - 1) as Step);
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [step])
+  }, [step]);
 
-  const goToStep = useCallback((target: Step) => {
-    if (target < step) {
-      setDirection(-1)
-      setStep(target)
-      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, [step])
+  const goToStep = useCallback(
+    (target: Step) => {
+      if (target < step) {
+        setDirection(-1);
+        setStep(target);
+        scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    [step],
+  );
 
   const validateStep = (s: Step): boolean => {
-    const errs: Record<string, string> = {}
-    if (s === 1 && !selectedDate) errs.date = 'Please select a date'
+    const errs: Record<string, string> = {};
+    if (s === 1 && !selectedDate) errs.date = "Please select a date";
     if (s === 3) {
-      if (!fullName.trim()) errs.fullName = 'Name is required'
-      if (!email.trim()) errs.email = 'Email is required'
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email'
-      if (!phone.trim()) errs.phone = 'Phone is required'
-      else if (!/^[\d\s+\-()]{7,20}$/.test(phone)) errs.phone = 'Enter a valid phone number'
-      if (!agreed) errs.agreed = 'You must agree to the house rules'
+      if (!fullName.trim()) errs.fullName = "Name is required";
+      if (!email.trim()) errs.email = "Email is required";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        errs.email = "Enter a valid email";
+      if (!phone.trim()) errs.phone = "Phone is required";
+      else if (!/^[\d\s+\-()]{7,20}$/.test(phone))
+        errs.phone = "Enter a valid phone number";
+      if (!agreed) errs.agreed = "You must agree to the house rules";
     }
-    setErrors(errs)
-    return Object.keys(errs).length === 0
-  }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
-  const handleNext = () => { if (validateStep(step)) goNext() }
+  const handleNext = () => {
+    if (validateStep(step)) goNext();
+  };
 
   const handleSubmit = () => {
-    if (!validateStep(3)) return
-    const newId = generateReservationId()
-    setReservationId(newId)
+    if (!validateStep(3)) return;
+    const newId = generateReservationId();
+    setReservationId(newId);
     const reservationData = {
-      id: newId, email, villaId: property.id, villaName: property.name,
-      maxGuests: property.maxGuests, checkIn: selectedDate!,
-      checkOut: new Date(new Date(selectedDate!).getTime() + 21 * 60 * 60 * 1000).toISOString().split('T')[0],
-      guests, createdAt: new Date().toISOString().split('T')[0], status: 'awaiting_confirmation' as const,
-    }
-    localStorage.setItem('krib_last_reservation', JSON.stringify({ id: newId, email }))
-    localStorage.setItem('krib_last_reservation_full', JSON.stringify(reservationData))
-    setSubmitState('submitting')
-    setTimeout(() => setSubmitState('success'), 1800)
-  }
+      id: newId,
+      email,
+      villaId: property.id,
+      villaName: property.name,
+      maxGuests: property.maxGuests,
+      checkIn: selectedDate!,
+      checkOut: new Date(
+        new Date(selectedDate!).getTime() + 21 * 60 * 60 * 1000,
+      )
+        .toISOString()
+        .split("T")[0],
+      guests,
+      createdAt: new Date().toISOString().split("T")[0],
+      status: "awaiting_confirmation" as const,
+    };
+    localStorage.setItem(
+      "krib_last_reservation",
+      JSON.stringify({ id: newId, email }),
+    );
+    localStorage.setItem(
+      "krib_last_reservation_full",
+      JSON.stringify(reservationData),
+    );
+    setSubmitState("submitting");
+    setTimeout(() => setSubmitState("success"), 1800);
+  };
 
-  const departureDate = selectedDate ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000) : null
-  const totalGuests = guests.adults + guests.children
-  const hasDate = !!selectedDate
-  const meta = STEP_META[step - 1]
+  const departureDate = selectedDate
+    ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000)
+    : null;
+  const totalGuests = guests.adults + guests.children;
+  const hasDate = !!selectedDate;
+  const meta = STEP_META[step - 1];
 
   const summaryContent = (
     <div className="flex flex-col h-full">
@@ -262,12 +339,14 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
           alt={property.name}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/10 to-transparent" />
         <div className="absolute bottom-4 left-5 right-5">
           <p className="font-body text-[10px] text-white/60 uppercase tracking-[0.2em] font-semibold mb-1">
             Your Villa
           </p>
-          <p className="font-display text-headline-sm text-white">{property.name}</p>
+          <p className="font-display text-headline-sm text-white">
+            {property.name}
+          </p>
         </div>
       </div>
 
@@ -295,15 +374,19 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
         {totalGuests > 0 && (
           <SummaryItem
             label="Guests"
-            value={`${totalGuests} ${totalGuests === 1 ? 'Guest' : 'Guests'}`}
+            value={`${totalGuests} ${totalGuests === 1 ? "Guest" : "Guests"}`}
           />
         )}
 
         <div className="h-px bg-outline-variant/40 my-4" />
 
         <div className="flex justify-between items-center">
-          <span className="font-body text-sm text-on-surface-variant">Base Rate</span>
-          <span className="font-body text-sm text-on-surface font-medium">{formatPrice(basePrice)}</span>
+          <span className="font-body text-sm text-on-surface-variant">
+            Base Rate
+          </span>
+          <span className="font-body text-sm text-on-surface font-medium">
+            {formatPrice(basePrice)}
+          </span>
         </div>
 
         {onPartyFeeToggle && (
@@ -313,8 +396,8 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                 type="button"
                 onClick={() => onPartyFeeToggle(!partyFeeActive!)}
                 className={cn(
-                  'relative inline-flex h-[22px] w-10 items-center rounded-full transition-colors duration-300 cursor-pointer shrink-0',
-                  partyFeeActive ? 'bg-primary' : 'bg-outline/40',
+                  "relative inline-flex h-22px w-10 items-center rounded-full transition-colors duration-300 cursor-pointer shrink-0",
+                  partyFeeActive ? "bg-primary" : "bg-outline/40",
                 )}
                 role="switch"
                 aria-checked={!!partyFeeActive}
@@ -322,28 +405,30 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
               >
                 <motion.span
                   layout
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   className={cn(
-                    'inline-block h-4 w-4 rounded-full bg-white shadow-sm',
-                    partyFeeActive ? 'ml-[22px]' : 'ml-[3px]',
+                    "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
+                    partyFeeActive ? "ml-22px" : "ml-3px",
                   )}
                 />
               </button>
-              <span className="font-body text-sm text-on-surface-variant">Party fee</span>
+              <span className="font-body text-sm text-on-surface-variant">
+                Party fee
+              </span>
             </div>
             <motion.span
-              key={partyFeeActive ? 'on' : 'off'}
+              key={partyFeeActive ? "on" : "off"}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="font-body text-sm text-on-surface font-medium tabular-nums"
             >
-              {partyFeeActive ? formatPrice(5000) : '—'}
+              {partyFeeActive ? formatPrice(5000) : "—"}
             </motion.span>
           </div>
         )}
 
         {partyFeeActive && (
-          <p className="font-body text-xs text-secondary/80 pl-[52px] -mt-1">
+          <p className="font-body text-xs text-secondary/80 pl-52px -mt-1">
             Includes venue setup for celebrations
           </p>
         )}
@@ -351,7 +436,9 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
         <div className="h-px bg-on-surface/10 my-4" />
 
         <div className="flex justify-between items-baseline">
-          <span className="font-body text-sm font-semibold text-on-surface">Total</span>
+          <span className="font-body text-sm font-semibold text-on-surface">
+            Total
+          </span>
           <LayoutGroup>
             <motion.span
               key={total}
@@ -367,37 +454,37 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
       </div>
 
       <div className="p-5 lg:p-6 pt-0 lg:pt-0">
-        {submitState === 'idle' && step < STEP_COUNT && (
+        {submitState === "idle" && step < STEP_COUNT && (
           <button
             onClick={handleNext}
             className={cn(
-              'w-full py-4 rounded-full font-body text-xs font-semibold uppercase tracking-[0.14em]',
-              'bg-primary text-on-primary',
-              'shadow-[0_4px_16px_rgba(0,71,171,0.2)]',
-              'hover:bg-primary-hover hover:shadow-[0_6px_24px_rgba(0,71,171,0.28)]',
-              'transition-all duration-300 cursor-pointer',
+              "w-full py-4 rounded-full font-body text-xs font-semibold uppercase tracking-[0.14em]",
+              "bg-primary text-on-primary",
+              "shadow-[0_4px_16px_rgba(0,71,171,0.2)]",
+              "hover:bg-primary-hover hover:shadow-[0_6px_24px_rgba(0,71,171,0.28)]",
+              "transition-all duration-300 cursor-pointer",
             )}
           >
             Continue
           </button>
         )}
-        {submitState === 'idle' && step === STEP_COUNT && (
+        {submitState === "idle" && step === STEP_COUNT && (
           <button
             onClick={handleSubmit}
             className={cn(
-              'w-full py-4 rounded-full inline-flex items-center justify-center gap-2.5',
-              'font-body text-xs font-semibold uppercase tracking-[0.14em]',
-              'bg-primary text-on-primary',
-              'shadow-[0_4px_16px_rgba(0,71,171,0.2)]',
-              'hover:bg-primary-hover hover:shadow-[0_6px_24px_rgba(0,71,171,0.28)]',
-              'transition-all duration-300 cursor-pointer',
+              "w-full py-4 rounded-full inline-flex items-center justify-center gap-2.5",
+              "font-body text-xs font-semibold uppercase tracking-[0.14em]",
+              "bg-primary text-on-primary",
+              "shadow-[0_4px_16px_rgba(0,71,171,0.2)]",
+              "hover:bg-primary-hover hover:shadow-[0_6px_24px_rgba(0,71,171,0.28)]",
+              "transition-all duration-300 cursor-pointer",
             )}
           >
             <Send size={14} />
             Request Reservation
           </button>
         )}
-        {submitState === 'idle' && (
+        {submitState === "idle" && (
           <div className="flex items-center gap-2 mt-3 justify-center">
             <Shield size={12} className="text-tertiary" />
             <p className="font-body text-[11px] text-on-surface-variant/60">
@@ -407,7 +494,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
         )}
       </div>
     </div>
-  )
+  );
 
   const stepContent = (
     <LayoutGroup>
@@ -448,6 +535,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
               onMessageChange={setMessage}
               agreed={agreed}
               onAgreedChange={setAgreed}
+              onOpenTerms={() => setTermsOpen(true)}
               errors={errors}
             />
           )}
@@ -471,7 +559,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
         </motion.div>
       </AnimatePresence>
     </LayoutGroup>
-  )
+  );
 
   return (
     <AnimatePresence>
@@ -481,9 +569,10 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed inset-0 z-[100]"
+          className="fixed inset-0 z-100"
           onClick={(e) => {
-            if (e.target === e.currentTarget && submitState === 'idle') onClose()
+            if (e.target === e.currentTarget && submitState === "idle")
+              onClose();
           }}
         >
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
@@ -496,20 +585,20 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
             animate="visible"
             exit="exit"
             className={cn(
-              'hidden md:flex flex-col bg-white overflow-hidden',
-              'absolute inset-4 lg:inset-6 xl:inset-8',
-              'max-w-[1280px] mx-auto my-auto max-h-[92vh]',
-              'shadow-[0_24px_80px_rgba(0,0,0,0.18)]',
+              "hidden md:flex flex-col bg-white overflow-hidden",
+              "absolute inset-4 lg:inset-6 xl:inset-8",
+              "max-w-1280px mx-auto my-auto max-h-[92vh]",
+              "shadow-[0_24px_80px_rgba(0,0,0,0.18)]",
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            {submitState === 'success' ? (
+            {submitState === "success" ? (
               <SuccessState
                 propertyName={property.name}
                 reservationId={reservationId}
                 onClose={onClose}
               />
-            ) : submitState === 'submitting' ? (
+            ) : submitState === "submitting" ? (
               <SubmittingState />
             ) : (
               <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -520,37 +609,45 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-1">
                         {STEP_META.map((m, i) => {
-                          const Icon = m.icon
-                          const isCurrent = i + 1 === step
-                          const isDone = i + 1 < step
+                          const Icon = m.icon;
+                          const isCurrent = i + 1 === step;
+                          const isDone = i + 1 < step;
                           return (
                             <button
                               key={m.label}
-                              onClick={() => isDone && goToStep((i + 1) as Step)}
+                              onClick={() =>
+                                isDone && goToStep((i + 1) as Step)
+                              }
                               className={cn(
-                                'flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300',
+                                "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                                 isCurrent
-                                  ? 'text-primary'
+                                  ? "text-primary"
                                   : isDone
-                                    ? 'text-on-surface-variant/60 hover:text-primary cursor-pointer'
-                                    : 'text-on-surface-variant/25 pointer-events-none',
+                                    ? "text-on-surface-variant/60 hover:text-primary cursor-pointer"
+                                    : "text-on-surface-variant/25 pointer-events-none",
                               )}
                             >
-                              <div className={cn(
-                                'w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-300',
-                                isCurrent
-                                  ? 'border-primary bg-primary text-white'
-                                  : isDone
-                                    ? 'border-primary/40 bg-primary/5 text-primary'
-                                    : 'border-outline-variant/40 text-on-surface-variant/30',
-                              )}>
-                                {isDone ? <Check size={12} strokeWidth={3} /> : <Icon size={13} />}
+                              <div
+                                className={cn(
+                                  "w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-300",
+                                  isCurrent
+                                    ? "border-primary bg-primary text-white"
+                                    : isDone
+                                      ? "border-primary/40 bg-primary/5 text-primary"
+                                      : "border-outline-variant/40 text-on-surface-variant/30",
+                                )}
+                              >
+                                {isDone ? (
+                                  <Check size={12} strokeWidth={3} />
+                                ) : (
+                                  <Icon size={13} />
+                                )}
                               </div>
                               <span className="font-body text-[11px] font-semibold uppercase tracking-[0.08em] hidden lg:block">
                                 {m.label}
                               </span>
                             </button>
-                          )
+                          );
                         })}
                       </div>
                       <button
@@ -562,11 +659,15 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                       </button>
                     </div>
 
-                    <div className="relative h-[2px] bg-surface-container-high">
+                    <div className="relative h-2px bg-surface-container-high">
                       <motion.div
                         className="absolute inset-y-0 left-0 bg-primary"
                         animate={{ width: `${(step / STEP_COUNT) * 100}%` }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 28 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 28,
+                        }}
                       />
                     </div>
 
@@ -585,9 +686,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                     ref={scrollContainerRef}
                     className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-8 lg:px-10 pb-8"
                   >
-                    <div className="pt-6">
-                      {stepContent}
-                    </div>
+                    <div className="pt-6">{stepContent}</div>
 
                     {/* Inline Navigation */}
                     <div className="flex items-center gap-3 mt-8 pt-6 border-t border-outline-variant/30">
@@ -597,7 +696,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                           animate={{ opacity: 1, x: 0 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={goBack}
-                          className="flex items-center gap-1.5 px-5 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-[0.1em] text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 cursor-pointer"
+                          className="flex items-center gap-1.5 px-5 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 cursor-pointer"
                         >
                           <ChevronLeft size={14} />
                           Back
@@ -610,12 +709,12 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                           whileTap={{ scale: 0.98 }}
                           onClick={handleNext}
                           className={cn(
-                            'px-8 py-3.5 rounded-full',
-                            'bg-primary text-on-primary',
-                            'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
-                            'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
-                            'hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]',
-                            'transition-all duration-300 cursor-pointer',
+                            "px-8 py-3.5 rounded-full",
+                            "bg-primary text-on-primary",
+                            "font-body text-[11px] font-semibold uppercase tracking-0.1em",
+                            "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
+                            "hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]",
+                            "transition-all duration-300 cursor-pointer",
                           )}
                         >
                           Continue
@@ -627,12 +726,12 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                           whileTap={{ scale: 0.98 }}
                           onClick={handleSubmit}
                           className={cn(
-                            'inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full',
-                            'bg-primary text-on-primary',
-                            'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
-                            'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
-                            'hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]',
-                            'transition-all duration-300 cursor-pointer',
+                            "inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full",
+                            "bg-primary text-on-primary",
+                            "font-body text-[11px] font-semibold uppercase tracking-0.1em",
+                            "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
+                            "hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]",
+                            "transition-all duration-300 cursor-pointer",
                           )}
                         >
                           <Send size={13} />
@@ -644,7 +743,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                 </div>
 
                 {/* RIGHT — Sticky Summary */}
-                <div className="w-[340px] lg:w-[380px] shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain">
+                <div className="w-340px lg:w-380px shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain">
                   {summaryContent}
                 </div>
               </div>
@@ -658,19 +757,19 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
             animate="visible"
             exit="exit"
             className={cn(
-              'md:hidden fixed bottom-0 left-0 right-0 bg-white flex flex-col',
-              'max-h-[95vh]',
+              "md:hidden fixed bottom-0 left-0 right-0 bg-white flex flex-col",
+              "max-h-[95vh]",
             )}
             onClick={(e) => e.stopPropagation()}
-            style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           >
-            {submitState === 'success' ? (
+            {submitState === "success" ? (
               <SuccessState
                 propertyName={property.name}
                 reservationId={reservationId}
                 onClose={onClose}
               />
-            ) : submitState === 'submitting' ? (
+            ) : submitState === "submitting" ? (
               <SubmittingState />
             ) : (
               <>
@@ -679,17 +778,21 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-1.5">
                       {STEP_META.map((m, i) => {
-                        const isCurrent = i + 1 === step
-                        const isDone = i + 1 < step
+                        const isCurrent = i + 1 === step;
+                        const isDone = i + 1 < step;
                         return (
                           <div
                             key={m.label}
                             className={cn(
-                              'h-1 rounded-full transition-all duration-500',
-                              isCurrent ? 'w-6 bg-primary' : isDone ? 'w-3 bg-primary/40' : 'w-3 bg-outline-variant/40',
+                              "h-1 rounded-full transition-all duration-500",
+                              isCurrent
+                                ? "w-6 bg-primary"
+                                : isDone
+                                  ? "w-3 bg-primary/40"
+                                  : "w-3 bg-outline-variant/40",
                             )}
                           />
-                        )
+                        );
                       })}
                     </div>
                     <button
@@ -719,7 +822,7 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                     {step > 1 && (
                       <button
                         onClick={goBack}
-                        className="flex items-center gap-1 px-4 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-[0.1em] text-on-surface-variant cursor-pointer"
+                        className="flex items-center gap-1 px-4 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant cursor-pointer"
                       >
                         <ChevronLeft size={14} />
                         Back
@@ -730,11 +833,11 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                       <button
                         onClick={handleNext}
                         className={cn(
-                          'px-6 py-3.5 rounded-full',
-                          'bg-primary text-on-primary',
-                          'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
-                          'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
-                          'transition-all duration-300 cursor-pointer',
+                          "px-6 py-3.5 rounded-full",
+                          "bg-primary text-on-primary",
+                          "font-body text-[11px] font-semibold uppercase tracking-0.1em",
+                          "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
+                          "transition-all duration-300 cursor-pointer",
                         )}
                       >
                         Continue
@@ -743,11 +846,11 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
                       <button
                         onClick={handleSubmit}
                         className={cn(
-                          'inline-flex items-center gap-2 px-6 py-3.5 rounded-full',
-                          'bg-primary text-on-primary',
-                          'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
-                          'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
-                          'transition-all duration-300 cursor-pointer',
+                          "inline-flex items-center gap-2 px-6 py-3.5 rounded-full",
+                          "bg-primary text-on-primary",
+                          "font-body text-[11px] font-semibold uppercase tracking-0.1em",
+                          "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
+                          "transition-all duration-300 cursor-pointer",
                         )}
                       >
                         <Send size={13} />
@@ -774,23 +877,26 @@ export function BookingExperience({ isOpen, onClose, property, partyFeeActive, o
           </motion.div>
         </motion.div>
       )}
+      <TermsModal
+        isOpen={termsOpen}
+        onClose={() => setTermsOpen(false)}
+        onAgree={() => setAgreed(true)}
+        triggerRef={agreementRowRef}
+      />
     </AnimatePresence>
-  )
+  );
 }
 
-/* ======================================================================
-   SUMMARY ITEM (for right sidebar)
-   ====================================================================== */
 function SummaryItem({
   label,
   value,
   icon,
   valueClassName,
 }: {
-  label: string
-  value: string
-  icon?: React.ReactNode
-  valueClassName?: string
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  valueClassName?: string;
 }) {
   return (
     <div className="flex justify-between items-center py-2.5">
@@ -798,11 +904,16 @@ function SummaryItem({
         {icon}
         {label}
       </span>
-      <span className={cn('font-body text-[13px] text-on-surface font-medium', valueClassName)}>
+      <span
+        className={cn(
+          "font-body text-[13px] text-on-surface font-medium",
+          valueClassName,
+        )}
+      >
         {value}
       </span>
     </div>
-  )
+  );
 }
 
 /* ======================================================================
@@ -810,18 +921,33 @@ function SummaryItem({
    ====================================================================== */
 function SubmittingState() {
   return (
-    <div className="flex-1 flex items-center justify-center p-12 min-h-[400px]">
+    <div className="flex-1 flex items-center justify-center p-12 min-h-400px">
       <div className="text-center">
-        <svg className="animate-spin h-8 w-8 mx-auto mb-4 text-primary" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+        <svg
+          className="animate-spin h-8 w-8 mx-auto mb-4 text-primary"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          />
         </svg>
         <p className="font-body text-sm text-on-surface-variant">
           Submitting your reservation request...
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 /* ======================================================================
@@ -833,18 +959,22 @@ function StepDate({
   onDateSelect,
   error,
 }: {
-  villaId: string
-  selectedDate: string | null
-  onDateSelect: (date: string | null) => void
-  error?: string
+  villaId: string;
+  selectedDate: string | null;
+  onDateSelect: (date: string | null) => void;
+  error?: string;
 }) {
   const depDate = selectedDate
     ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000)
-    : null
+    : null;
 
   return (
     <div>
-      <AvailabilityCalendar villaId={villaId} villaName="" onDateSelect={onDateSelect} />
+      <AvailabilityCalendar
+        villaId={villaId}
+        villaName=""
+        onDateSelect={onDateSelect}
+      />
 
       {selectedDate && (
         <motion.div
@@ -854,7 +984,7 @@ function StepDate({
         >
           <div className="flex items-center gap-2 mb-3">
             <Clock size={14} className="text-primary" />
-            <span className="font-body text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
+            <span className="font-body text-[11px] font-semibold uppercase tracking-0.1em text-primary">
               Your 21-Hour Stay
             </span>
           </div>
@@ -867,7 +997,7 @@ function StepDate({
           <div className="flex justify-between text-sm mt-1.5">
             <span className="font-body text-on-surface-variant">Departure</span>
             <span className="font-body text-primary font-medium">
-              {depDate ? formatDateShort(depDate) : '—'} · 11:00 AM
+              {depDate ? formatDateShort(depDate) : "—"} · 11:00 AM
             </span>
           </div>
         </motion.div>
@@ -891,7 +1021,7 @@ function StepDate({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 /* ======================================================================
@@ -903,10 +1033,10 @@ function StepGuests({
   guests,
   onChange,
 }: {
-  maxGuests: number
-  villaName: string
-  guests: GuestCount
-  onChange: (g: GuestCount) => void
+  maxGuests: number;
+  villaName: string;
+  guests: GuestCount;
+  onChange: (g: GuestCount) => void;
 }) {
   return (
     <div>
@@ -920,11 +1050,12 @@ function StepGuests({
       {guests.pets > 2 && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          animate={{ opacity: 1, height: "auto" }}
           className="mt-4 overflow-hidden"
         >
           <p className="font-body text-sm text-primary leading-relaxed">
-            For more than 2 pets, our staff will be notified so we can prepare accordingly.
+            For more than 2 pets, our staff will be notified so we can prepare
+            accordingly.
           </p>
         </motion.div>
       )}
@@ -937,13 +1068,14 @@ function StepGuests({
               Maximum {maxGuests} guests allowed
             </p>
             <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
-              Adults and children count toward the guest limit. Infants and pets do not.
+              Adults and children count toward the guest limit. Infants and pets
+              do not.
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 /* ======================================================================
@@ -960,25 +1092,27 @@ function StepDetails({
   onMessageChange,
   agreed,
   onAgreedChange,
+  onOpenTerms,
   errors,
 }: {
-  fullName: string
-  onFullNameChange: (v: string) => void
-  email: string
-  onEmailChange: (v: string) => void
-  phone: string
-  onPhoneChange: (v: string) => void
-  message: string
-  onMessageChange: (v: string) => void
-  agreed: boolean
-  onAgreedChange: (v: boolean) => void
-  errors: Record<string, string>
+  fullName: string;
+  onFullNameChange: (v: string) => void;
+  email: string;
+  onEmailChange: (v: string) => void;
+  phone: string;
+  onPhoneChange: (v: string) => void;
+  message: string;
+  onMessageChange: (v: string) => void;
+  agreed: boolean;
+  onAgreedChange: (v: boolean) => void;
+  onOpenTerms: () => void;
+  errors: Record<string, string>;
 }) {
-  const nameRef = useRef<HTMLInputElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setTimeout(() => nameRef.current?.focus(), 350)
-  }, [])
+    setTimeout(() => nameRef.current?.focus(), 350);
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -995,7 +1129,9 @@ function StepDetails({
           className="w-full px-4 py-3.5 rounded-lg bg-surface-container-low border border-outline-variant/60 font-body text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary transition-colors duration-200"
         />
         {errors.fullName && (
-          <p className="font-body text-[11px] text-error mt-1">{errors.fullName}</p>
+          <p className="font-body text-[11px] text-error mt-1">
+            {errors.fullName}
+          </p>
         )}
       </div>
 
@@ -1012,7 +1148,9 @@ function StepDetails({
             className="w-full px-4 py-3.5 rounded-lg bg-surface-container-low border border-outline-variant/60 font-body text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary transition-colors duration-200"
           />
           {errors.email && (
-            <p className="font-body text-[11px] text-error mt-1">{errors.email}</p>
+            <p className="font-body text-[11px] text-error mt-1">
+              {errors.email}
+            </p>
           )}
         </div>
         <div>
@@ -1027,14 +1165,17 @@ function StepDetails({
             className="w-full px-4 py-3.5 rounded-lg bg-surface-container-low border border-outline-variant/60 font-body text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary transition-colors duration-200"
           />
           {errors.phone && (
-            <p className="font-body text-[11px] text-error mt-1">{errors.phone}</p>
+            <p className="font-body text-[11px] text-error mt-1">
+              {errors.phone}
+            </p>
           )}
         </div>
       </div>
 
       <div>
         <label className="font-body text-[11px] text-on-surface-variant/60 uppercase tracking-[0.12em] font-semibold block mb-1.5">
-          Anything we should know? <span className="text-on-surface-variant/30">(optional)</span>
+          Anything we should know?{" "}
+          <span className="text-on-surface-variant/30">(optional)</span>
         </label>
         <textarea
           value={message}
@@ -1045,38 +1186,85 @@ function StepDetails({
         />
       </div>
 
-      <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30">
+      <div
+        className={cn(
+          "p-4 rounded-xl border transition-all duration-200 cursor-pointer group",
+          agreed
+            ? "bg-primary-container/15 border-primary/20"
+            : "bg-surface-container-low border-outline-variant/30 hover:border-primary/30 hover:bg-surface-container-low/80",
+        )}
+        role="button"
+        tabIndex={0}
+        onClick={onOpenTerms}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpenTerms();
+          }
+        }}
+        aria-label="Read and agree to terms and conditions"
+      >
         <div className="flex items-start gap-3">
-          <button
-            type="button"
-            onClick={() => onAgreedChange(!agreed)}
+          <div
             className={cn(
-              'shrink-0 mt-0.5 w-11 h-11 min-w-11 min-h-11 flex items-center justify-center rounded-md transition-all duration-200 cursor-pointer',
+              "shrink-0 mt-0.5 w-44px h-44px min-w-44px min-h-44px flex items-center justify-center rounded-full border-[1.5px] transition-all duration-300",
               agreed
-                ? 'bg-primary text-white'
-                : 'border-2 border-outline hover:border-primary',
+                ? "bg-primary border-primary"
+                : "border-outline group-hover:border-primary/50",
             )}
-            aria-checked={agreed}
-            role="checkbox"
+            aria-hidden="true"
           >
-            {agreed && <Check size={14} strokeWidth={3} />}
-          </button>
-          <p className="font-body text-[13px] text-on-surface leading-relaxed">
-            I have read and agree to the house rules. I understand this is a reservation request that requires owner approval before payment.
-          </p>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              className={cn(
+                "transition-all duration-300",
+                agreed ? "opacity-100 scale-100" : "opacity-0 scale-75",
+              )}
+            >
+              <motion.path
+                d="M2.5 7.5L5.5 10.5L11.5 3.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: agreed ? 1 : 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-body text-[13px] text-on-surface leading-relaxed">
+              I have read and agree to the{" "}
+              <span className="text-primary font-medium">House Rules</span> and{" "}
+              <span className="text-primary font-medium">
+                Terms &amp; Conditions
+              </span>
+              .
+            </p>
+            <p className="font-body text-[11px] text-on-surface-variant/50 mt-1.5">
+              Click to review before confirming.
+            </p>
+          </div>
         </div>
         {errors.agreed && (
-          <p className="font-body text-[11px] text-error mt-2 ml-14">{errors.agreed}</p>
+          <p className="font-body text-[11px] text-error mt-2 ml-56px">
+            {errors.agreed}
+          </p>
         )}
       </div>
 
       <div className="p-4 rounded-xl bg-tertiary-container/20 border border-tertiary/10">
         <p className="font-body text-xs text-on-surface-variant">
-          No payment required until your reservation is approved. We&apos;ll personally review your request before any payment is processed.
+          No payment required until your reservation is approved. We&apos;ll
+          personally review your request before any payment is processed.
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 /* ======================================================================
@@ -1097,19 +1285,19 @@ function StepReview({
   onPartyFeeToggle,
   total,
 }: {
-  property: PropertyInfo
-  selectedDate: string | null
-  departureDate: Date | null
-  guests: GuestCount
-  totalGuests: number
-  fullName: string
-  email: string
-  phone: string
-  message: string
-  basePrice: number
-  partyFeeActive?: boolean
-  onPartyFeeToggle?: (active: boolean) => void
-  total: number
+  property: PropertyInfo;
+  selectedDate: string | null;
+  departureDate: Date | null;
+  guests: GuestCount;
+  totalGuests: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  message: string;
+  basePrice: number;
+  partyFeeActive?: boolean;
+  onPartyFeeToggle?: (active: boolean) => void;
+  total: number;
 }) {
   return (
     <div>
@@ -1128,9 +1316,11 @@ function StepReview({
         />
         <ReviewRow
           label="Guests"
-          value={`${totalGuests} ${totalGuests === 1 ? 'Guest' : 'Guests'} (${guests.adults} Adult${guests.adults !== 1 ? 's' : ''}${guests.children > 0 ? `, ${guests.children} Child${guests.children !== 1 ? 'ren' : ''}` : ''})`}
+          value={`${totalGuests} ${totalGuests === 1 ? "Guest" : "Guests"} (${guests.adults} Adult${guests.adults !== 1 ? "s" : ""}${guests.children > 0 ? `, ${guests.children} Child${guests.children !== 1 ? "ren" : ""}` : ""})`}
         />
-        {guests.infants > 0 && <ReviewRow label="Infants" value={`${guests.infants}`} />}
+        {guests.infants > 0 && (
+          <ReviewRow label="Infants" value={`${guests.infants}`} />
+        )}
         {guests.pets > 0 && <ReviewRow label="Pets" value={`${guests.pets}`} />}
       </div>
 
@@ -1162,8 +1352,8 @@ function StepReview({
                   type="button"
                   onClick={() => onPartyFeeToggle(!partyFeeActive)}
                   className={cn(
-                    'relative inline-flex h-[22px] w-10 items-center rounded-full transition-colors duration-300 cursor-pointer',
-                    partyFeeActive ? 'bg-primary' : 'bg-outline/40',
+                    "relative inline-flex h-22px w-10 items-center rounded-full transition-colors duration-300 cursor-pointer",
+                    partyFeeActive ? "bg-primary" : "bg-outline/40",
                   )}
                   role="switch"
                   aria-checked={!!partyFeeActive}
@@ -1171,29 +1361,31 @@ function StepReview({
                 >
                   <motion.span
                     layout
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     className={cn(
-                      'inline-block h-4 w-4 rounded-full bg-white shadow-sm',
-                      partyFeeActive ? 'ml-[22px]' : 'ml-[3px]',
+                      "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
+                      partyFeeActive ? "ml-22px" : "ml-3px",
                     )}
                   />
                 </button>
-                <span className="font-body text-sm text-on-surface-variant">Party fee (+₱5,000)</span>
+                <span className="font-body text-sm text-on-surface-variant">
+                  Party fee (+₱5,000)
+                </span>
               </div>
               <motion.span
-                key={partyFeeActive ? 'on' : 'off'}
+                key={partyFeeActive ? "on" : "off"}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="font-body text-sm text-on-surface font-medium tabular-nums"
               >
-                {partyFeeActive ? formatPrice(5000) : '—'}
+                {partyFeeActive ? formatPrice(5000) : "—"}
               </motion.span>
             </div>
             {partyFeeActive && (
               <motion.p
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="font-body text-xs text-secondary/80 mt-2 ml-[52px] overflow-hidden"
+                animate={{ opacity: 1, height: "auto" }}
+                className="font-body text-xs text-secondary/80 mt-2 ml-52px overflow-hidden"
               >
                 Includes venue setup for parties and celebrations
               </motion.p>
@@ -1202,7 +1394,9 @@ function StepReview({
         )}
 
         <div className="flex justify-between items-baseline pt-4 border-t border-on-surface/10">
-          <span className="font-body text-sm font-semibold text-on-surface">Total</span>
+          <span className="font-body text-sm font-semibold text-on-surface">
+            Total
+          </span>
           <motion.span
             key={total}
             initial={{ opacity: 0, y: 4 }}
@@ -1223,13 +1417,14 @@ function StepReview({
               We&apos;ll personally review your request
             </p>
             <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
-              No payment is required until your reservation has been approved by our team.
+              No payment is required until your reservation has been approved by
+              our team.
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ReviewRow({
@@ -1237,19 +1432,21 @@ function ReviewRow({
   value,
   valueIcon,
 }: {
-  label: string
-  value: string
-  valueIcon?: React.ReactNode
+  label: string;
+  value: string;
+  valueIcon?: React.ReactNode;
 }) {
   return (
     <div className="flex justify-between items-start gap-4 py-2">
-      <span className="font-body text-[13px] text-on-surface-variant shrink-0">{label}</span>
+      <span className="font-body text-[13px] text-on-surface-variant shrink-0">
+        {label}
+      </span>
       <span className="font-body text-[13px] text-on-surface font-medium text-right flex items-center gap-1.5">
         {valueIcon}
         {value}
       </span>
     </div>
-  )
+  );
 }
 
 /* ======================================================================
@@ -1260,18 +1457,18 @@ function SuccessState({
   reservationId,
   onClose,
 }: {
-  propertyName: string
-  reservationId: string
-  onClose: () => void
+  propertyName: string;
+  reservationId: string;
+  onClose: () => void;
 }) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(reservationId).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
     <motion.div
@@ -1305,7 +1502,7 @@ function SuccessState({
           transition={{ duration: 0.4, delay: 0.4 }}
           className="font-body text-sm text-on-surface-variant leading-relaxed mb-4"
         >
-          We&apos;ve received your reservation request for{' '}
+          We&apos;ve received your reservation request for{" "}
           <strong className="text-on-surface">{propertyName}</strong>.
         </motion.p>
 
@@ -1315,7 +1512,8 @@ function SuccessState({
           transition={{ duration: 0.4, delay: 0.45 }}
           className="font-body text-sm text-on-surface-variant leading-relaxed mb-8"
         >
-          Our team will review your preferred date shortly. You&apos;ll receive confirmation once your reservation has been approved.
+          Our team will review your preferred date shortly. You&apos;ll receive
+          confirmation once your reservation has been approved.
         </motion.p>
 
         <motion.div
@@ -1340,7 +1538,9 @@ function SuccessState({
               {copied ? (
                 <Check size={13} className="text-tertiary" />
               ) : (
-                <span className="font-body text-[10px] text-primary font-semibold">Copy</span>
+                <span className="font-body text-[10px] text-primary font-semibold">
+                  Copy
+                </span>
               )}
             </button>
           </div>
@@ -1354,15 +1554,15 @@ function SuccessState({
           <button
             type="button"
             onClick={() => {
-              onClose()
-              window.location.href = '/my-reservation'
+              onClose();
+              window.location.href = "/my-reservation";
             }}
-            className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-primary text-on-primary font-body text-[11px] font-semibold uppercase tracking-[0.1em] shadow-[0_2px_8px_rgba(0,71,171,0.25)] hover:bg-primary-hover transition-all duration-300 cursor-pointer"
+            className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-primary text-on-primary font-body text-[11px] font-semibold uppercase tracking-0.1em shadow-[0_2px_8px_rgba(0,71,171,0.25)] hover:bg-primary-hover transition-all duration-300 cursor-pointer"
           >
             View My Reservation <ArrowRight size={14} />
           </button>
         </motion.div>
       </div>
     </motion.div>
-  )
+  );
 }

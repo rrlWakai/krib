@@ -262,39 +262,39 @@ export const villas: VillaDetail[] = [
 
 export const experiences: Experience[] = [
   {
-    id: 'morning-pool',
-    title: 'Morning coffee beside the pool',
+    id: 'celebrate-together',
+    title: 'Celebrate together, under one roof',
     description:
-      'Wake up to the sound of birds and the gentle light filtering through the trees. Your first cup of coffee tastes better when the day has nowhere to rush.',
-    image: images.morningCoffee,
+      'Birthdays, reunions, and milestones feel different when the whole family is gathered in one place. KRiB gives you the space to host — with a kitchen ready for feasts, a pool for the kids, and room for everyone to be together.',
+    image: images.krib2Living,
   },
   {
-    id: 'birthday',
-    title: 'Birthday celebrations',
+    id: 'private-pool',
+    title: 'Your own private pool',
     description:
-      'There is something special about celebrating another year surrounded by the people who matter most. Every birthday deserves a beautiful backdrop.',
-    image: images.familyBbq,
+      'No shared facilities. No schedules. Just your group and the water — from morning swims to late-afternoon floats. The kids will not want to get out, and honestly, neither will you.',
+    image: images.krib1Pool,
   },
   {
-    id: 'weekend-bbq',
-    title: 'Weekend barbecue with family',
+    id: 'cook-and-share',
+    title: 'Cook together, eat together',
     description:
-      'The smell of grilled food, the sound of laughter, and the feeling of the sun on your skin. These are the weekends that become cherished memories.',
-    image: images.sunsetGatherings,
+      'Both villas come with fully equipped kitchens and dining areas built for groups. Bring your ingredients, cook your family recipes, and share the kind of meal that only happens when everyone pitches in.',
+    image: images.krib1Dining,
   },
   {
-    id: 'pool-days',
-    title: 'Swimming under the afternoon sun',
+    id: 'karaoke-nights',
+    title: 'Karaoke nights',
     description:
-      'Afternoons at KRiB are made for floating, laughing, and watching the kids splash while the adults unwind with cold drinks and good conversation.',
-    image: images.morningCoffee,
+      'Unlimited videoke comes with every stay. Queue your favorites, take turns on the mic, and let the living room become your own private concert hall. The best nights always end with one more song.',
+    image: images.krib1LivingAlt,
   },
   {
-    id: 'quiet-evenings',
-    title: 'Quiet evenings with loved ones',
+    id: 'beverly-place',
+    title: 'A peaceful setting, just right',
     description:
-      'As the sun sets, the villa transforms. Gather around, share stories, and enjoy the simple pleasure of being together without distraction.',
-    image: images.sunsetGatherings,
+      'Set within Beverly Place in Pampanga — a quiet golf community surrounded by open greens and mountain views. Close enough for a spontaneous weekend, yet far enough to feel like a real escape.',
+    image: images.krib2Balcony,
   },
 ]
 

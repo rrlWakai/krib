@@ -24,7 +24,7 @@ export function Experiences() {
             </span>
           </div>
           <h2 className="font-display text-display-md max-md:text-display-md-mobile text-on-surface mb-5 leading-tight max-w-3xl">
-            It is the little moments that make a weekend unforgettable.
+            Weekends at KRiB are built around what matters most.
           </h2>
         </motion.div>
 
