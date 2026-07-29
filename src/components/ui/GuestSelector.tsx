@@ -39,7 +39,7 @@ const modalVariants = {
 
 const sheetVariants = {
   hidden: { y: '100%' },
-  visible: { y: 0, transition: { type: 'spring', stiffness: 320, damping: 34 } },
+  visible: { y: 0, transition: { type: 'spring' as const, stiffness: 320, damping: 34 } },
   exit: { y: '100%', transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const } },
 }
 
