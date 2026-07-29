@@ -5,7 +5,13 @@ import { cn } from "../../../lib/cn";
 import { faqCategories } from "../../../lib/data";
 import type { FAQCategory } from "../../../types";
 
-function ChapterAccordion({ category, index }: { category: FAQCategory; index: number }) {
+function ChapterAccordion({
+  category,
+  index,
+}: {
+  category: FAQCategory;
+  index: number;
+}) {
   const [openId, setOpenId] = useState<string | null>(null);
   const uid = useId();
 
@@ -14,7 +20,11 @@ function ChapterAccordion({ category, index }: { category: FAQCategory; index: n
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.8, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
+      transition={{
+        duration: 0.8,
+        delay: index * 0.12,
+        ease: [0.22, 1, 0.36, 1],
+      }}
       className="relative"
     >
       {/* Chapter header */}
@@ -53,7 +63,11 @@ function ChapterAccordion({ category, index }: { category: FAQCategory; index: n
                 initial={{ opacity: 0, x: -12 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-30px" }}
-                transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.5,
+                  delay: i * 0.06,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="relative"
               >
                 {/* Timeline dot */}
@@ -98,7 +112,11 @@ function ChapterAccordion({ category, index }: { category: FAQCategory; index: n
                       exit={{ rotate: 90, opacity: 0 }}
                       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      {isOpen ? <Minus size={14} strokeWidth={2} /> : <Plus size={14} strokeWidth={2} />}
+                      {isOpen ? (
+                        <Minus size={14} strokeWidth={2} />
+                      ) : (
+                        <Plus size={14} strokeWidth={2} />
+                      )}
                     </motion.span>
                   </span>
                 </button>
@@ -118,7 +136,11 @@ function ChapterAccordion({ category, index }: { category: FAQCategory; index: n
                       <motion.div
                         initial={{ y: -4 }}
                         animate={{ y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{
+                          duration: 0.3,
+                          delay: 0.04,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
                         className="pb-4"
                       >
                         <div className="w-10 h-px bg-primary/20 mb-5" />
@@ -164,8 +186,8 @@ export function FAQ() {
             Everything you need to know before you arrive.
           </h2>
           <p className="font-body text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
-            We have gathered the questions guests ask most when planning their stay.
-            If you cannot find what you are looking for, reach out on{" "}
+            We have gathered the questions guests ask most when planning their
+            stay. If you cannot find what you are looking for, reach out on{" "}
             <a
               href="https://www.facebook.com/KribBeverlyPlace"
               target="_blank"

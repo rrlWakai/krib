@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion'
-import { cn } from '../../../lib/cn'
-import { experiences } from '../../../lib/data'
+import { motion } from "framer-motion";
+import { cn } from "../../../lib/cn";
+import { experiences } from "../../../lib/data";
 
 export function Experiences() {
   return (
@@ -38,7 +38,7 @@ export function Experiences() {
 
           <div className="space-y-24 md:space-y-32">
             {experiences.map((exp, i) => {
-              const isEven = i % 2 === 0
+              const isEven = i % 2 === 0;
 
               return (
                 <motion.div
@@ -46,7 +46,11 @@ export function Experiences() {
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
-                  transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{
+                    duration: 0.8,
+                    delay: i * 0.1,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
                   className="relative"
                 >
                   {/* Timeline dot - desktop */}
@@ -58,12 +62,17 @@ export function Experiences() {
                   {/* Desktop: alternating grid */}
                   <div className="hidden md:grid grid-cols-12 gap-8 items-center">
                     {/* Image */}
-                    <div className={cn("col-span-5", isEven ? "" : "col-start-8")}>
+                    <div
+                      className={cn("col-span-5", isEven ? "" : "col-start-8")}
+                    >
                       <div className="overflow-hidden rounded-sm bg-surface-container">
                         <motion.img
                           whileHover={{ scale: 1.04 }}
-                          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                          className="w-full h-[280px] lg:h-[340px] object-cover transition-transform duration-1000"
+                          transition={{
+                            duration: 1.2,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          className="w-full h-280px lg:h-340px object-cover transition-transform duration-1000"
                           src={exp.image}
                           alt={exp.title}
                         />
@@ -71,7 +80,9 @@ export function Experiences() {
                     </div>
 
                     {/* Text */}
-                    <div className={cn("col-span-5", isEven ? "col-start-8" : "")}>
+                    <div
+                      className={cn("col-span-5", isEven ? "col-start-8" : "")}
+                    >
                       <span className="font-body text-label-caps text-primary/40 tracking-[0.3em] text-xs">
                         {String(i + 1).padStart(2, "0")}
                       </span>
@@ -94,7 +105,7 @@ export function Experiences() {
                     </h3>
                     <div className="overflow-hidden rounded-sm bg-surface-container mb-5">
                       <img
-                        className="w-full h-[200px] object-cover"
+                        className="w-full h-200px object-cover"
                         src={exp.image}
                         alt={exp.title}
                       />
@@ -104,11 +115,11 @@ export function Experiences() {
                     </p>
                   </div>
                 </motion.div>
-              )
+              );
             })}
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

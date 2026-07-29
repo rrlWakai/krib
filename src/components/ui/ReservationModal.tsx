@@ -264,6 +264,7 @@ export function ReservationModal({
 
                   {/* Scrollable Body */}
                   <div
+                    data-lenis-prevent
                     className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 md:px-10 pb-4"
                     style={{ WebkitOverflowScrolling: "touch" }}
                   >

@@ -7,7 +7,6 @@ import { EmptyState } from "../components/my-reservation/EmptyState"
 import { ReservationProgressTracker } from "../components/my-reservation/ReservationProgressTracker"
 import { ReservationOverviewCard } from "../components/my-reservation/ReservationOverviewCard"
 import { ReservationStatusCard } from "../components/my-reservation/ReservationStatusCard"
-import { PaymentCard } from "../components/my-reservation/PaymentCard"
 import { BeforeCheckInSection } from "../components/my-reservation/BeforeCheckInSection"
 import type { Reservation, ReservationStatus } from "../lib/reservationData"
 import {
@@ -110,7 +109,6 @@ export function MyReservationPage() {
     setError("")
   }
 
-  const hasPaymentAction = reservation?.status === "awaiting_payment"
   const isTerminal = reservation ? TERMINAL.includes(reservation.status) : false
   const showGuide = reservation && !isTerminal
 
@@ -190,13 +188,6 @@ export function MyReservationPage() {
                   <ReservationOverviewCard reservation={reservation} />
 
                   <ReservationStatusCard status={reservation.status} />
-
-                  {hasPaymentAction && reservation.amountDue && reservation.paymentDeadline && (
-                    <PaymentCard
-                      amountDue={reservation.amountDue}
-                      deadline={reservation.paymentDeadline}
-                    />
-                  )}
 
                   {showGuide && <BeforeCheckInSection />}
                 </div>

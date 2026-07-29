@@ -684,6 +684,7 @@ export function BookingExperience({
                   {/* Scrollable Content */}
                   <div
                     ref={scrollContainerRef}
+                    data-lenis-prevent
                     className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-8 lg:px-10 pb-8"
                   >
                     <div className="pt-6">{stepContent}</div>
@@ -743,7 +744,7 @@ export function BookingExperience({
                 </div>
 
                 {/* RIGHT — Sticky Summary */}
-                <div className="w-340px lg:w-380px shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain">
+                <div data-lenis-prevent className="w-340px lg:w-380px shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain">
                   {summaryContent}
                 </div>
               </div>
@@ -812,7 +813,7 @@ export function BookingExperience({
                 </div>
 
                 {/* Mobile Scrollable Content */}
-                <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-5">
+                <div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-5">
                   {stepContent}
                 </div>
 

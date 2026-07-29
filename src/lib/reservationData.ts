@@ -2,7 +2,6 @@ import { getVillaImageByName } from './images'
 
 export type ReservationStatus =
   | 'awaiting_confirmation'
-  | 'awaiting_payment'
   | 'confirmed'
   | 'completed'
   | 'cancelled'
@@ -80,13 +79,12 @@ const mockReservations: Reservation[] = [
     checkOut: '2026-08-06',
     guests: { adults: 2, children: 1, infants: 1, pets: 0 },
     createdAt: '2026-07-20',
-    status: 'awaiting_payment',
+    status: 'confirmed',
     baseRate: 25000,
     partyFee: 5000,
     totalAmount: 30000,
-    amountDue: 15000,
-    paymentDeadline: '2026-07-27',
     approvalDate: '2026-07-22',
+    confirmationNumber: 'KRIB-CONF-2026-0805',
   },
   {
     id: 'KRIB-20260725-D2E4F8',
@@ -103,8 +101,6 @@ const mockReservations: Reservation[] = [
     baseRate: 30000,
     partyFee: 5000,
     totalAmount: 35000,
-    amountDue: 17500,
-    paymentDeadline: '2026-07-30',
     approvalDate: '2026-07-26',
     confirmationNumber: 'KRIB-CONF-2026-0901',
   },
@@ -156,8 +152,6 @@ const mockReservations: Reservation[] = [
     baseRate: 25000,
     partyFee: 0,
     totalAmount: 25000,
-    amountDue: 12500,
-    paymentDeadline: '2026-07-12',
   },
 ]
 
@@ -207,12 +201,6 @@ export function getStatusDisplay(status: ReservationStatus): { label: string; co
       bg: 'bg-amber-50 border-amber-200/60',
       dot: 'bg-amber-400',
     },
-    awaiting_payment: {
-      label: 'Approved',
-      color: 'text-blue-800',
-      bg: 'bg-blue-50 border-blue-200/60',
-      dot: 'bg-[#4F91B8]',
-    },
     confirmed: {
       label: 'Confirmed',
       color: 'text-green-800',
@@ -247,21 +235,16 @@ export function getStatusDisplay(status: ReservationStatus): { label: string; co
   return map[status]
 }
 
-export const TIMELINE_STEPS: { key: string; label: string; emotionalLabel: string }[] = [
-  { key: 'submitted', label: 'Reservation Received', emotionalLabel: 'We received your reservation' },
-  { key: 'reviewing', label: 'Under Review', emotionalLabel: 'Our team is reviewing your request' },
-  { key: 'approved', label: 'Approved', emotionalLabel: 'Great news — your dates are available!' },
-  { key: 'awaiting_payment', label: 'Down Payment', emotionalLabel: 'Secure your stay with a down payment' },
-  { key: 'payment_verified', label: 'Payment Verified', emotionalLabel: 'Your payment has been received' },
-  { key: 'confirmed', label: 'Confirmed', emotionalLabel: 'You\'re all set for your stay' },
-  { key: 'completed', label: 'Stay Completed', emotionalLabel: 'Thank you for choosing KRiB' },
+export const TIMELINE_STEPS: { key: string; label: string; description: string }[] = [
+  { key: 'submitted', label: 'Reservation Submitted', description: "We've successfully received your reservation request." },
+  { key: 'reviewing', label: 'Under Review', description: 'Our team is reviewing your reservation and checking availability.' },
+  { key: 'confirmed', label: 'Confirmed', description: 'Your reservation has been confirmed. An SMS containing your reservation details and check-in information has been sent.' },
 ]
 
 const STATUS_TO_STEP: Record<string, number> = {
   awaiting_confirmation: 1,
-  awaiting_payment: 3,
-  confirmed: 5,
-  completed: 6,
+  confirmed: 3,
+  completed: 3,
 }
 
 export function getTimelineCurrentStep(status: ReservationStatus): number {
@@ -272,17 +255,12 @@ export function getStatusContext(status: ReservationStatus): { heading: string; 
   const map: Record<ReservationStatus, { heading: string; body: string; emotion: string }> = {
     awaiting_confirmation: {
       heading: 'We\'re reviewing your reservation.',
-      body: 'Our team is carefully reviewing your reservation request. We typically respond within a few hours during business hours. You\'ll receive an update soon.',
+      body: 'Our team is carefully reviewing your reservation request and checking availability. We typically respond within a few hours during business hours.',
       emotion: 'calm',
-    },
-    awaiting_payment: {
-      heading: 'Great news! Your reservation has been approved.',
-      body: 'We\'re excited to welcome you to KRiB Beverly Place. Complete your down payment below to secure your preferred dates.',
-      emotion: 'celebrate',
     },
     confirmed: {
       heading: 'Your reservation is confirmed!',
-      body: 'Everything is set for your upcoming stay. We can\'t wait to welcome you. A detailed guest guide will be sent 3 days before your check-in date.',
+      body: 'Everything is set for your upcoming stay. An SMS containing your reservation details and check-in information has been sent to your registered mobile number.',
       emotion: 'excited',
     },
     completed: {
@@ -302,7 +280,7 @@ export function getStatusContext(status: ReservationStatus): { heading: string; 
     },
     expired: {
       heading: 'This reservation has expired.',
-      body: 'The payment window for this reservation has passed. Please contact us if you\'d like to explore new dates.',
+      body: 'The reservation window for this request has passed. Please contact us if you\'d like to explore new dates.',
       emotion: 'empathy',
     },
   }

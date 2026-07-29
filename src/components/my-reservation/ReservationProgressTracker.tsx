@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { Check, X, Clock } from "lucide-react"
+import { Check, X } from "lucide-react"
 import { cn } from "../../lib/cn"
 import type { ReservationStatus } from "../../lib/reservationData"
 import { TIMELINE_STEPS } from "../../lib/reservationData"
@@ -10,10 +10,10 @@ interface Props {
 
 const TERMINAL: ReservationStatus[] = ["cancelled", "declined", "expired"]
 
-const TERMINAL_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof X }> = {
-  cancelled: { label: "Cancelled", color: "text-on-surface-variant", bg: "bg-surface-container-high border-outline-variant/60", icon: X },
-  declined: { label: "Declined", color: "text-red-800", bg: "bg-red-50 border-red-200/60", icon: X },
-  expired: { label: "Expired", color: "text-red-800", bg: "bg-red-50 border-red-200/60", icon: Clock },
+const TERMINAL_LABELS: Record<string, string> = {
+  cancelled: "Reservation Cancelled",
+  declined: "Reservation Declined",
+  expired: "Reservation Expired",
 }
 
 function getStepStatus(
@@ -32,128 +32,287 @@ export function ReservationProgressTracker({ status }: Props) {
 
   const STATUS_RANK: Record<string, number> = {
     awaiting_confirmation: 1,
-    awaiting_payment: 3,
-    confirmed: 5,
-    completed: 6,
+    confirmed: 3,
+    completed: 3,
   }
   const currentStep = isTerminal ? -1 : (STATUS_RANK[status] ?? -1)
 
   return (
     <div className="w-full">
-      {/* Horizontal timeline */}
-      <div className="relative overflow-x-auto pb-4 -mx-2 px-2">
-        <div className="flex items-start justify-between min-w-[640px] gap-1">
-          {TIMELINE_STEPS.map((step, i) => {
-            const stepStatus = getStepStatus(i, currentStep, isTerminal)
-            const isLast = i === TIMELINE_STEPS.length - 1
+      {/* Desktop — 3 steps horizontal */}
+      <div className="hidden md:flex items-start justify-between gap-8">
+        {TIMELINE_STEPS.map((step, i) => {
+          const stepStatus = getStepStatus(i, currentStep, isTerminal)
+          const isLast = i === TIMELINE_STEPS.length - 1
 
-            return (
-              <div key={step.key} className="flex-1 relative flex flex-col items-center">
-                {/* Connector line */}
-                {!isLast && (
-                  <div className="absolute left-[calc(50%+18px)] right-[calc(-50%+18px)] h-[2px] top-[18px] -translate-y-1/2">
-                    <div className="w-full h-full bg-outline-variant/60" />
-                    {stepStatus === "done" && (
-                      <motion.div
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute inset-0 bg-primary origin-left"
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* Node */}
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{
-                    delay: i * 0.06,
-                    duration: 0.4,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className={cn(
-                    "relative z-10 w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-500",
-                    stepStatus === "done" && "bg-primary text-white shadow-[0_0_0_4px_rgba(0,71,171,0.08)]",
-                    stepStatus === "active" && "bg-[#4F91B8] text-white shadow-[0_0_0_4px_rgba(79,145,184,0.12)]",
-                    stepStatus === "upcoming" && "bg-white border-2 border-outline-variant/60 text-on-surface-variant/30",
-                  )}
-                >
-                  {stepStatus === "done" ? (
+          return (
+            <div key={step.key} className="flex-1 relative flex flex-col items-center">
+              {/* Connector line */}
+              {!isLast && (
+                <div className="absolute left-[calc(50%+22px)] right-[calc(-50%+22px)] h-px top-[19px]">
+                  <div className="w-full h-full bg-outline-variant/40" />
+                  {stepStatus === "done" && (
                     <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: i * 0.08 + 0.15, duration: 0.3 }}
-                    >
-                      <Check size={14} strokeWidth={3} />
-                    </motion.div>
-                  ) : stepStatus === "active" ? (
-                    <motion.div
-                      animate={{ scale: [1, 1.3, 1] }}
-                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-2 h-2 rounded-full bg-white"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute inset-0 bg-primary origin-left"
                     />
-                  ) : (
-                    <span className="text-[11px] font-medium">{i + 1}</span>
                   )}
-                </motion.div>
+                </div>
+              )}
 
-                {/* Label */}
+              {/* Node */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  delay: i * 0.06,
+                  duration: 0.4,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className={cn(
+                  "relative z-10 w-[38px] h-[38px] rounded-full flex items-center justify-center shrink-0 transition-all duration-500",
+                  stepStatus === "done" && "bg-primary text-white",
+                  stepStatus === "active" && "border-2 border-primary bg-white",
+                  stepStatus === "upcoming" && "border-[1.5px] border-outline-variant/30 bg-white",
+                )}
+              >
+                {stepStatus === "done" ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: i * 0.08 + 0.15, duration: 0.3 }}
+                  >
+                    <Check size={15} strokeWidth={2.5} />
+                  </motion.div>
+                ) : stepStatus === "active" ? (
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-2 h-2 rounded-full bg-primary"
+                  />
+                ) : (
+                  <span className="text-xs font-body font-medium text-on-surface-variant/25">{i + 1}</span>
+                )}
+              </motion.div>
+
+              {/* Label */}
+              <motion.p
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 + 0.1, duration: 0.3 }}
+                className={cn(
+                  "font-body text-xs font-medium mt-3 text-center transition-colors duration-500",
+                  stepStatus === "done" && "text-on-surface",
+                  stepStatus === "active" && "text-primary",
+                  stepStatus === "upcoming" && "text-on-surface-variant/35",
+                )}
+              >
+                {step.label}
+              </motion.p>
+
+              {/* Description for active step */}
+              {stepStatus === "active" && (
                 <motion.p
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 + 0.1, duration: 0.3 }}
-                  className={cn(
-                    "font-body text-[10px] md:text-[11px] font-medium mt-3 text-center leading-tight max-w-[70px] md:max-w-none transition-colors duration-500",
-                    stepStatus === "done" || stepStatus === "active"
-                      ? "text-on-surface"
-                      : "text-on-surface-variant/40",
-                  )}
+                  transition={{ delay: i * 0.06 + 0.2, duration: 0.3 }}
+                  className="font-body text-xs text-on-surface-variant/60 mt-1.5 text-center leading-relaxed max-w-[200px]"
                 >
-                  {step.label}
+                  {step.description}
                 </motion.p>
+              )}
+            </div>
+          )
+        })}
+      </div>
 
-                {/* Emotional subtitle for active step */}
+      {/* Tablet — wrap to 2 rows */}
+      <div className="hidden sm:flex md:hidden flex-wrap items-start justify-between gap-y-8">
+        {TIMELINE_STEPS.map((step, i) => {
+          const stepStatus = getStepStatus(i, currentStep, isTerminal)
+          const isLast = i === TIMELINE_STEPS.length - 1
+
+          return (
+            <div key={step.key} className="relative flex flex-col items-center" style={{ width: i < 2 ? '50%' : '100%' }}>
+              {/* Connector line */}
+              {!isLast && (
+                <div className={cn(
+                  "absolute h-px top-[19px]",
+                  i === 0 ? "left-[calc(50%+22px)] right-4" : "",
+                  i === 1 ? "left-4 right-[calc(50%+22px)]" : "",
+                )}>
+                  <div className="w-full h-full bg-outline-variant/40" />
+                  {stepStatus === "done" && (
+                    <motion.div
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute inset-0 bg-primary origin-left"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Node */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className={cn(
+                  "relative z-10 w-[38px] h-[38px] rounded-full flex items-center justify-center shrink-0 transition-all duration-500",
+                  stepStatus === "done" && "bg-primary text-white",
+                  stepStatus === "active" && "border-2 border-primary bg-white",
+                  stepStatus === "upcoming" && "border-[1.5px] border-outline-variant/30 bg-white",
+                )}
+              >
+                {stepStatus === "done" ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: i * 0.08 + 0.15, duration: 0.3 }}
+                  >
+                    <Check size={15} strokeWidth={2.5} />
+                  </motion.div>
+                ) : stepStatus === "active" ? (
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-2 h-2 rounded-full bg-primary"
+                  />
+                ) : (
+                  <span className="text-xs font-body font-medium text-on-surface-variant/25">{i + 1}</span>
+                )}
+              </motion.div>
+
+              {/* Label */}
+              <motion.p
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 + 0.1, duration: 0.3 }}
+                className={cn(
+                  "font-body text-xs font-medium mt-3 text-center transition-colors duration-500",
+                  stepStatus === "done" && "text-on-surface",
+                  stepStatus === "active" && "text-primary",
+                  stepStatus === "upcoming" && "text-on-surface-variant/35",
+                )}
+              >
+                {step.label}
+              </motion.p>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Mobile — 3 steps vertical */}
+      <div className="sm:hidden space-y-0">
+        {TIMELINE_STEPS.map((step, i) => {
+          const stepStatus = getStepStatus(i, currentStep, isTerminal)
+          const isLast = i === TIMELINE_STEPS.length - 1
+
+          return (
+            <div key={step.key} className="relative flex gap-4 pb-8 last:pb-0">
+              {!isLast && (
+                <div className="absolute left-[18.5px] top-10 bottom-0 w-px bg-outline-variant/40">
+                  {stepStatus === "done" && (
+                    <motion.div
+                      initial={{ scaleY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute inset-0 bg-primary origin-top"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Node */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  delay: i * 0.06,
+                  duration: 0.4,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className={cn(
+                  "relative z-10 w-[37px] h-[37px] rounded-full flex items-center justify-center shrink-0 transition-all duration-500",
+                  stepStatus === "done" && "bg-primary text-white",
+                  stepStatus === "active" && "border-2 border-primary bg-white",
+                  stepStatus === "upcoming" && "border-[1.5px] border-outline-variant/30 bg-white",
+                )}
+              >
+                {stepStatus === "done" ? (
+                  <Check size={14} strokeWidth={2.5} />
+                ) : stepStatus === "active" ? (
+                  <motion.div
+                    animate={{ scale: [1, 1.4, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-2 h-2 rounded-full bg-primary"
+                  />
+                ) : (
+                  <span className="text-xs font-body font-medium text-on-surface-variant/25">{i + 1}</span>
+                )}
+              </motion.div>
+
+              {/* Content */}
+              <div className="flex-1 pt-1.5">
+                <p className={cn(
+                  "font-body text-sm font-medium transition-colors duration-500",
+                  stepStatus === "done" && "text-on-surface",
+                  stepStatus === "active" && "text-primary font-semibold",
+                  stepStatus === "upcoming" && "text-on-surface-variant/35",
+                )}>
+                  {step.label}
+                </p>
                 {stepStatus === "active" && (
                   <motion.p
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 + 0.2, duration: 0.3 }}
-                    className="font-body text-[10px] text-primary/70 mt-1 text-center max-w-[80px] md:max-w-[100px] leading-tight hidden md:block"
+                    transition={{ delay: 0.1, duration: 0.3 }}
+                    className="font-body text-xs text-on-surface-variant/60 mt-1.5 leading-relaxed"
                   >
-                    {step.emotionalLabel}
+                    {step.description}
                   </motion.p>
                 )}
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
       </div>
 
-      {/* Terminal status badge */}
+      {/* Terminal states */}
       {isTerminal && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-          className="mt-6 text-center"
+          transition={{ delay: 0.4, duration: 0.4 }}
+          className="mt-8 md:mt-10"
         >
-          {(() => {
-            const config = TERMINAL_CONFIG[status]
-            if (!config) return null
-            const Icon = config.icon
-            return (
-              <span className={cn(
-                "inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium",
-                config.bg,
-                config.color,
-              )}>
-                <Icon size={14} />
-                {config.label}
-              </span>
-            )
-          })()}
+          <div className="flex items-start gap-3 p-5 md:p-6 rounded-xl bg-red-50/50 border border-red-200/40">
+            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+              <X size={16} className="text-[#C86A5A]" />
+            </div>
+            <div>
+              <p className="font-display text-headline-xs text-on-surface mb-1">
+                {TERMINAL_LABELS[status] ?? status}
+              </p>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                {status === "declined"
+                  ? "Your requested dates are not available. Please try booking a different date or contact us for assistance."
+                  : status === "cancelled"
+                    ? "This reservation has been cancelled. If you have any questions, please contact us."
+                    : "The reservation window for this request has passed. Please contact us if you would like to explore new dates."}
+              </p>
+              <a
+                href="/"
+                className="inline-flex items-center gap-1.5 mt-3 font-body text-sm font-medium text-primary hover:text-primary-hover transition-colors"
+              >
+                {status === "declined" ? "Browse Other Dates" : "Make a New Reservation"}
+                <span className="text-xs ml-0.5">→</span>
+              </a>
+            </div>
+          </div>
         </motion.div>
       )}
     </div>

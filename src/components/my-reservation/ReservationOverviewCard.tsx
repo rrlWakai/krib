@@ -181,23 +181,6 @@ export function ReservationOverviewCard({ reservation }: Props) {
             </div>
           </div>
 
-          {/* Payment Due */}
-          {reservation.amountDue && reservation.status === "awaiting_payment" && (
-            <div className="mt-5 p-4 rounded-xl bg-blue-50/60 border border-blue-200/40">
-              <p className="font-body text-[11px] font-semibold uppercase tracking-[0.1em] text-blue-600/70 mb-1">
-                Down Payment Due
-              </p>
-              <p className="font-display text-headline-sm text-blue-800">
-                {formatPrice(reservation.amountDue)}
-              </p>
-              {reservation.paymentDeadline && (
-                <p className="font-body text-xs text-blue-700/60 mt-1">
-                  Due by {formatDate(reservation.paymentDeadline)}
-                </p>
-              )}
-            </div>
-          )}
-
           {/* Guest name */}
           {reservation.guestName && (
             <div className="mt-5 pt-4 border-t border-outline-variant/30">

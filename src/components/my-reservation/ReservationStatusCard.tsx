@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { Clock, ArrowRight, PartyPopper, Heart, AlertTriangle, Frown, ExternalLink } from "lucide-react"
+import { Clock, ArrowRight, Heart, AlertTriangle, Frown, ExternalLink } from "lucide-react"
 import { cn } from "../../lib/cn"
 import type { ReservationStatus } from "../../lib/reservationData"
 import { getStatusContext } from "../../lib/reservationData"
@@ -19,12 +19,6 @@ const STATUS_VISUAL: Record<ReservationStatus, {
     iconBg: "bg-amber-100",
     iconColor: "text-amber-600",
     icon: Clock,
-  },
-  awaiting_payment: {
-    bg: "bg-blue-50/60 border-blue-200/50",
-    iconBg: "bg-blue-100",
-    iconColor: "text-[#4F91B8]",
-    icon: PartyPopper,
   },
   confirmed: {
     bg: "bg-green-50/60 border-green-200/50",
@@ -102,19 +96,6 @@ export function ReservationStatusCard({ status }: Props) {
                   Average response time: Within a few hours
                 </span>
               </motion.div>
-            )}
-
-            {status === "awaiting_payment" && (
-              <motion.a
-                href="#payment"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.3 }}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-body text-[11px] font-semibold uppercase tracking-[0.1em] shadow-[0_2px_8px_rgba(0,71,171,0.25)] hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)] transition-all duration-300"
-              >
-                Complete Payment
-                <ArrowRight size={13} />
-              </motion.a>
             )}
 
             {status === "confirmed" && (

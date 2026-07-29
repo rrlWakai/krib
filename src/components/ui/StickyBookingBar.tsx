@@ -1,22 +1,22 @@
-import { motion } from 'framer-motion'
-import { cn } from '../../lib/cn'
+import { motion } from "framer-motion";
+import { cn } from "../../lib/cn";
 
 interface StickyBookingBarProps {
-  price: string
-  rateType: string
-  maxGuests: number
-  partyFeeActive?: boolean
-  discountApplied?: boolean
-  onPartyFeeToggle?: (active: boolean) => void
-  onReserve: () => void
+  price: string;
+  rateType: string;
+  maxGuests: number;
+  partyFeeActive?: boolean;
+  discountApplied?: boolean;
+  onPartyFeeToggle?: (active: boolean) => void;
+  onReserve: () => void;
 }
 
 function parsePrice(priceStr: string): number {
-  return parseInt(priceStr.replace(/[^0-9]/g, ''), 10)
+  return parseInt(priceStr.replace(/[^0-9]/g, ""), 10);
 }
 
 function formatPrice(amount: number): string {
-  return '₱' + amount.toLocaleString('en-PH')
+  return "₱" + amount.toLocaleString("en-PH");
 }
 
 export function StickyBookingBar({
@@ -28,11 +28,14 @@ export function StickyBookingBar({
   onPartyFeeToggle,
   onReserve,
 }: StickyBookingBarProps) {
-  const basePrice = parsePrice(price)
-  const total = partyFeeActive ? basePrice + 5000 : basePrice
+  const basePrice = parsePrice(price);
+  const total = partyFeeActive ? basePrice + 5000 : basePrice;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+    <div
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
       <div className="bg-white/95 backdrop-blur-xl border-t border-outline-variant/40 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between gap-4 px-5 py-3.5">
           {/* Left Side */}
@@ -65,8 +68,8 @@ export function StickyBookingBar({
                   type="button"
                   onClick={() => onPartyFeeToggle(!partyFeeActive)}
                   className={cn(
-                    'relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 cursor-pointer',
-                    partyFeeActive ? 'bg-primary' : 'bg-outline/50',
+                    "relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 cursor-pointer",
+                    partyFeeActive ? "bg-primary" : "bg-outline/50",
                   )}
                   role="switch"
                   aria-checked={partyFeeActive}
@@ -74,10 +77,10 @@ export function StickyBookingBar({
                 >
                   <motion.span
                     layout
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     className={cn(
-                      'inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm',
-                      partyFeeActive ? 'translate-x-4' : 'translate-x-0.5',
+                      "inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm",
+                      partyFeeActive ? "translate-x-4" : "translate-x-0.5",
                     )}
                   />
                 </button>
@@ -100,14 +103,14 @@ export function StickyBookingBar({
             whileTap={{ scale: 0.98 }}
             onClick={onReserve}
             className={cn(
-              'shrink-0 px-6 py-3.5 rounded-full',
-              'bg-primary text-on-primary',
-              'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
-              'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
-              'hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]',
-              'transition-all duration-300',
-              'active:scale-[0.98]',
-              'cursor-pointer',
+              "shrink-0 px-6 py-3.5 rounded-full",
+              "bg-primary text-on-primary",
+              "font-body text-[11px] font-semibold uppercase tracking-0.1em",
+              "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
+              "hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]",
+              "transition-all duration-300",
+              "active:scale-[0.98]",
+              "cursor-pointer",
             )}
           >
             Request Reservation
@@ -115,5 +118,5 @@ export function StickyBookingBar({
         </div>
       </div>
     </div>
-  )
+  );
 }

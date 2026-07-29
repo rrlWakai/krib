@@ -17,8 +17,6 @@ export type DiscountStatus = 'active' | 'inactive' | 'expired';
 
 export type CalendarBlockType = 'reservation' | 'blocked' | 'maintenance';
 
-export type MessagePlatform = 'facebook' | 'instagram' | 'direct';
-
 export type DiscountType = 'percentage' | 'fixed';
 
 export interface Guests {
@@ -47,7 +45,7 @@ export interface Reservation {
   paymentStatus: PaymentStatus;
   paymentDeadline: string;
   createdAt: string;
-  message: string;
+  message?: string;
   specialRequests: string;
   approvalDate: string | null;
   paymentDate: string | null;
@@ -93,23 +91,6 @@ export interface Discount {
   status: DiscountStatus;
   usageCount: number;
   maxUsage: number;
-}
-
-export interface ChatMessage {
-  sender: string;
-  text: string;
-  timestamp: string;
-}
-
-export interface Message {
-  id: string;
-  platform: MessagePlatform;
-  guestName: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: boolean;
-  reservationId: string | null;
-  messages: ChatMessage[];
 }
 
 export interface OccupancyData {

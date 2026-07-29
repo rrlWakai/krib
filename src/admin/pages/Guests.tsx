@@ -1,29 +1,9 @@
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Search,
-  X,
-  Mail,
-  Phone,
-  CalendarDays,
-  User,
-} from 'lucide-react'
+import { Search, X, Mail, Phone, CalendarDays } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { guests, reservations, formatCurrency } from '../data/mockData'
 import { cn } from '../../lib/cn'
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04 },
-  },
-}
-
-const item = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const } },
-}
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -74,145 +54,105 @@ export default function Guests() {
     : []
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
-      <motion.div variants={item}>
-        <PageHeader title="Guests" subtitle="Your guest directory" />
-      </motion.div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <PageHeader title="Guests" subtitle="Client directory" />
 
-      <motion.div variants={item} className="mb-6">
-        <div className="relative max-w-md">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-          />
+      <div className="mb-6 max-w-md">
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#757575]" />
           <input
             type="text"
-            placeholder="Search guests by name, email, or phone..."
+            placeholder="Search by name, email, or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-[12px] border border-outline-variant bg-white py-2.5 pl-10 pr-4 font-body text-body-md text-on-surface placeholder:text-on-surface-variant/60 shadow-card transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full rounded-lg border border-[#ECECEC] bg-white py-2.5 pl-9 pr-4 font-body text-[13px] text-[#0A1F44] placeholder:text-[#757575] transition-colors focus:border-[#0A1F44] outline-none"
           />
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item} className="hidden md:block overflow-hidden rounded-[16px] bg-white shadow-card">
+      <div className="hidden md:block border border-[#ECECEC] rounded-lg bg-white overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-outline-variant">
-                <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Name
-                </th>
-                <th className="hidden lg:table-cell px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Email
-                </th>
-                <th className="px-6 py-3.5 text-left font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Phone
-                </th>
-                <th className="px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Total Stays
-                </th>
-                <th className="px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Total Spending
-                </th>
-                <th className="hidden lg:table-cell px-6 py-3.5 text-right font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Last Visit
-                </th>
+              <tr className="border-b border-[#ECECEC]">
+                <th className="px-5 py-3.5 text-left font-body text-[11px] uppercase tracking-[0.08em] text-[#757575] font-medium">Name</th>
+                <th className="hidden lg:table-cell px-5 py-3.5 text-left font-body text-[11px] uppercase tracking-[0.08em] text-[#757575] font-medium">Email</th>
+                <th className="px-5 py-3.5 text-left font-body text-[11px] uppercase tracking-[0.08em] text-[#757575] font-medium">Phone</th>
+                <th className="px-5 py-3.5 text-right font-body text-[11px] uppercase tracking-[0.08em] text-[#757575] font-medium">Stays</th>
+                <th className="px-5 py-3.5 text-right font-body text-[11px] uppercase tracking-[0.08em] text-[#757575] font-medium">Spending</th>
+                <th className="hidden lg:table-cell px-5 py-3.5 text-right font-body text-[11px] uppercase tracking-[0.08em] text-[#757575] font-medium">Last Visit</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-high">
-                        <User size={24} className="text-on-surface-variant" />
-                      </div>
-                      <p className="font-body text-body-md text-on-surface-variant">
-                        No guests found
-                      </p>
-                    </div>
+                  <td colSpan={6} className="px-5 py-16 text-center">
+                    <p className="font-body text-[14px] text-[#757575]">No guests found</p>
                   </td>
                 </tr>
               ) : (
-                filtered.map((guest, i) => (
+                filtered.map((guest) => (
                   <tr
                     key={guest.id}
                     onClick={() => setSelectedGuestId(guest.id)}
-                    className={cn(
-                      'cursor-pointer border-b border-outline-variant/50 transition-colors hover:bg-surface-container-low',
-                      i % 2 === 1 && 'bg-surface-container-low/50'
-                    )}
+                    className="cursor-pointer border-b border-[#ECECEC]/50 transition-colors hover:bg-[#f0f2f7]/50"
                   >
-                    <td className="px-6 py-3.5">
+                    <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-container font-body text-body-sm font-medium text-primary">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f0f2f7] font-body text-[12px] font-medium text-[#0A1F44]">
                           {getInitials(guest.name)}
                         </div>
-                        <span className="font-body text-body-md font-medium text-on-surface">
-                          {guest.name}
-                        </span>
+                        <span className="font-body text-[14px] font-medium text-[#0A1F44]">{guest.name}</span>
                       </div>
                     </td>
-                    <td className="hidden lg:table-cell px-6 py-3.5 font-body text-body-md text-on-surface-variant">
-                      {guest.email}
-                    </td>
-                    <td className="px-6 py-3.5 font-body text-body-md text-on-surface-variant">
-                      {guest.phone}
-                    </td>
-                    <td className="px-6 py-3.5 text-right font-body text-body-md font-medium text-on-surface">
-                      {guest.totalStays}
-                    </td>
-                    <td className="px-6 py-3.5 text-right font-body text-body-md font-medium text-on-surface">
-                      {formatCurrencyShort(guest.totalSpending)}
-                    </td>
-                    <td className="hidden lg:table-cell px-6 py-3.5 text-right font-body text-body-sm text-on-surface-variant">
-                      {formatDate(guest.lastVisit)}
-                    </td>
+                    <td className="hidden lg:table-cell px-5 py-3.5 font-body text-[13px] text-[#757575]">{guest.email}</td>
+                    <td className="px-5 py-3.5 font-body text-[13px] text-[#757575]">{guest.phone}</td>
+                    <td className="px-5 py-3.5 text-right font-body text-[14px] font-medium text-[#0A1F44]">{guest.totalStays}</td>
+                    <td className="px-5 py-3.5 text-right font-body text-[14px] font-medium text-[#0A1F44]">{formatCurrencyShort(guest.totalSpending)}</td>
+                    <td className="hidden lg:table-cell px-5 py-3.5 text-right font-body text-[12px] text-[#757575]">{formatDate(guest.lastVisit)}</td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item} className="md:hidden">
+      <div className="md:hidden">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-high">
-              <User size={24} className="text-on-surface-variant" />
-            </div>
-            <p className="font-body text-body-md text-on-surface-variant">
-              No guests found
-            </p>
+          <div className="py-16 text-center">
+            <p className="font-body text-[14px] text-[#757575]">No guests found</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {filtered.map((guest) => (
               <div
                 key={guest.id}
                 onClick={() => setSelectedGuestId(guest.id)}
-                className="rounded-[12px] border border-outline-variant/50 bg-white p-4 shadow-sm"
+                className="rounded-lg border border-[#ECECEC] bg-white p-4"
               >
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container font-body text-body-sm font-medium text-primary">
+                <div className="mb-2 flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f0f2f7] font-body text-[12px] font-medium text-[#0A1F44]">
                     {getInitials(guest.name)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-on-surface">{guest.name}</p>
-                    <p className="truncate text-sm text-on-surface-variant">{guest.email}</p>
+                    <p className="truncate font-body text-[14px] font-medium text-[#0A1F44]">{guest.name}</p>
+                    <p className="truncate font-body text-[12px] text-[#757575]">{guest.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-on-surface-variant">{guest.totalStays} stays</span>
-                  <span className="font-medium">{formatCurrencyShort(guest.totalSpending)}</span>
+                <div className="flex items-center justify-between text-[12px]">
+                  <span className="text-[#757575]">{guest.totalStays} stays</span>
+                  <span className="font-medium text-[#0A1F44]">{formatCurrencyShort(guest.totalSpending)}</span>
                 </div>
               </div>
             ))}
           </div>
         )}
-      </motion.div>
+      </div>
 
       <AnimatePresence>
         {selectedGuest && (
@@ -221,130 +161,77 @@ export default function Guests() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.18 }}
               onClick={() => setSelectedGuestId(null)}
-              className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+              className="fixed inset-0 z-40 bg-black/10"
             />
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 top-0 z-50 w-full overflow-y-auto bg-white shadow-2xl md:inset-x-auto md:right-0 md:max-w-md rounded-t-[20px] md:rounded-none"
+              transition={{ type: 'spring', damping: 26, stiffness: 240 }}
+              data-lenis-prevent
+              className="fixed inset-y-0 right-0 z-50 w-full max-w-[420px] overflow-y-auto border-l border-[#ECECEC] bg-white"
             >
-              <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-on-surface-variant/30 md:hidden" />
+              <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-[#ECECEC] md:hidden" />
               <div className="flex flex-col p-6">
                 <div className="mb-6 flex items-center justify-between">
-                  <h2 className="font-display text-title-lg font-medium text-on-surface">
-                    Guest Profile
-                  </h2>
-                  <button
-                    onClick={() => setSelectedGuestId(null)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-surface-container-low md:h-10 md:w-10"
-                  >
-                    <X size={20} className="text-on-surface" />
+                  <h2 className="font-display text-[20px] font-medium text-[#0A1F44]">Guest Profile</h2>
+                  <button onClick={() => setSelectedGuestId(null)} className="flex h-9 w-9 items-center justify-center rounded-full text-[#757575] transition-colors hover:bg-[#f0f2f7]">
+                    <X size={16} />
                   </button>
                 </div>
 
                 <div className="mb-6 flex flex-col items-center gap-3">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-container font-display text-headline-md font-medium text-primary">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f2f7] font-display text-[22px] font-medium text-[#0A1F44]">
                     {getInitials(selectedGuest.name)}
                   </div>
-                  <h3 className="font-display text-title-lg font-medium text-on-surface">
-                    {selectedGuest.name}
-                  </h3>
+                  <h3 className="font-display text-[18px] font-medium text-[#0A1F44]">{selectedGuest.name}</h3>
                 </div>
 
-                <div className="mb-6 rounded-[12px] bg-surface-container-low p-4">
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <Mail size={18} className="shrink-0 text-primary" />
-                      <span className="font-body text-body-md text-on-surface">
-                        {selectedGuest.email}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Phone size={18} className="shrink-0 text-primary" />
-                      <span className="font-body text-body-md text-on-surface">
-                        {selectedGuest.phone}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CalendarDays size={18} className="shrink-0 text-primary" />
-                      <span className="font-body text-body-md text-on-surface">
-                        Guest since {formatDate(selectedGuest.createdAt)}
-                      </span>
-                    </div>
+                <div className="mb-6 space-y-2.5 border-b border-[#ECECEC] pb-6">
+                  <div className="flex items-center gap-3">
+                    <Mail size={14} className="shrink-0 text-[#757575]" />
+                    <span className="font-body text-[13px] text-[#0A1F44]">{selectedGuest.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone size={14} className="shrink-0 text-[#757575]" />
+                    <span className="font-body text-[13px] text-[#0A1F44]">{selectedGuest.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CalendarDays size={14} className="shrink-0 text-[#757575]" />
+                    <span className="font-body text-[13px] text-[#0A1F44]">Guest since {formatDate(selectedGuest.createdAt)}</span>
                   </div>
                 </div>
 
-                <div className="mb-6 rounded-[12px] bg-surface-container-low p-4">
-                  <h4 className="mb-3 font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                    Spending Summary
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col">
-                      <span className="font-body text-body-sm text-on-surface-variant">
-                        Total Stays
-                      </span>
-                      <span className="font-display text-headline-md font-medium text-on-surface">
-                        {selectedGuest.totalStays}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-body text-body-sm text-on-surface-variant">
-                        Total Spending
-                      </span>
-                      <span className="font-display text-headline-md font-medium text-on-surface">
-                        {formatCurrency(selectedGuest.totalSpending)}
-                      </span>
-                    </div>
+                <div className="mb-6 grid grid-cols-2 gap-4 border-b border-[#ECECEC] pb-6">
+                  <div>
+                    <p className="font-body text-[11px] uppercase tracking-[0.08em] text-[#757575]">Total Stays</p>
+                    <p className="mt-1 font-display text-[24px] font-medium text-[#0A1F44]">{selectedGuest.totalStays}</p>
+                  </div>
+                  <div>
+                    <p className="font-body text-[11px] uppercase tracking-[0.08em] text-[#757575]">Total Spending</p>
+                    <p className="mt-1 font-display text-[24px] font-medium text-[#0A1F44]">{formatCurrency(selectedGuest.totalSpending)}</p>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="mb-3 font-body text-label-caps uppercase tracking-widest text-on-surface-variant">
-                    Reservation History
-                  </h4>
+                  <h4 className="mb-3 font-body text-[11px] uppercase tracking-[0.08em] text-[#757575]">Reservation History</h4>
                   {selectedGuestReservations.length === 0 ? (
-                    <p className="font-body text-body-md text-on-surface-variant">
-                      No reservations found
-                    </p>
+                    <p className="font-body text-[13px] text-[#757575]">No reservations found</p>
                   ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2">
                       {selectedGuestReservations.map((res) => (
-                        <div
-                          key={res.id}
-                          className="rounded-[12px] border border-outline-variant/50 p-4"
-                        >
-                          <div className="mb-2 flex items-center justify-between">
-                            <span className="font-body text-body-sm font-medium text-primary">
-                              {res.id}
-                            </span>
-                            <span
-                              className={cn(
-                                'inline-flex items-center rounded-full px-2 py-0.5 font-body text-[11px] font-medium',
-                                res.status === 'confirmed'
-                                  ? 'bg-tertiary-container text-on-tertiary-container'
-                                  : res.status === 'completed'
-                                  ? 'bg-surface-container-high text-on-surface-variant'
-                                  : res.status === 'cancelled' || res.status === 'declined'
-                                  ? 'bg-error-container text-on-error-container'
-                                  : 'bg-primary-container text-on-primary-container'
-                              )}
-                            >
-                              {res.status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                        <div key={res.id} className="rounded-lg border border-[#ECECEC] p-4">
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="font-body text-[11px] text-[#757575]">{res.id}</span>
+                            <span className="font-body text-[11px] text-[#0A1F44] capitalize">
+                              {res.status.replace(/_/g, ' ')}
                             </span>
                           </div>
-                          <p className="mb-1 font-body text-body-md font-medium text-on-surface">
-                            {res.villaName}
-                          </p>
-                          <p className="font-body text-body-sm text-on-surface-variant">
-                            {formatDate(res.checkIn)} – {formatDate(res.checkOut)}
-                          </p>
-                          <p className="mt-1 font-body text-body-sm font-medium text-on-surface">
-                            {formatCurrency(res.totalAmount)}
-                          </p>
+                          <p className="mb-1 font-body text-[13px] font-medium text-[#0A1F44]">{res.villaName}</p>
+                          <p className="font-body text-[12px] text-[#757575]">{formatDate(res.checkIn)} – {formatDate(res.checkOut)}</p>
+                          <p className="mt-1 font-body text-[13px] font-medium text-[#0A1F44]">{formatCurrency(res.totalAmount)}</p>
                         </div>
                       ))}
                     </div>

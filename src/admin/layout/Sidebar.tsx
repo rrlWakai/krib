@@ -7,8 +7,8 @@ import {
   Users,
   Tag,
   Building2,
+  Image,
   MessageSquare,
-  BarChart3,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -24,8 +24,8 @@ const iconMap: Record<string, React.FC<{ size?: number; className?: string }>> =
   Users,
   Tag,
   Building2,
+  Image,
   MessageSquare,
-  BarChart3,
   Settings,
 }
 
@@ -48,32 +48,30 @@ function SidebarContent({
 }) {
   return (
     <div className="flex h-full flex-col">
-      {/* Brand */}
       <div
         className={cn(
-          'flex h-16 shrink-0 items-center border-b border-outline-variant',
-          collapsed ? 'justify-center px-3' : 'px-5'
+          'flex h-16 shrink-0 items-center border-b border-[#ECECEC]',
+          collapsed ? 'justify-center px-3' : 'px-6'
         )}
       >
         {collapsed ? (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-display text-body-md font-semibold text-on-primary">
+          <div className="flex h-9 w-9 items-center justify-center font-display text-[17px] font-semibold text-[#0A1F44]">
             K
           </div>
         ) : (
           <div className="flex flex-col leading-none">
-            <span className="font-display text-headline-sm font-medium text-on-surface">
+            <span className="font-display text-[18px] font-semibold text-[#0A1F44]">
               KRiB
             </span>
-            <span className="font-body text-body-sm text-on-surface-variant">
+            <span className="font-body text-[11px] text-[#757575]">
               Control Center
             </span>
           </div>
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="flex flex-col gap-1">
+      <nav className="flex-1 overflow-y-auto px-3 py-5">
+        <ul className="flex flex-col gap-0.5">
           {NAV_ITEMS.map((item) => {
             const Icon = iconMap[item.icon]
             const isDashboard = item.path === '/admin'
@@ -86,32 +84,32 @@ function SidebarContent({
                   onClick={isMobile ? onToggle : undefined}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 rounded-[12px] px-3 py-3 font-body text-body-md transition-all duration-200',
+                      'relative flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-[14px] transition-all duration-200',
                       isActive
-                        ? 'bg-primary font-semibold text-on-primary'
-                        : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface',
+                        ? 'text-[#0A1F44] font-medium'
+                        : 'text-[#757575] hover:text-[#0A1F44] hover:bg-[#f0f2f7]',
                       collapsed && 'justify-center px-0'
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
+                      {isActive && !collapsed && (
+                        <motion.span
+                          layoutId="sidebar-indicator"
+                          className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-[#C9A227]"
+                          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                        />
+                      )}
                       <Icon
-                        size={20}
+                        size={18}
                         className={cn(
-                          'shrink-0',
-                          isActive && 'text-on-primary'
+                          'shrink-0 transition-colors',
+                          isActive ? 'text-[#C9A227]' : 'text-[#757575]'
                         )}
                       />
                       {!collapsed && (
-                        <motion.span
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: 'auto' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          className="truncate"
-                        >
-                          {item.label}
-                        </motion.span>
+                        <span className="truncate">{item.label}</span>
                       )}
                     </>
                   )}
@@ -122,21 +120,20 @@ function SidebarContent({
         </ul>
       </nav>
 
-      {/* Collapse toggle (desktop/laptop only) */}
       {!isMobile && (
-        <div className="border-t border-outline-variant px-3 py-3">
+        <div className="border-t border-[#ECECEC] px-3 py-3">
           <button
             onClick={onToggle}
             className={cn(
-              'flex w-full items-center gap-3 rounded-[12px] px-3 py-3 font-body text-body-md text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high hover:text-on-surface',
+              'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-[14px] text-[#757575] transition-all duration-200 hover:text-[#0A1F44] hover:bg-[#f0f2f7]',
               collapsed && 'justify-center px-0'
             )}
           >
             {collapsed ? (
-              <ChevronRight size={20} className="shrink-0" />
+              <ChevronRight size={18} />
             ) : (
               <>
-                <ChevronLeft size={20} className="shrink-0" />
+                <ChevronLeft size={18} />
                 <span>Collapse</span>
               </>
             )}
@@ -163,22 +160,23 @@ export function Sidebar({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.18 }}
               onClick={onClose}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
             />
             <motion.aside
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed left-0 top-0 z-50 flex h-screen w-[280px] flex-col border-r border-outline-variant bg-white shadow-2xl"
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              className="fixed left-0 top-0 z-50 flex h-screen w-[280px] flex-col border-r border-[#ECECEC] bg-white"
             >
               <button
                 onClick={onClose}
-                className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high lg:hidden"
+                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-[#757575] transition-colors hover:bg-[#f0f2f7]"
+                aria-label="Close sidebar"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
               <SidebarContent
                 collapsed={false}
@@ -197,7 +195,7 @@ export function Sidebar({
       initial={false}
       animate={{ width: collapsed ? 72 : 240 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-outline-variant bg-white lg:flex"
+      className="fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-[#ECECEC] bg-white lg:flex"
     >
       <SidebarContent
         collapsed={collapsed}

@@ -49,11 +49,14 @@ const AdminDiscounts = lazy(() =>
 const AdminVillas = lazy(() =>
   import("./admin/pages/Villas").then((m) => ({ default: m.default })),
 );
-const AdminMessages = lazy(() =>
-  import("./admin/pages/Messages").then((m) => ({ default: m.default })),
-);
 const AdminReports = lazy(() =>
   import("./admin/pages/Reports").then((m) => ({ default: m.default })),
+);
+const AdminGallery = lazy(() =>
+  import("./admin/pages/Gallery").then((m) => ({ default: m.default })),
+);
+const AdminSmsActivity = lazy(() =>
+  import("./admin/pages/SmsActivity").then((m) => ({ default: m.default })),
 );
 const AdminSettings = lazy(() =>
   import("./admin/pages/Settings").then((m) => ({ default: m.default })),
@@ -134,7 +137,7 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col min-h-screen"
       >
-        <Navbar />
+        {!location.pathname.startsWith('/admin') && <Navbar />}
         <div className="flex-grow">
           <AnimatePresence mode="wait">
             <Suspense fallback={<PageLoader />}>
@@ -155,8 +158,9 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                   <Route path="guests" element={<AdminGuests />} />
                   <Route path="discounts" element={<AdminDiscounts />} />
                   <Route path="villas" element={<AdminVillas />} />
-                  <Route path="messages" element={<AdminMessages />} />
                   <Route path="reports" element={<AdminReports />} />
+                  <Route path="gallery" element={<AdminGallery />} />
+                  <Route path="sms-activity" element={<AdminSmsActivity />} />
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>
 
@@ -165,7 +169,7 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
             </Suspense>
           </AnimatePresence>
         </div>
-        <Footer />
+        {!location.pathname.startsWith('/admin') && <Footer />}
       </motion.div>
     </>
   );

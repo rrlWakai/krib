@@ -1,25 +1,25 @@
-import { ArrowRight, Users, Clock, Waves, Snowflake } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { Reveal } from '../../ui/Reveal'
-import { villas } from '../../../lib/data'
-import type { LucideIcon } from 'lucide-react'
+import { ArrowRight, Users, Clock, Waves, Snowflake } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Reveal } from "../../ui/Reveal";
+import { villas } from "../../../lib/data";
+import type { LucideIcon } from "lucide-react";
 
 const quickInfoIcons: Record<string, LucideIcon> = {
   users: Users,
   clock: Clock,
   pool: Waves,
   ac: Snowflake,
-}
+};
 
 export function ChooseYourStay() {
-  const [villa1, villa2] = villas
+  const [villa1, villa2] = villas;
 
   const villaQuickInfo = [
-    { icon: 'users', label: (n: number) => `Up to ${n} Guests` },
-    { icon: 'clock', label: () => '21-Hour Stay' },
-    { icon: 'pool', label: () => 'Private Swimming Pool' },
-    { icon: 'ac', label: () => 'Fully Air-conditioned' },
-  ]
+    { icon: "users", label: (n: number) => `Up to ${n} Guests` },
+    { icon: "clock", label: () => "21-Hour Stay" },
+    { icon: "pool", label: () => "Private Swimming Pool" },
+    { icon: "ac", label: () => "Fully Air-conditioned" },
+  ];
 
   return (
     <section className="py-section-gap px-margin-desktop max-md:px-margin-mobile max-w-container-max mx-auto">
@@ -33,8 +33,8 @@ export function ChooseYourStay() {
           </h2>
           <p className="font-body text-body-lg text-on-surface-variant">
             Whether you are planning an intimate family getaway or a grand
-            celebration, each villa offers its own personality. The question
-            is not which is better — but which feels like yours.
+            celebration, each villa offers its own personality. The question is
+            not which is better — but which feels like yours.
           </p>
         </div>
       </Reveal>
@@ -43,13 +43,13 @@ export function ChooseYourStay() {
         <Reveal delay={100}>
           <div className="group relative">
             <Link to={`/${villa1.slug}`} className="block mb-8">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-surface-container">
+              <div className="relative aspect-4/5 overflow-hidden rounded-sm bg-surface-container">
                 <img
                   className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
                   src={villa1.image}
                   alt={villa1.name}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               </div>
             </Link>
             <div className="max-w-lg">
@@ -63,20 +63,27 @@ export function ChooseYourStay() {
                 The Original Family Retreat
               </p>
               <p className="font-body text-body-lg text-on-surface-variant mb-6 leading-relaxed">
-                Perfect for intimate family gatherings, birthdays, and peaceful weekend escapes.
+                Perfect for intimate family gatherings, birthdays, and peaceful
+                weekend escapes.
               </p>
 
               <div className="grid grid-cols-2 gap-3 mb-10">
                 {villaQuickInfo.map((info) => {
-                  const Icon = quickInfoIcons[info.icon]
+                  const Icon = quickInfoIcons[info.icon];
                   return (
-                    <div key={info.icon} className="flex items-center gap-3 bg-surface-container-low rounded-default px-4 py-3">
-                      <Icon size={18} className="text-on-surface-variant shrink-0" />
+                    <div
+                      key={info.icon}
+                      className="flex items-center gap-3 bg-surface-container-low rounded-default px-4 py-3"
+                    >
+                      <Icon
+                        size={18}
+                        className="text-on-surface-variant shrink-0"
+                      />
                       <span className="font-body text-body-md text-on-surface text-sm">
                         {info.label(villa1.maxGuests)}
                       </span>
                     </div>
-                  )
+                  );
                 })}
               </div>
 
@@ -97,13 +104,13 @@ export function ChooseYourStay() {
         <Reveal delay={250}>
           <div className="group relative md:mt-32">
             <Link to={`/${villa2.slug}`} className="block mb-8">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-surface-container">
+              <div className="relative aspect-4/5 overflow-hidden rounded-sm bg-surface-container">
                 <img
                   className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
                   src={villa2.image}
                   alt={villa2.name}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               </div>
             </Link>
             <div className="max-w-lg">
@@ -117,20 +124,27 @@ export function ChooseYourStay() {
                 The Signature Celebration Villa
               </p>
               <p className="font-body text-body-lg text-on-surface-variant mb-6 leading-relaxed">
-                Designed for larger celebrations, reunions, and unforgettable group experiences.
+                Designed for larger celebrations, reunions, and unforgettable
+                group experiences.
               </p>
 
               <div className="grid grid-cols-2 gap-3 mb-10">
                 {villaQuickInfo.map((info) => {
-                  const Icon = quickInfoIcons[info.icon]
+                  const Icon = quickInfoIcons[info.icon];
                   return (
-                    <div key={info.icon} className="flex items-center gap-3 bg-surface-container-low rounded-default px-4 py-3">
-                      <Icon size={18} className="text-on-surface-variant shrink-0" />
+                    <div
+                      key={info.icon}
+                      className="flex items-center gap-3 bg-surface-container-low rounded-default px-4 py-3"
+                    >
+                      <Icon
+                        size={18}
+                        className="text-on-surface-variant shrink-0"
+                      />
                       <span className="font-body text-body-md text-on-surface text-sm">
                         {info.label(villa2.maxGuests)}
                       </span>
                     </div>
-                  )
+                  );
                 })}
               </div>
 
@@ -149,5 +163,5 @@ export function ChooseYourStay() {
         </Reveal>
       </div>
     </section>
-  )
+  );
 }

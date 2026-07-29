@@ -146,6 +146,15 @@
   --color-inverse-on-surface: #f0f0ee;
   --color-inverse-primary: #a8c8ee;
 
+  /* Admin Navy + Gold palette */
+  --color-admin-navy: #0A1F44;
+  --color-admin-navy-light: #f0f2f7;
+  --color-admin-gold: #C9A227;
+  --color-admin-gold-light: #faf6ed;
+  --color-admin-surface: #FAFAFA;
+  --color-admin-border: #ECECEC;
+  --color-admin-muted: #757575;
+
   /* Error */
   --color-error: #d32f2f;
   --color-on-error: #ffffff;

@@ -1,26 +1,26 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { fadeUp } from '../../lib/animations'
-import { GuestSelector } from './GuestSelector'
-import type { GuestCount } from './GuestSelector'
-import { cn } from '../../lib/cn'
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { fadeUp } from "../../lib/animations";
+import { GuestSelector } from "./GuestSelector";
+import type { GuestCount } from "./GuestSelector";
+import { cn } from "../../lib/cn";
 
 interface StickyReservationCardProps {
-  price: string
-  rateType: string
-  villaName: string
-  maxGuests: number
-  partyFeeActive?: boolean
-  onPartyFeeToggle?: (active: boolean) => void
-  onReserve?: () => void
+  price: string;
+  rateType: string;
+  villaName: string;
+  maxGuests: number;
+  partyFeeActive?: boolean;
+  onPartyFeeToggle?: (active: boolean) => void;
+  onReserve?: () => void;
 }
 
 function parsePrice(priceStr: string): number {
-  return parseInt(priceStr.replace(/[^0-9]/g, ''), 10)
+  return parseInt(priceStr.replace(/[^0-9]/g, ""), 10);
 }
 
 function formatPrice(amount: number): string {
-  return '₱' + amount.toLocaleString('en-PH')
+  return "₱" + amount.toLocaleString("en-PH");
 }
 
 export function StickyReservationCard({
@@ -32,17 +32,22 @@ export function StickyReservationCard({
   onPartyFeeToggle,
   onReserve,
 }: StickyReservationCardProps) {
-  const [guests, setGuests] = useState<GuestCount>({ adults: 2, children: 0, infants: 0, pets: 0 })
+  const [guests, setGuests] = useState<GuestCount>({
+    adults: 2,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
 
-  const basePrice = parsePrice(price)
-  const total = partyFeeActive ? basePrice + 5000 : basePrice
+  const basePrice = parsePrice(price);
+  const total = partyFeeActive ? basePrice + 5000 : basePrice;
 
   return (
     <motion.div
       variants={fadeUp}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: '-50px' }}
+      viewport={{ once: true, margin: "-50px" }}
       className="bg-white border border-outline-variant rounded-default shadow-elevated sticky top-28"
     >
       <div className="p-6">
@@ -56,7 +61,9 @@ export function StickyReservationCard({
           >
             {formatPrice(total)}
           </motion.span>
-          <span className="font-body text-body-md text-on-surface-variant">{rateType}</span>
+          <span className="font-body text-body-md text-on-surface-variant">
+            {rateType}
+          </span>
         </div>
 
         <div className="mt-4 space-y-4">
@@ -65,13 +72,17 @@ export function StickyReservationCard({
               <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1">
                 Arrival date
               </label>
-              <span className="font-body text-body-md text-on-surface">Select date</span>
+              <span className="font-body text-body-md text-on-surface">
+                Select date
+              </span>
             </div>
             <div className="p-4 bg-surface-container/50">
               <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1">
                 Departure (auto)
               </label>
-              <span className="font-body text-body-md text-primary font-medium">21 hours after arrival</span>
+              <span className="font-body text-body-md text-primary font-medium">
+                21 hours after arrival
+              </span>
             </div>
             <div className="p-4 relative">
               <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1">
@@ -88,7 +99,8 @@ export function StickyReservationCard({
 
           <button
             onClick={onReserve}
-            className="w-full bg-primary text-on-primary py-4 px-6 rounded-full font-body text-label-caps uppercase tracking-widest shadow-button hover:bg-primary-hover hover:shadow-elevated transition-all duration-300 cursor-pointer">
+            className="w-full bg-primary text-on-primary py-4 px-6 rounded-full font-body text-label-caps uppercase tracking-widest shadow-button hover:bg-primary-hover hover:shadow-elevated transition-all duration-300 cursor-pointer"
+          >
             Request Reservation
           </button>
 
@@ -100,15 +112,9 @@ export function StickyReservationCard({
 
       <div className="border-t border-outline-variant p-6 space-y-3">
         <div className="flex justify-between items-center">
-          <span className="font-body text-body-md text-on-surface-variant">{villaName}</span>
-        </div>
-        <div className="flex justify-between items-center text-sm">
-          <span className="font-body text-body-md text-on-surface-variant">Cleaning fee</span>
-          <span className="font-body text-body-md text-on-surface">Included</span>
-        </div>
-        <div className="flex justify-between items-center text-sm">
-          <span className="font-body text-body-md text-on-surface-variant">Security deposit</span>
-          <span className="font-body text-body-md text-on-surface">Refundable</span>
+          <span className="font-body text-body-md text-on-surface-variant">
+            {villaName}
+          </span>
         </div>
 
         {/* Party Fee Toggle */}
@@ -120,8 +126,8 @@ export function StickyReservationCard({
                   type="button"
                   onClick={() => onPartyFeeToggle(!partyFeeActive)}
                   className={cn(
-                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 cursor-pointer',
-                    partyFeeActive ? 'bg-primary' : 'bg-outline/50',
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 cursor-pointer",
+                    partyFeeActive ? "bg-primary" : "bg-outline/50",
                   )}
                   role="switch"
                   aria-checked={partyFeeActive}
@@ -129,10 +135,10 @@ export function StickyReservationCard({
                 >
                   <motion.span
                     layout
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     className={cn(
-                      'inline-block h-4 w-4 rounded-full bg-white shadow-sm',
-                      partyFeeActive ? 'translate-x-5.5' : 'translate-x-1',
+                      "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
+                      partyFeeActive ? "translate-x-5.5" : "translate-x-1",
                     )}
                   />
                 </button>
@@ -141,18 +147,18 @@ export function StickyReservationCard({
                 </span>
               </div>
               <motion.span
-                key={partyFeeActive ? 'active' : 'inactive'}
+                key={partyFeeActive ? "active" : "inactive"}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="font-body text-body-md text-on-surface"
               >
-                {partyFeeActive ? formatPrice(5000) : '—'}
+                {partyFeeActive ? formatPrice(5000) : "—"}
               </motion.span>
             </div>
             {partyFeeActive && (
               <motion.p
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="font-body text-[12px] text-secondary mt-2 ml-12"
               >
@@ -163,5 +169,5 @@ export function StickyReservationCard({
         )}
       </div>
     </motion.div>
-  )
+  );
 }
