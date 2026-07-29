@@ -10,11 +10,8 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
-import {
-  reservations,
-  formatCurrency,
-} from '../data/mockData'
-import type { ReservationStatus } from '../types'
+import { formatCurrency } from '../data/mockData'
+import type { Reservation, ReservationStatus } from '../types'
 import { cn } from '../../lib/cn'
 
 function formatDate(dateStr: string) {
@@ -43,10 +40,10 @@ function getStatusIndex(status: ReservationStatus): number {
 }
 
 export default function ReservationDetail() {
-  const { id } = useParams<{ id: string }>()
+  const { id: _id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const reservation = reservations.find((r) => r.id === id)
+  const reservation = null as Reservation | null
 
   if (!reservation) {
     return (

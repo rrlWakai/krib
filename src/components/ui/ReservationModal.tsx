@@ -16,7 +16,7 @@ import {
 import { GuestSelector } from "./GuestSelector";
 import type { GuestCount } from "./GuestSelector";
 import type { VillaPolicy } from "../../types";
-import { generateReservationId } from "../../lib/reservationData";
+
 
 interface PropertyInfo {
   id: string;
@@ -184,7 +184,7 @@ export function ReservationModal({
 
   function handleSubmit() {
     if (!validate()) return;
-    const newId = generateReservationId();
+    const newId = `KRIB-${Date.now().toString(36).toUpperCase()}`;
     setReservationId(newId);
 
     const reservationData = {

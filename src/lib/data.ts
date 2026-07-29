@@ -9,7 +9,6 @@ import type {
   NearbyAttraction,
   Amenity,
   VillaAvailability,
-  AvailabilityStatus,
   CalendarDay,
 } from '../types'
 
@@ -710,18 +709,7 @@ export function generateMockAvailability(villaId: string): VillaAvailability[] {
 
     for (let d = 1; d <= daysInMonth; d++) {
       const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-      const dayOfWeek = new Date(year, month, d).getDay()
-
-      let status: AvailabilityStatus = 'available'
-      const rand = Math.random()
-      if (rand < 0.2) status = 'booked'
-      else if (rand < 0.35) status = 'limited'
-
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        if (Math.random() < 0.4) status = 'booked'
-      }
-
-      days.push({ date, status })
+      days.push({ date, status: 'available' })
     }
 
     months.push({ villaId, year, month: month + 1, days })

@@ -52,9 +52,6 @@ const AdminVillas = lazy(() =>
 const AdminReports = lazy(() =>
   import("./admin/pages/Reports").then((m) => ({ default: m.default })),
 );
-const AdminGallery = lazy(() =>
-  import("./admin/pages/Gallery").then((m) => ({ default: m.default })),
-);
 const AdminSmsActivity = lazy(() =>
   import("./admin/pages/SmsActivity").then((m) => ({ default: m.default })),
 );
@@ -159,7 +156,6 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                   <Route path="discounts" element={<AdminDiscounts />} />
                   <Route path="villas" element={<AdminVillas />} />
                   <Route path="reports" element={<AdminReports />} />
-                  <Route path="gallery" element={<AdminGallery />} />
                   <Route path="sms-activity" element={<AdminSmsActivity />} />
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>

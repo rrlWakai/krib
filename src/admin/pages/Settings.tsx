@@ -14,7 +14,6 @@ import {
   Copy,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
-import { settings as initialSettings } from '../data/mockData'
 import type { Settings, NotificationSettings } from '../types'
 import { cn } from '../../lib/cn'
 
@@ -83,7 +82,32 @@ function InfoRow({
 }
 
 export default function SettingsPage() {
-  const [settingsData, setSettingsData] = useState<Settings>(initialSettings)
+  const defaultSettings: Settings = {
+    businessInfo: {
+      name: 'KRiB Beverly Place',
+      tagline: 'Your luxury home away from home in Subic',
+      address: 'Beverly Place, Phase 3',
+      city: 'Subic',
+      province: 'Zambales',
+      zipCode: '2209',
+    },
+    contactDetails: {
+      phone: '+63 917 123 4567',
+      email: 'hello@kribbeverlyplace.com',
+      facebook: 'facebook.com/kribbeverlyplace',
+      instagram: 'instagram.com/kribbeverlyplace',
+      website: 'kribbeverlyplace.com',
+    },
+    notifications: {
+      emailOnReservation: true,
+      emailOnPayment: true,
+      emailOnCancellation: true,
+      smsOnReservation: true,
+      smsOnPayment: true,
+      dailyReport: false,
+    },
+  }
+  const [settingsData, setSettingsData] = useState<Settings>(defaultSettings)
   const [copied, setCopied] = useState<string | null>(null)
 
   function toggleNotification(key: keyof NotificationSettings) {

@@ -12,9 +12,8 @@ import {
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import { discounts as initialDiscounts, villas } from '../data/mockData'
 import type { Discount, DiscountType } from '../types'
-import { cn } from '../../lib/cn'
+
 
 interface DiscountFormData {
   code: string
@@ -25,6 +24,11 @@ interface DiscountFormData {
   startDate: string
   endDate: string
 }
+
+const VILLA_OPTIONS: { id: string; name: string }[] = [
+  { id: 'krib-1', name: 'KRiB 1' },
+  { id: 'krib-2', name: 'KRiB 2' },
+]
 
 const emptyForm: DiscountFormData = {
   code: '',
@@ -37,7 +41,7 @@ const emptyForm: DiscountFormData = {
 }
 
 export default function Discounts() {
-  const [discountList, setDiscountList] = useState<Discount[]>(initialDiscounts)
+  const [discountList, setDiscountList] = useState<Discount[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<DiscountFormData>(emptyForm)
@@ -51,7 +55,7 @@ export default function Discounts() {
 
   function getVillaName(villaId: string) {
     if (villaId === 'all') return 'All Villas'
-    return villas.find((v) => v.id === villaId)?.name ?? villaId
+    return VILLA_OPTIONS.find((v) => v.id === villaId)?.name ?? villaId
   }
 
   function openCreateModal() {
@@ -137,7 +141,7 @@ export default function Discounts() {
               </tr>
             </thead>
             <tbody>
-              {filteredDiscounts.map((discount, i) => (
+              {filteredDiscounts.map((discount, _i) => (
                 <tr key={discount.id} className="border-b border-[#ECECEC]/50 transition-colors hover:bg-[#f0f2f7]/50">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2">
@@ -285,7 +289,7 @@ export default function Discounts() {
                     <select value={form.villaId} onChange={(e) => setForm((f) => ({ ...f, villaId: e.target.value }))}
                       className="w-full rounded-lg border border-[#ECECEC] px-4 py-2.5 font-body text-[13px] text-[#0A1F44] outline-none focus:border-[#0A1F44]">
                       <option value="all">All Villas</option>
-                      {villas.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+                      {VILLA_OPTIONS.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">

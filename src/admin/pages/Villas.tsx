@@ -2,9 +2,11 @@ import { motion } from 'framer-motion'
 import { Eye, MapPin, Bed } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import { villas, formatCurrency } from '../data/mockData'
+import { formatCurrency } from '../data/mockData'
 
 export default function Villas() {
+  const villas: any[] = []
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -59,7 +61,7 @@ export default function Villas() {
               </p>
 
               <div className="mb-4 flex flex-wrap gap-1.5">
-                {villa.amenities.slice(0, 4).map((amenity) => (
+                {villa.amenities.slice(0, 4).map((amenity: any) => (
                   <span
                     key={amenity}
                     className="inline-flex items-center rounded-md bg-[#FAFAFA] px-2.5 py-1 font-body text-[11px] text-[#757575]"
@@ -80,7 +82,7 @@ export default function Villas() {
                     Bedrooms
                   </p>
                   <div className="space-y-1.5">
-                    {villa.bedrooms.map((bedroom) => (
+                    {villa.bedrooms.map((bedroom: any) => (
                       <div key={bedroom.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Bed size={13} className="text-[#757575]" />

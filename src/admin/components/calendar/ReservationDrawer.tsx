@@ -2,15 +2,10 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
-  User,
-  Building2,
-  Calendar,
-  Clock,
   Users,
   Phone,
   Mail,
   CheckCircle2,
-  XCircle,
   Ban,
   LogIn,
   LogOut,
@@ -18,7 +13,7 @@ import {
 import type { Reservation, ReservationStatus } from '../../types'
 import { StatusBadge } from '../StatusBadge'
 import { formatCurrency } from '../../data/mockData'
-import { updateReservationStatus } from '../../services/calendarService'
+
 
 interface ReservationDrawerProps {
   reservation: Reservation | null
@@ -77,7 +72,6 @@ export default function ReservationDrawer({
     setUpdating(true)
     setFeedback(null)
     setTimeout(() => {
-      updateReservationStatus(reservation.id, status)
       setUpdating(false)
       setFeedback(
         `${reservation.guestName}'s reservation has been ${status}.`,

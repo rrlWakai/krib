@@ -18,7 +18,6 @@ import type { GuestCount } from "./GuestSelector";
 import { AvailabilityCalendar } from "./AvailabilityCalendar";
 import { TermsModal } from "./TermsModal";
 import { cn } from "../../lib/cn";
-import { generateReservationId } from "../../lib/reservationData";
 import { images } from "../../lib/images";
 
 interface PropertyInfo {
@@ -294,7 +293,7 @@ export function BookingExperience({
 
   const handleSubmit = () => {
     if (!validateStep(3)) return;
-    const newId = generateReservationId();
+    const newId = `KRIB-${Date.now().toString(36).toUpperCase()}`;
     setReservationId(newId);
     const reservationData = {
       id: newId,

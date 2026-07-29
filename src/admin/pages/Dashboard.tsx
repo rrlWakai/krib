@@ -1,16 +1,9 @@
-import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import {
-  reservations,
-  dashboardStats,
-  formatCurrency,
-  isToday,
-  getDaysUntil,
-} from '../data/mockData'
+import { formatCurrency, getDaysUntil } from '../data/mockData'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -29,45 +22,21 @@ function formatFullDate(dateStr: string) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const stats = dashboardStats
+  const stats = {
+    pendingReservations: 0,
+    todayCheckins: 0,
+    todayCheckouts: 0,
+    occupancyRate: 0,
+    confirmedUpcoming: 0,
+    recentlyApproved: 0,
+    totalGuests: 0,
+    totalReservations: 0,
+  }
 
-  const recentReservations = useMemo(
-    () =>
-      [...reservations]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5),
-    [],
-  )
-
-  const upcomingReservations = useMemo(
-    () =>
-      reservations
-        .filter(
-          (r) =>
-            r.status !== 'cancelled' &&
-            r.status !== 'declined' &&
-            r.status !== 'completed' &&
-            r.status !== 'expired',
-        )
-        .sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime())
-        .slice(0, 5),
-    [],
-  )
-
-  const todayCheckins = useMemo(
-    () =>
-      reservations.filter(
-        (r) =>
-          isToday(r.checkIn) &&
-          (r.status === 'confirmed' || r.status === 'payment_submitted'),
-      ),
-    [],
-  )
-
-  const todayCheckouts = useMemo(
-    () => reservations.filter((r) => isToday(r.checkOut) && r.status === 'completed'),
-    [],
-  )
+  const recentReservations: any[] = []
+  const upcomingReservations: any[] = []
+  const todayCheckins: any[] = []
+  const todayCheckouts: any[] = []
 
   return (
     <motion.div

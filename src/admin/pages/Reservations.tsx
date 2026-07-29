@@ -1,17 +1,12 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Search, ChevronRight } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import {
-  reservations,
-  formatCurrency,
-  RESERVATION_STATUSES,
-  getReservationStatusLabel,
-} from '../data/mockData'
+import { formatCurrency, RESERVATION_STATUSES, getReservationStatusLabel } from '../data/mockData'
 import type { ReservationStatus } from '../types'
-import { cn } from '../../lib/cn'
+
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -34,21 +29,8 @@ export default function Reservations() {
   const [villaFilter, setVillaFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const filtered = useMemo(() => {
-    return reservations.filter((r) => {
-      if (statusFilter !== 'all' && r.status !== statusFilter) return false
-      if (villaFilter !== 'all' && r.villaId !== villaFilter) return false
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        const matches =
-          r.guestName.toLowerCase().includes(q) ||
-          r.id.toLowerCase().includes(q) ||
-          r.guestEmail.toLowerCase().includes(q)
-        if (!matches) return false
-      }
-      return true
-    })
-  }, [statusFilter, villaFilter, searchQuery])
+  const filtered: any[] = []
+
 
   const activeCount = filtered.length
   const totalRevenue = filtered.reduce((sum, r) => sum + r.totalAmount, 0)

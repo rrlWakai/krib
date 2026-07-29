@@ -10,15 +10,10 @@ import { PageHeader } from '../components/PageHeader'
 import OccupancySummary from '../components/calendar/OccupancySummary'
 import ReservationDrawer from '../components/calendar/ReservationDrawer'
 import {
-  getReservationsForMonth,
-  getReservationsForWeek,
-  getReservationsForDay,
-  getOccupancySummary,
   formatDateStr,
   getDaysInMonth,
   getFirstDayOfMonth,
   formatMonthYear,
-  getInitials,
 } from '../services/calendarService'
 import type { Reservation, ReservationStatus } from '../types'
 import { StatusBadge } from '../components/StatusBadge'
@@ -57,6 +52,14 @@ export default function Calendar() {
   const [showFilters, setShowFilters] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
   const [drawerKey, setDrawerKey] = useState(0)
+
+  const getReservationsForMonth = useCallback((_year: number, _month: number): Reservation[] => [], [])
+  const getReservationsForWeek = useCallback((_date: Date): Reservation[] => [], [])
+  const getReservationsForDay = useCallback((_date: Date): Reservation[] => [], [])
+  const getOccupancySummary = useCallback((_date: Date) => ({
+    arrivals: [], departures: [], currentGuests: 0, pendingRequests: 0,
+    occupiedVillas: 0, availableVillas: 2, upcomingCheckins: 0,
+  }), [])
 
   const refreshDrawer = useCallback(() => setDrawerKey((k) => k + 1), [])
 
@@ -268,13 +271,11 @@ export default function Calendar() {
         <div className="px-5 py-4">
           {view === 'month' && (
             <MonthView
-              dates={monthDates}
-              year={currentYear}
-              month={currentMonth}
-              getReservations={getReservationsForDayInMonth}
-              isToday={isToday}
-              onReservationClick={handleReservationClick}
-            />
+                dates={monthDates}
+                getReservations={getReservationsForDayInMonth}
+                isToday={isToday}
+                onReservationClick={handleReservationClick}
+              />
           )}
           {view === 'week' && (
             <WeekView
@@ -328,10 +329,9 @@ export default function Calendar() {
 }
 
 function MonthView({
-  dates, year, month, getReservations, isToday, onReservationClick,
+  dates, getReservations, isToday, onReservationClick,
 }: {
   dates: (number | null)[]
-  year: number; month: number
   getReservations: (day: number) => Reservation[]
   isToday: (day: number) => boolean
   onReservationClick: (e: React.MouseEvent, r: Reservation) => void

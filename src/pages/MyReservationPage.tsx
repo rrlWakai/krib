@@ -9,11 +9,10 @@ import { ReservationOverviewCard } from "../components/my-reservation/Reservatio
 import { ReservationStatusCard } from "../components/my-reservation/ReservationStatusCard"
 import { BeforeCheckInSection } from "../components/my-reservation/BeforeCheckInSection"
 import type { Reservation, ReservationStatus } from "../lib/reservationData"
-import {
-  lookupReservation,
-  lookupByCode,
-  lookupByEmail,
-} from "../lib/reservationData"
+
+const lookupReservation = async (_id: string, _email: string): Promise<Reservation | null> => null
+const lookupByCode = async (_code: string): Promise<Reservation | null> => null
+const lookupByEmail = async (_email: string): Promise<Reservation[]> => []
 
 type PageStep = "lookup" | "result"
 

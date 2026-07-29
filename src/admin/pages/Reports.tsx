@@ -1,21 +1,15 @@
 import { motion } from 'framer-motion'
-import {
-  BedDouble,
-  CalendarCheck,
-  Users,
-  TrendingUp,
-} from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
-import {
-  occupancyData,
-  villaPopularity,
-  reservationTrends,
-  guestStats,
-  statusDistribution,
-} from '../data/mockData'
+
 
 const maxOccupancy = 100
-const maxTrend = Math.max(...reservationTrends.map((d) => d.total))
+const reservationTrends: any[] = []
+const occupancyData: any[] = []
+const villaPopularity: any[] = []
+const guestStats: any[] = [{ label: 'Total Guests', value: 0, total: 0 }]
+const statusDistribution: any[] = []
+const maxTrend = 1
 
 export default function Reports() {
   const avgOccupancy = occupancyData.reduce((sum, d) => sum + d.rate, 0) / occupancyData.length
@@ -186,7 +180,7 @@ export default function Reports() {
       <div className="mt-8">
         <h2 className="mb-4 font-display text-[17px] font-medium text-[#0A1F44]">Guest Statistics</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {guestStats.map((stat, i) => (
+          {guestStats.map((stat, _i) => (
             <div key={stat.label} className="border-b border-[#ECECEC] pb-3">
               <p className="font-body text-[11px] uppercase tracking-[0.08em] text-[#757575]">{stat.label}</p>
               <p className="mt-1 font-display text-[22px] font-medium text-[#0A1F44]">{stat.value}</p>
