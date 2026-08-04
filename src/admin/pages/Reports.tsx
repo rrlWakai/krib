@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion'
 import { TrendingUp } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
+import type { ReservationTrend, OccupancyData, VillaPopularity, GuestStat, StatusDistribution } from '../types'
 
 
 const maxOccupancy = 100
-const reservationTrends: any[] = []
-const occupancyData: any[] = []
-const villaPopularity: any[] = []
-const guestStats: any[] = [{ label: 'Total Guests', value: 0, total: 0 }]
-const statusDistribution: any[] = []
+const reservationTrends: ReservationTrend[] = []
+const occupancyData: OccupancyData[] = []
+const villaPopularity: VillaPopularity[] = []
+const guestStats: GuestStat[] = [{ label: 'Total Guests', value: 0, total: 0 }]
+const statusDistribution: StatusDistribution[] = []
 const maxTrend = 1
 
 export default function Reports() {

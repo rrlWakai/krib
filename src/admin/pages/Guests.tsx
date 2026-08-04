@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Mail, Phone, CalendarDays } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
-import { formatCurrency } from '../data/mockData'
+import { formatCurrency } from '../data/constants'
+import type { Guest, Reservation } from '../types'
 
 
 function formatDate(dateStr: string) {
@@ -31,8 +32,8 @@ function getInitials(name: string) {
 }
 
 export default function Guests() {
-  const guests: any[] = []
-  const reservations: any[] = []
+  const guests: Guest[] = []
+  const reservations: Reservation[] = []
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null)

@@ -6,7 +6,6 @@ import {
   Hash,
   DoorOpen,
   PartyPopper,
-  Tag,
 } from "lucide-react"
 import { cn } from "../../lib/cn"
 import type { Reservation } from "../../lib/reservationData"
@@ -28,7 +27,6 @@ export function ReservationOverviewCard({ reservation }: Props) {
   const s = getStatusDisplay(reservation.status)
   const image = getVillaImage(reservation.villaName)
   const hasPartyFee = (reservation.partyFee ?? 0) > 0
-  const hasDiscount = false
 
   return (
     <motion.div
@@ -161,14 +159,7 @@ export function ReservationOverviewCard({ reservation }: Props) {
               />
             )}
 
-            {hasDiscount && (
-              <PricingRow
-                label="Discount"
-                value="-₱0"
-                icon={<Tag size={12} className="text-tertiary/60" />}
-                valueClassName="text-tertiary"
-              />
-            )}
+
           </div>
 
           {/* Total */}

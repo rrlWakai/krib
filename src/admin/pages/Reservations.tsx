@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { Search, ChevronRight } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import { formatCurrency, RESERVATION_STATUSES, getReservationStatusLabel } from '../data/mockData'
-import type { ReservationStatus } from '../types'
+import { formatCurrency, RESERVATION_STATUSES, getReservationStatusLabel } from '../data/constants'
+import type { ReservationStatus, Reservation } from '../types'
 
 
 function formatDate(dateStr: string) {
@@ -29,7 +29,7 @@ export default function Reservations() {
   const [villaFilter, setVillaFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const filtered: any[] = []
+  const filtered: Reservation[] = []
 
 
   const activeCount = filtered.length

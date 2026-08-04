@@ -24,21 +24,21 @@ export function MyReservationPage() {
   const [searching, setSearching] = useState(false)
   const [reservation, setReservation] = useState<Reservation | null>(null)
 
-  // Auto-load from localStorage if redirected after booking
+  // Auto-load from sessionStorage if redirected after booking
   useEffect(() => {
-    const fullData = localStorage.getItem("krib_last_reservation_full")
+    const fullData = sessionStorage.getItem("krib_last_reservation_full")
     if (fullData) {
       try {
         const parsed: Reservation = JSON.parse(fullData)
         setReservation(parsed)
         setPageStep("result")
-        localStorage.removeItem("krib_last_reservation")
-        localStorage.removeItem("krib_last_reservation_full")
+        sessionStorage.removeItem("krib_last_reservation")
+        sessionStorage.removeItem("krib_last_reservation_full")
         return
       } catch { /* ignore */ }
     }
 
-    const stored = localStorage.getItem("krib_last_reservation")
+    const stored = sessionStorage.getItem("krib_last_reservation")
     if (stored) {
       try {
         const parsed: { id: string; email: string } = JSON.parse(stored)
@@ -59,7 +59,7 @@ export function MyReservationPage() {
       setError("Reservation not found.")
     }
     setSearching(false)
-    localStorage.removeItem("krib_last_reservation")
+    sessionStorage.removeItem("krib_last_reservation")
   }
 
   const handleLookup = useCallback(async (lookupData: { id: string; email: string }) => {

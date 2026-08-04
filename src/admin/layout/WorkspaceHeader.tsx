@@ -1,7 +1,8 @@
 import { useLocation, Link } from 'react-router-dom'
 import { Bell, Menu, Search } from 'lucide-react'
-import { NAV_ITEMS } from '../data/mockData'
+import { NAV_ITEMS } from '../data/constants'
 import { cn } from '../../lib/cn'
+import { useAuth } from '../../hooks/auth/useAuth'
 
 interface WorkspaceHeaderProps {
   onToggleSidebar: () => void
@@ -10,6 +11,7 @@ interface WorkspaceHeaderProps {
 
 export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderProps) {
   const location = useLocation()
+  const { user } = useAuth()
 
   const currentPage = NAV_ITEMS.find(
     (item) =>
@@ -25,6 +27,16 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
     month: 'short',
     day: 'numeric',
   })
+
+  const initials = user?.email
+    ? user.email
+        .split('@')[0]
+        .split(/[._-]/)
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : 'KA'
 
   return (
     <header
@@ -77,8 +89,11 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
         <button className="flex h-8 w-8 items-center justify-center rounded-full text-[#757575] transition-colors hover:bg-[#f0f2f7] hover:text-[#0A1F44]">
           <Bell size={16} />
         </button>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0A1F44] font-body text-[12px] font-medium leading-none text-white">
-          KA
+        <div
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0A1F44] font-body text-[12px] font-medium leading-none text-white"
+          title={user?.email ?? ''}
+        >
+          {initials}
         </div>
       </div>
     </header>

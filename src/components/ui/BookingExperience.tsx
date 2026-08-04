@@ -311,11 +311,11 @@ export function BookingExperience({
       createdAt: new Date().toISOString().split("T")[0],
       status: "awaiting_confirmation" as const,
     };
-    localStorage.setItem(
+    sessionStorage.setItem(
       "krib_last_reservation",
       JSON.stringify({ id: newId, email }),
     );
-    localStorage.setItem(
+    sessionStorage.setItem(
       "krib_last_reservation_full",
       JSON.stringify(reservationData),
     );
@@ -508,9 +508,7 @@ export function BookingExperience({
         >
           {step === 1 && (
             <StepDate
-              villaId={property.id}
               selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
               error={errors.date}
             />
           )}
@@ -954,14 +952,10 @@ function SubmittingState() {
    STEP 1 — Choose Your Stay Date
    ====================================================================== */
 function StepDate({
-  villaId,
   selectedDate,
-  onDateSelect,
   error,
 }: {
-  villaId: string;
   selectedDate: string | null;
-  onDateSelect: (date: string | null) => void;
   error?: string;
 }) {
   const depDate = selectedDate
@@ -970,11 +964,7 @@ function StepDate({
 
   return (
     <div>
-      <AvailabilityCalendar
-        villaId={villaId}
-        villaName=""
-        onDateSelect={onDateSelect}
-      />
+      <AvailabilityCalendar />
 
       {selectedDate && (
         <motion.div

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -7,15 +7,16 @@ import {
   Users,
   Tag,
   Building2,
-  Image,
   MessageSquare,
   Settings,
   ChevronLeft,
   ChevronRight,
   X,
+  LogOut,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
-import { NAV_ITEMS } from '../data/mockData'
+import { NAV_ITEMS } from '../data/constants'
+import { useAuth } from '../../hooks/auth/useAuth'
 
 const iconMap: Record<string, React.FC<{ size?: number; className?: string }>> = {
   LayoutDashboard,
@@ -24,7 +25,6 @@ const iconMap: Record<string, React.FC<{ size?: number; className?: string }>> =
   Users,
   Tag,
   Building2,
-  Image,
   MessageSquare,
   Settings,
 }
@@ -46,6 +46,13 @@ function SidebarContent({
   onToggle: () => void
   isMobile: boolean
 }) {
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await signOut()
+    navigate('/admin/login', { replace: true })
+  }
   return (
     <div className="flex h-full flex-col">
       <div
@@ -120,12 +127,27 @@ function SidebarContent({
         </ul>
       </nav>
 
-      {!isMobile && (
-        <div className="border-t border-[#ECECEC] px-3 py-3">
+      <div className="border-t border-[#ECECEC] px-3 py-3">
+        {!collapsed && user && (
+          <div className="mb-2 truncate px-3 font-body text-[12px] text-[#757575]">
+            {user.email}
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-[14px] text-[#757575] transition-all duration-200 hover:text-red-600 hover:bg-red-50',
+            collapsed && 'justify-center px-0'
+          )}
+        >
+          <LogOut size={18} />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
+        {!isMobile && (
           <button
             onClick={onToggle}
             className={cn(
-              'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-[14px] text-[#757575] transition-all duration-200 hover:text-[#0A1F44] hover:bg-[#f0f2f7]',
+              'mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-[14px] text-[#757575] transition-all duration-200 hover:text-[#0A1F44] hover:bg-[#f0f2f7]',
               collapsed && 'justify-center px-0'
             )}
           >
@@ -138,8 +160,8 @@ function SidebarContent({
               </>
             )}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

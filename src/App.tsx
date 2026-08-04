@@ -8,14 +8,14 @@ import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 import { HomePage } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { LoadingScreen } from "./components/ui/LoadingScreen";
+import { AuthProvider } from "./contexts/AuthContext";
+import { AuthGuard } from "./components/auth/AuthGuard";
+import { AdminLogin } from "./components/auth/LoginPage";
 
 const VillaDetailPage = lazy(() =>
   import("./pages/VillaDetailPage").then((m) => ({
     default: m.VillaDetailPage,
   })),
-);
-const GalleryPage = lazy(() =>
-  import("./pages/GalleryPage").then((m) => ({ default: m.GalleryPage })),
 );
 const LocationPage = lazy(() =>
   import("./pages/LocationPage").then((m) => ({ default: m.LocationPage })),
@@ -117,6 +117,8 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
     };
   }, [loading]);
 
+  const isAdminRoute = location.pathname.startsWith('/admin')
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -134,7 +136,7 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col min-h-screen"
       >
-        {!location.pathname.startsWith('/admin') && <Navbar />}
+        {!isAdminRoute && <Navbar />}
         <div className="flex-grow">
           <AnimatePresence mode="wait">
             <Suspense fallback={<PageLoader />}>
@@ -142,12 +144,21 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                 <Route path="/" element={<HomePage />} />
                 <Route path="/krib-1" element={<VillaDetailPage />} />
                 <Route path="/krib-2" element={<VillaDetailPage />} />
-                <Route path="/gallery" element={<GalleryPage />} />
                 <Route path="/location" element={<LocationPage />} />
                 <Route path="/my-reservation" element={<MyReservationPage />} />
 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
+                {/* Admin Login — public */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+
+                {/* Protected Admin Routes */}
+                <Route
+                  path="/admin"
+                  element={
+                    <AuthGuard>
+                      <AdminLayout />
+                    </AuthGuard>
+                  }
+                >
                   <Route index element={<AdminDashboard />} />
                   <Route path="reservations" element={<AdminReservations />} />
                   <Route path="reservations/:id" element={<AdminReservationDetail />} />
@@ -165,7 +176,7 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
             </Suspense>
           </AnimatePresence>
         </div>
-        {!location.pathname.startsWith('/admin') && <Footer />}
+        {!isAdminRoute && <Footer />}
       </motion.div>
     </>
   );
@@ -177,7 +188,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
-        <MainLayout loading={loading} setLoading={setLoading} />
+        <AuthProvider>
+          <MainLayout loading={loading} setLoading={setLoading} />
+        </AuthProvider>
       </ErrorBoundary>
     </BrowserRouter>
   );

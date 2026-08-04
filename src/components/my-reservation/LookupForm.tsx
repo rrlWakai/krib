@@ -127,17 +127,7 @@ export function LookupForm({ onFound, onError, onSearching, searching }: LookupF
               )}
             </AnimatePresence>
 
-            {/* Error */}
-            <AnimatePresence>
-              {false && (
-                <motion.p
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="font-body text-sm text-error mt-3 overflow-hidden"
-                />
-              )}
-            </AnimatePresence>
+
 
             {/* Submit */}
             <button

@@ -52,12 +52,6 @@ export function Footer() {
                 About
               </Link>
               <Link
-                to="/gallery"
-                className="font-body text-headline-xs text-on-surface hover:text-primary transition-colors duration-300"
-              >
-                Gallery
-              </Link>
-              <Link
                 to="/location"
                 className="font-body text-headline-xs text-on-surface hover:text-primary transition-colors duration-300"
               >

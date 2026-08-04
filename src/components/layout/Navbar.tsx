@@ -66,17 +66,6 @@ export function Navbar() {
                 Villas
               </a>
               <a
-                href="#gallery"
-                className={cn(
-                  "font-body text-sm font-medium transition-all duration-300",
-                  scrolled
-                    ? "text-on-surface-variant hover:text-primary"
-                    : "text-white/90 hover:text-white",
-                )}
-              >
-                Gallery
-              </a>
-              <a
                 href="#connect"
                 className={cn(
                   "font-body text-sm font-medium transition-all duration-300",
@@ -153,13 +142,6 @@ export function Navbar() {
                     className="font-body text-sm font-medium text-on-surface transition-colors hover:text-primary"
                   >
                     About
-                  </a>
-                  <a
-                    href="#gallery"
-                    onClick={() => setMobileOpen(false)}
-                    className="font-body text-sm font-medium text-on-surface transition-colors hover:text-primary"
-                  >
-                    Gallery
                   </a>
                   <a
                     href="#connect"

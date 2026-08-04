@@ -1,8 +1,6 @@
 import heroImage from '../assets/hero.png'
 import krib1Portrait from '../assets/05.png'
 import krib2Portrait from '../assets/bbx.png'
-import k2Image from '../assets/k2.webp'
-import kk2Image from '../assets/kk2.webp'
 import aboutImage from '../assets/about.png'
 import finalctaImage from '../assets/finalcta.png'
 import socImage from '../assets/soc.png'
@@ -42,22 +40,8 @@ import krib2Toil3 from '../assets/Krib2/toil3.avif'
 import krib2Toil4 from '../assets/Krib2/toil4.avif'
 import krib2Toil5 from '../assets/Krib2/toil5.avif'
 
-// ─── PREMIUM HOSPITALITY PLACEHOLDERS ────────────────────────────────
-// All placeholder URLs use Unsplash Source for reliable, high-quality
-// hospitality photography. Replace these URLs with the owner's real
-// images by editing only this file.
-//
-// TO REPLACE: Swap the URL string for each key with the real image path.
-// Example: hero: '/images/hero-real.jpg' or import from assets.
-// ──────────────────────────────────────────────────────────────────────
-
-const UNSPLASH = 'https://images.unsplash.com'
-
 export const images = {
-  // ── Hero ──────────────────────────────────────────────────────────
   hero: heroImage,
-
-  // ── KRiB 1 ────────────────────────────────────────────────────────
   krib1: krib1Portrait,
   krib1Pool,
   krib1Living,
@@ -70,8 +54,6 @@ export const images = {
   krib1Bed,
   krib1BedAlt,
   krib1Bed1,
-
-  // ── KRiB 2 ────────────────────────────────────────────────────────
   krib2: krib2Portrait,
   krib2Exterior,
   krib2Pool,
@@ -95,39 +77,9 @@ export const images = {
   krib2Toil3,
   krib2Toil4,
   krib2Toil5,
-  k2: k2Image,
-  kk2: kk2Image,
-
-  // ── Experiences ────────────────────────────────────────────────────
-  morningCoffee: `${UNSPLASH}/photo-1495474472287-4d71bcdd2085?w=1200&q=80&auto=format&fit=crop`,
-  familyBbq: `${UNSPLASH}/photo-1529543544282-ea99407407c1?w=1200&q=80&auto=format&fit=crop`,
-  sunsetGatherings: `${UNSPLASH}/photo-1507525428034-b723cf961d3e?w=1200&q=80&auto=format&fit=crop`,
-
-  // ── Gallery ────────────────────────────────────────────────────────
-  galleryBathroom: `${UNSPLASH}/photo-1552321554-5fefe8c9ef14?w=1200&q=80&auto=format&fit=crop`,
-  galleryStairs: `${UNSPLASH}/photo-1600585154340-be6161a56a0c?w=1200&q=80&auto=format&fit=crop`,
-  galleryBreakfast: `${UNSPLASH}/photo-1504674900247-0877df9cc836?w=1200&q=80&auto=format&fit=crop`,
-  galleryTextile: `${UNSPLASH}/photo-1616137466211-f73a09f13e16?w=1200&q=80&auto=format&fit=crop`,
-  galleryEstateNight: `${UNSPLASH}/photo-1564013799919-ab600027ffc6?w=1200&q=80&auto=format&fit=crop`,
-
-  // ── Map ────────────────────────────────────────────────────────────
-  map: `${UNSPLASH}/photo-1524661135-423995f22d0b?w=1200&q=80&auto=format&fit=crop`,
-
-  // ── Food / Lifestyle ──────────────────────────────────────────────
-  alFresco: `${UNSPLASH}/photo-1414235077428-338989a2e8c0?w=1200&q=80&auto=format&fit=crop`,
-  yogaTerrace: `${UNSPLASH}/photo-1506126613408-eca07ce68773?w=1200&q=80&auto=format&fit=crop`,
-
-  // ── About / Story ──────────────────────────────────────────────────
   about: aboutImage,
-
-  // ── CTA Background ─────────────────────────────────────────────────
   cta: finalctaImage,
-
-  // ── Social / Connect ───────────────────────────────────────────────
   social: socImage,
-
-  // ── Location ───────────────────────────────────────────────────────
-  locationHero: `${UNSPLASH}/photo-1500382017468-9049fed747ef?w=1920&q=85&auto=format&fit=crop`,
 } as const
 
 // ── Helper: Get villa image by name ──────────────────────────────────

@@ -10,7 +10,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
-import { formatCurrency } from '../data/mockData'
+import { formatCurrency } from '../data/constants'
 import type { Reservation, ReservationStatus } from '../types'
 import { cn } from '../../lib/cn'
 

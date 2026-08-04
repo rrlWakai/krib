@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
-import { formatCurrency, getDaysUntil } from '../data/mockData'
+import { formatCurrency, getDaysUntil } from '../data/constants'
+import type { Reservation } from '../types'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -33,10 +34,10 @@ export default function Dashboard() {
     totalReservations: 0,
   }
 
-  const recentReservations: any[] = []
-  const upcomingReservations: any[] = []
-  const todayCheckins: any[] = []
-  const todayCheckouts: any[] = []
+  const recentReservations: Reservation[] = []
+  const upcomingReservations: Reservation[] = []
+  const todayCheckins: Reservation[] = []
+  const todayCheckouts: Reservation[] = []
 
   return (
     <motion.div

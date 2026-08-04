@@ -5,7 +5,6 @@ import { ChooseYourStay } from "../components/sections/home/ChooseYourStay";
 import { About } from "../components/sections/home/About";
 import { Experiences } from "../components/sections/home/Experiences";
 import { Amenities } from "../components/sections/home/Amenities";
-import { Gallery } from "../components/sections/home/Gallery";
 import { FAQ } from "../components/sections/home/FAQ";
 import { CTA } from "../components/sections/home/CTA";
 import { Connect } from "../components/sections/home/Connect";
@@ -29,7 +28,6 @@ export function HomePage() {
         <ChooseYourStay />
       </div>
       <Amenities />
-      <Gallery />
       <FAQ />
       <CTA />
       <Connect />

@@ -2,22 +2,11 @@ import { images } from './images'
 import type {
   VillaDetail,
   Experience,
-  GalleryImage,
   Testimonial,
-  NavLink,
   FAQCategory,
   NearbyAttraction,
   Amenity,
-  VillaAvailability,
-  CalendarDay,
 } from '../types'
-
-export const navLinks: NavLink[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Villas', href: '/#villas' },
-  { label: 'About', href: '/about' },
-  { label: 'Gallery', href: '/gallery' },
-]
 
 export const villas: VillaDetail[] = [
   {
@@ -340,49 +329,6 @@ export const amenities: Amenity[] = [
   },
 ]
 
-export const galleryImages: GalleryImage[] = [
-  {
-    id: 'pool-aerial',
-    src: images.krib2Pool,
-    alt: 'Private pool at KRiB Beverly Place',
-    colSpan: 'col-span-12 md:col-span-4',
-    rowSpan: 'row-span-1',
-    delay: 0,
-  },
-  {
-    id: 'living-room',
-    src: images.krib2Living,
-    alt: 'Spacious living room with natural light at KRiB villa',
-    colSpan: 'col-span-12 md:col-span-3',
-    rowSpan: 'row-span-2',
-    delay: 200,
-  },
-  {
-    id: 'breakfast',
-    src: images.krib2Dining,
-    alt: 'Dining area at KRiB family villa',
-    colSpan: 'col-span-12 md:col-span-5',
-    rowSpan: 'row-span-1',
-    delay: 300,
-  },
-  {
-    id: 'bedroom',
-    src: images.krib2Bed1,
-    alt: 'Bedroom interior at KRiB Beverly Place',
-    colSpan: 'col-span-12 md:col-span-4',
-    rowSpan: 'row-span-1',
-    delay: 400,
-  },
-  {
-    id: 'garden',
-    src: images.krib2Exterior,
-    alt: 'Exterior view at KRiB Signature Villa',
-    colSpan: 'col-span-12 md:col-span-5',
-    rowSpan: 'row-span-1',
-    delay: 500,
-  },
-]
-
 export const testimonials: Testimonial[] = [
   {
     id: '1',
@@ -683,37 +629,5 @@ export const siteContent = {
       },
     ],
   },
-  gallery: {
-    heroTitle: 'A visual journey',
-    heroDescription:
-      'Every corner of KRiB tells a story. Browse through our gallery and start imagining your weekend here.',
-    categories: [
-      { id: 'all', label: 'All' },
-      { id: 'villas', label: 'Villas' },
-      { id: 'pool', label: 'Pool & Outdoors' },
-      { id: 'interiors', label: 'Interiors' },
-      { id: 'experiences', label: 'Experiences' },
-    ],
-  },
 }
 
-export function generateMockAvailability(villaId: string): VillaAvailability[] {
-  const now = new Date()
-  const months: VillaAvailability[] = []
-
-  for (let m = 0; m < 4; m++) {
-    const year = now.getFullYear()
-    const month = now.getMonth() + m
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const days: CalendarDay[] = []
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-      days.push({ date, status: 'available' })
-    }
-
-    months.push({ villaId, year, month: month + 1, days })
-  }
-
-  return months
-}

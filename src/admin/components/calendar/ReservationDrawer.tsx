@@ -13,7 +13,7 @@ import {
 import type { Reservation, ReservationStatus } from '../../types'
 import { StatusBadge } from '../StatusBadge'
 import { formatCurrency } from '../../data/mockData'
-
+import { updateReservationStatus } from '../../services/calendarService'
 
 interface ReservationDrawerProps {
   reservation: Reservation | null
@@ -72,6 +72,7 @@ export default function ReservationDrawer({
     setUpdating(true)
     setFeedback(null)
     setTimeout(() => {
+      updateReservationStatus(reservation.id, status)
       setUpdating(false)
       setFeedback(
         `${reservation.guestName}'s reservation has been ${status}.`,
@@ -101,7 +102,6 @@ export default function ReservationDrawer({
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-        data-lenis-prevent
         className="fixed right-0 top-0 z-50 h-full w-full max-w-[420px] overflow-y-auto border-l border-[#ECECEC] bg-white"
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#ECECEC] bg-white px-6 py-4">

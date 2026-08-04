@@ -5,9 +5,10 @@ import { PageHero } from '../components/ui/PageHero'
 import { Reveal } from '../components/ui/Reveal'
 import { SectionLabel } from '../components/ui/SectionLabel'
 import { siteContent, nearbyAttractions } from '../lib/data'
-import { images } from '../lib/images'
 import { pageTransition } from '../lib/animations'
 import { getIcon } from '../lib/iconMap'
+
+const MAP_EMBED = 'https://www.google.com/maps?q=3M8R+XWR+Beverley+Place+Yorkshire+San+Fernando+Pampanga&output=embed'
 
 export function LocationPage() {
   const { location } = siteContent
@@ -61,11 +62,14 @@ export function LocationPage() {
           </Reveal>
 
           <Reveal delay={200} className="md:col-span-6 md:col-start-7">
-            <div className="aspect-[4/3] bg-surface-container-highest rounded-default overflow-hidden shadow-elevated grayscale hover:grayscale-0 transition-all duration-1000">
-              <img
-                className="w-full h-full object-cover"
-                src={images.map}
-                alt="Map showing KRiB Beverly Place location"
+            <div className="aspect-[4/3] bg-surface-container-highest rounded-default overflow-hidden shadow-elevated">
+              <iframe
+                title="KRiB Beverly Place location on Google Maps"
+                src={MAP_EMBED}
+                className="w-full h-full"
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
           </Reveal>

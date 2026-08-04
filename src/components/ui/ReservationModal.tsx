@@ -200,8 +200,8 @@ export function ReservationModal({
       status: "awaiting_confirmation" as const,
     };
 
-    localStorage.setItem("krib_last_reservation", JSON.stringify({ id: newId, email }));
-    localStorage.setItem("krib_last_reservation_full", JSON.stringify(reservationData));
+    sessionStorage.setItem("krib_last_reservation", JSON.stringify({ id: newId, email }));
+    sessionStorage.setItem("krib_last_reservation_full", JSON.stringify(reservationData));
 
     setStep("submitting");
     setTimeout(() => setStep("success"), 1800);

@@ -52,15 +52,6 @@ export interface Experience {
   image: string
 }
 
-export interface GalleryImage {
-  id: string
-  src: string
-  alt: string
-  colSpan: string
-  rowSpan: string
-  delay: number
-}
-
 export interface Testimonial {
   id: string
   quote: string
@@ -69,11 +60,6 @@ export interface Testimonial {
   rating: number
   date?: string
   avatar?: string
-}
-
-export interface NavLink {
-  label: string
-  href: string
 }
 
 export interface FAQItem {
@@ -102,17 +88,4 @@ export interface Amenity {
   description?: string
 }
 
-export type AvailabilityStatus = 'available' | 'limited' | 'booked'
 
-export interface CalendarDay {
-  date: string
-  status: AvailabilityStatus
-  price?: number
-}
-
-export interface VillaAvailability {
-  villaId: string
-  year: number
-  month: number
-  days: CalendarDay[]
-}
