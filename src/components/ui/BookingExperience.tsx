@@ -15,10 +15,18 @@ import {
 } from "lucide-react";
 import { GuestSelector } from "./GuestSelector";
 import type { GuestCount } from "./GuestSelector";
-import { AvailabilityCalendar } from "./AvailabilityCalendar";
+import { ArrivalDateTimePicker } from "./ArrivalDateTimePicker";
 import { TermsModal } from "./TermsModal";
 import { cn } from "../../lib/cn";
 import { images } from "../../lib/images";
+import { createReservation } from "../../services/api/reservations";
+import type { Reservation } from "../../lib/reservationData";
+import {
+  combineArrivalDatetime,
+  computeCheckout,
+  formatArrivalLabel,
+  formatCheckoutLabel,
+} from "../../lib/bookingTime";
 
 interface PropertyInfo {
   id: string;
@@ -106,14 +114,6 @@ function formatPrice(amount: number): string {
   return "₱" + amount.toLocaleString("en-PH");
 }
 
-function formatDateShort(d: Date) {
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 function getVillaImage(villaId: string): string {
   if (villaId === "krib-2") return images.krib2Exterior;
   return images.krib1;
@@ -130,7 +130,7 @@ const STEP_META: {
     icon: CalendarDays,
     heading: "Choose your stay date",
     subheading:
-      "Select your preferred arrival date. Your stay includes a full 21-hour experience.",
+      "Select your preferred arrival date and time. Your stay includes a full 21-hour experience.",
   },
   {
     label: "Guests",
@@ -164,7 +164,8 @@ export function BookingExperience({
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [reservationId, setReservationId] = useState("");
 
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [arrivalDate, setArrivalDate] = useState<string | null>(null);
+  const [arrivalTime, setArrivalTime] = useState<string | null>(null);
   const [guests, setGuests] = useState<GuestCount>({
     adults: 2,
     children: 0,
@@ -176,13 +177,20 @@ export function BookingExperience({
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [termsSection, setTermsSection] = useState<"terms" | "privacy">(
+    "terms",
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState("");
+  const submitErrorRef = useRef<HTMLDivElement>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const agreementRowRef = useRef<HTMLButtonElement>(null);
+  const agreementRowRef = useRef<HTMLDivElement>(null);
+  const privacyRowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -191,15 +199,18 @@ export function BookingExperience({
       setDirection(1);
       setSubmitState("idle");
       setReservationId("");
-      setSelectedDate(null);
+      setArrivalDate(null);
+      setArrivalTime(null);
       setGuests({ adults: 2, children: 0, infants: 0, pets: 0 });
       setFullName("");
       setEmail("");
       setPhone("");
       setMessage("");
       setAgreed(false);
+      setPrivacyAgreed(false);
       setTermsOpen(false);
       setErrors({});
+      setSubmitError("");
     } else {
       previousFocusRef.current?.focus();
     }
@@ -272,7 +283,10 @@ export function BookingExperience({
 
   const validateStep = (s: Step): boolean => {
     const errs: Record<string, string> = {};
-    if (s === 1 && !selectedDate) errs.date = "Please select a date";
+    if (s === 1) {
+      if (!arrivalDate) errs.date = "Please select a date";
+      if (!arrivalTime) errs.time = "Please select a time";
+    }
     if (s === 3) {
       if (!fullName.trim()) errs.fullName = "Name is required";
       if (!email.trim()) errs.email = "Email is required";
@@ -281,7 +295,11 @@ export function BookingExperience({
       if (!phone.trim()) errs.phone = "Phone is required";
       else if (!/^[\d\s+\-()]{7,20}$/.test(phone))
         errs.phone = "Enter a valid phone number";
-      if (!agreed) errs.agreed = "You must agree to the house rules";
+      if (!agreed)
+        errs.agreed =
+          "You must agree to the House Rules and Terms & Conditions";
+      if (!privacyAgreed)
+        errs.privacyAgreed = "You must agree to the Privacy Notice";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -291,26 +309,72 @@ export function BookingExperience({
     if (validateStep(step)) goNext();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep(3)) return;
-    const newId = `KRIB-${Date.now().toString(36).toUpperCase()}`;
-    setReservationId(newId);
-    const reservationData = {
-      id: newId,
+    setSubmitError("");
+    setSubmitState("submitting");
+
+    const arrivalDatetime = combineArrivalDatetime(arrivalDate!, arrivalTime!);
+
+    const { data, error } = await createReservation({
+      villa_id: property.id,
+      arrival_datetime: arrivalDatetime,
+      full_name: fullName,
       email,
-      villaId: property.id,
-      villaName: property.name,
+      phone,
+      special_requests: message,
+      adults: guests.adults,
+      children: guests.children,
+      infants: guests.infants,
+      pets: guests.pets,
+      terms_accepted: agreed,
+      privacy_accepted: privacyAgreed,
+    });
+
+    if (error || !data) {
+      setSubmitState("idle");
+      setSubmitError(
+        error?.message ?? "Unable to submit your reservation. Please try again.",
+      );
+      setTimeout(() => {
+        submitErrorRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 50);
+      return;
+    }
+
+    const r = data.reservation;
+    const newId = r.reference_code;
+    setReservationId(newId);
+
+    const reservationData: Reservation = {
+      id: newId,
+      email: r.guest.email,
+      guestName: r.guest.full_name,
+      villaId: r.villa.slug,
+      villaName: r.villa.name,
       maxGuests: property.maxGuests,
-      checkIn: selectedDate!,
-      checkOut: new Date(
-        new Date(selectedDate!).getTime() + 21 * 60 * 60 * 1000,
-      )
-        .toISOString()
-        .split("T")[0],
-      guests,
-      createdAt: new Date().toISOString().split("T")[0],
-      status: "awaiting_confirmation" as const,
+      checkIn: r.arrival_datetime.slice(0, 10),
+      checkOut: r.checkout_datetime.slice(0, 10),
+      arrivalDatetime: r.arrival_datetime,
+      checkoutDatetime: r.checkout_datetime,
+      guests: {
+        adults: guests.adults,
+        children: guests.children,
+        infants: guests.infants,
+        pets: guests.pets,
+      },
+      createdAt: r.created_at.slice(0, 10),
+      status: "awaiting_confirmation",
+      baseRate: basePrice,
+      partyFee: partyFeeActive ? 5000 : 0,
+      totalAmount: total,
+      confirmationNumber: r.reference_code,
+      message: r.special_requests,
     };
+
     sessionStorage.setItem(
       "krib_last_reservation",
       JSON.stringify({ id: newId, email }),
@@ -319,15 +383,18 @@ export function BookingExperience({
       "krib_last_reservation_full",
       JSON.stringify(reservationData),
     );
-    setSubmitState("submitting");
-    setTimeout(() => setSubmitState("success"), 1800);
+    setSubmitState("success");
   };
 
-  const departureDate = selectedDate
-    ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000)
+  const arrivalDatetime =
+    arrivalDate && arrivalTime
+      ? combineArrivalDatetime(arrivalDate, arrivalTime)
+      : null;
+  const checkoutDatetime = arrivalDatetime
+    ? computeCheckout(arrivalDatetime)
     : null;
   const totalGuests = guests.adults + guests.children;
-  const hasDate = !!selectedDate;
+  const hasArrival = !!arrivalDatetime;
   const meta = STEP_META[step - 1];
 
   const summaryContent = (
@@ -356,15 +423,15 @@ export function BookingExperience({
           icon={<Clock size={14} className="text-on-surface-variant/50" />}
         />
 
-        {hasDate && departureDate && (
+        {hasArrival && (
           <>
             <SummaryItem
               label="Arrival"
-              value={`${formatDateShort(new Date(selectedDate!))} · 2:00 PM`}
+              value={formatArrivalLabel(arrivalDatetime!)}
             />
             <SummaryItem
-              label="Departure"
-              value={`${formatDateShort(departureDate)} · 11:00 AM`}
+              label="Checkout"
+              value={formatCheckoutLabel(checkoutDatetime!)}
               valueClassName="text-primary"
             />
           </>
@@ -508,8 +575,12 @@ export function BookingExperience({
         >
           {step === 1 && (
             <StepDate
-              selectedDate={selectedDate}
-              error={errors.date}
+              arrivalDate={arrivalDate}
+              arrivalTime={arrivalTime}
+              onArrivalDateChange={setArrivalDate}
+              onArrivalTimeChange={setArrivalTime}
+              dateError={errors.date}
+              timeError={errors.time}
             />
           )}
           {step === 2 && (
@@ -532,15 +603,26 @@ export function BookingExperience({
               onMessageChange={setMessage}
               agreed={agreed}
               onAgreedChange={setAgreed}
-              onOpenTerms={() => setTermsOpen(true)}
+              privacyAgreed={privacyAgreed}
+              onPrivacyAgreedChange={setPrivacyAgreed}
+              onOpenTerms={() => {
+                setTermsSection("terms");
+                setTermsOpen(true);
+              }}
+              onOpenPrivacy={() => {
+                setTermsSection("privacy");
+                setTermsOpen(true);
+              }}
+              agreementRowRef={agreementRowRef}
+              privacyRowRef={privacyRowRef}
               errors={errors}
             />
           )}
           {step === 4 && (
             <StepReview
               property={property}
-              selectedDate={selectedDate}
-              departureDate={departureDate}
+              arrivalDatetime={arrivalDatetime}
+              checkoutDatetime={checkoutDatetime}
               guests={guests}
               totalGuests={totalGuests}
               fullName={fullName}
@@ -551,6 +633,8 @@ export function BookingExperience({
               partyFeeActive={partyFeeActive}
               onPartyFeeToggle={onPartyFeeToggle}
               total={total}
+              submitError={submitError}
+              submitErrorRef={submitErrorRef}
             />
           )}
         </motion.div>
@@ -559,8 +643,9 @@ export function BookingExperience({
   );
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <>
+      <AnimatePresence>
+        {isOpen && (
         <motion.div
           variants={overlayVariants}
           initial="hidden"
@@ -741,7 +826,10 @@ export function BookingExperience({
                 </div>
 
                 {/* RIGHT — Sticky Summary */}
-                <div data-lenis-prevent className="w-340px lg:w-380px shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain">
+                <div
+                  data-lenis-prevent
+                  className="w-340px lg:w-380px shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain"
+                >
                   {summaryContent}
                 </div>
               </div>
@@ -810,7 +898,10 @@ export function BookingExperience({
                 </div>
 
                 {/* Mobile Scrollable Content */}
-                <div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-5">
+                <div
+                  data-lenis-prevent
+                  className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-5"
+                >
                   {stepContent}
                 </div>
 
@@ -875,13 +966,17 @@ export function BookingExperience({
           </motion.div>
         </motion.div>
       )}
+      </AnimatePresence>
       <TermsModal
         isOpen={termsOpen}
         onClose={() => setTermsOpen(false)}
-        onAgree={() => setAgreed(true)}
-        triggerRef={agreementRowRef}
+        onAgree={() => {
+          if (termsSection === "privacy") setPrivacyAgreed(true);
+          else setAgreed(true);
+        }}
+        section={termsSection}
       />
-    </AnimatePresence>
+    </>
   );
 }
 
@@ -952,50 +1047,30 @@ function SubmittingState() {
    STEP 1 — Choose Your Stay Date
    ====================================================================== */
 function StepDate({
-  selectedDate,
-  error,
+  arrivalDate,
+  arrivalTime,
+  onArrivalDateChange,
+  onArrivalTimeChange,
+  dateError,
+  timeError,
 }: {
-  selectedDate: string | null;
-  error?: string;
+  arrivalDate: string | null;
+  arrivalTime: string | null;
+  onArrivalDateChange: (date: string) => void;
+  onArrivalTimeChange: (time: string) => void;
+  dateError?: string;
+  timeError?: string;
 }) {
-  const depDate = selectedDate
-    ? new Date(new Date(selectedDate).getTime() + 21 * 60 * 60 * 1000)
-    : null;
-
   return (
     <div>
-      <AvailabilityCalendar />
-
-      {selectedDate && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-5 p-5 rounded-xl bg-surface-container-low border border-outline-variant/30"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Clock size={14} className="text-primary" />
-            <span className="font-body text-[11px] font-semibold uppercase tracking-0.1em text-primary">
-              Your 21-Hour Stay
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="font-body text-on-surface-variant">Arrival</span>
-            <span className="font-body text-on-surface font-medium">
-              {formatDateShort(new Date(selectedDate))} · 2:00 PM
-            </span>
-          </div>
-          <div className="flex justify-between text-sm mt-1.5">
-            <span className="font-body text-on-surface-variant">Departure</span>
-            <span className="font-body text-primary font-medium">
-              {depDate ? formatDateShort(depDate) : "—"} · 11:00 AM
-            </span>
-          </div>
-        </motion.div>
-      )}
-
-      {error && (
-        <p className="font-body text-[12px] text-error mt-3">{error}</p>
-      )}
+      <ArrivalDateTimePicker
+        arrivalDate={arrivalDate}
+        arrivalTime={arrivalTime}
+        onArrivalDateChange={onArrivalDateChange}
+        onArrivalTimeChange={onArrivalTimeChange}
+        dateError={dateError}
+        timeError={timeError}
+      />
 
       <div className="mt-6 p-4 rounded-xl bg-tertiary-container/20 border border-tertiary/10">
         <div className="flex items-start gap-3">
@@ -1071,6 +1146,113 @@ function StepGuests({
 /* ======================================================================
    STEP 3 — A Few Details About You
    ====================================================================== */
+function ConsentRow({
+  rowRef,
+  checked,
+  onChange,
+  onReview,
+  reviewLabel,
+  ariaLabel,
+  label,
+  error,
+}: {
+  rowRef: React.RefObject<HTMLDivElement | null>;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  onReview: () => void;
+  reviewLabel: string;
+  ariaLabel: string;
+  label: React.ReactNode;
+  error?: string;
+}) {
+  return (
+    <div
+      ref={rowRef}
+      role="button"
+      tabIndex={0}
+      aria-pressed={checked}
+      aria-label={ariaLabel}
+      onClick={() => onChange(!checked)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onChange(!checked);
+        }
+      }}
+      className={cn(
+        "p-4 rounded-xl border transition-all duration-200 cursor-pointer group",
+        checked
+          ? "bg-primary-container/15 border-primary/20"
+          : "bg-surface-container-low border-outline-variant/30 hover:border-primary/30 hover:bg-surface-container-low/80",
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={cn(
+            "shrink-0 mt-0.5 w-44px h-44px min-w-44px min-h-44px flex items-center justify-center rounded-full border-[1.5px] transition-all duration-300",
+            checked
+              ? "bg-primary border-primary"
+              : "border-outline group-hover:border-primary/50",
+          )}
+          aria-hidden="true"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            className={cn(
+              "transition-all duration-300",
+              checked ? "opacity-100 scale-100" : "opacity-0 scale-75",
+            )}
+          >
+            <motion.path
+              d="M2.5 7.5L5.5 10.5L11.5 3.5"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: checked ? 1 : 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-body text-[13px] text-on-surface leading-relaxed">
+            {label}
+          </p>
+          <p className="font-body text-[11px] text-on-surface-variant/50 mt-1.5">
+            Click to agree.{" "}
+            <span
+              role="link"
+              tabIndex={0}
+              aria-label={reviewLabel}
+              onClick={(e) => {
+                e.stopPropagation();
+                onReview();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onReview();
+                }
+              }}
+              className="text-primary font-medium underline underline-offset-2 hover:text-primary-hover cursor-pointer"
+            >
+              Review before confirming.
+            </span>
+          </p>
+        </div>
+      </div>
+      {error && (
+        <p className="font-body text-[11px] text-error mt-2 ml-56px">{error}</p>
+      )}
+    </div>
+  );
+}
+
 function StepDetails({
   fullName,
   onFullNameChange,
@@ -1081,7 +1263,11 @@ function StepDetails({
   message,
   onMessageChange,
   agreed,
+  onAgreedChange,
   onOpenTerms,
+
+  agreementRowRef,
+
   errors,
 }: {
   fullName: string;
@@ -1094,7 +1280,12 @@ function StepDetails({
   onMessageChange: (v: string) => void;
   agreed: boolean;
   onAgreedChange: (v: boolean) => void;
+  privacyAgreed: boolean;
+  onPrivacyAgreedChange: (v: boolean) => void;
   onOpenTerms: () => void;
+  onOpenPrivacy: () => void;
+  agreementRowRef: React.RefObject<HTMLDivElement | null>;
+  privacyRowRef: React.RefObject<HTMLDivElement | null>;
   errors: Record<string, string>;
 }) {
   const nameRef = useRef<HTMLInputElement>(null);
@@ -1175,76 +1366,25 @@ function StepDetails({
         />
       </div>
 
-      <div
-        className={cn(
-          "p-4 rounded-xl border transition-all duration-200 cursor-pointer group",
-          agreed
-            ? "bg-primary-container/15 border-primary/20"
-            : "bg-surface-container-low border-outline-variant/30 hover:border-primary/30 hover:bg-surface-container-low/80",
-        )}
-        role="button"
-        tabIndex={0}
-        onClick={onOpenTerms}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onOpenTerms();
-          }
-        }}
-        aria-label="Read and agree to terms and conditions"
-      >
-        <div className="flex items-start gap-3">
-          <div
-            className={cn(
-              "shrink-0 mt-0.5 w-44px h-44px min-w-44px min-h-44px flex items-center justify-center rounded-full border-[1.5px] transition-all duration-300",
-              agreed
-                ? "bg-primary border-primary"
-                : "border-outline group-hover:border-primary/50",
-            )}
-            aria-hidden="true"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              className={cn(
-                "transition-all duration-300",
-                agreed ? "opacity-100 scale-100" : "opacity-0 scale-75",
-              )}
-            >
-              <motion.path
-                d="M2.5 7.5L5.5 10.5L11.5 3.5"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: agreed ? 1 : 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </svg>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-body text-[13px] text-on-surface leading-relaxed">
-              I have read and agree to the{" "}
-              <span className="text-primary font-medium">House Rules</span> and{" "}
-              <span className="text-primary font-medium">
-                Terms &amp; Conditions
-              </span>
-              .
-            </p>
-            <p className="font-body text-[11px] text-on-surface-variant/50 mt-1.5">
-              Click to review before confirming.
-            </p>
-          </div>
-        </div>
-        {errors.agreed && (
-          <p className="font-body text-[11px] text-error mt-2 ml-56px">
-            {errors.agreed}
-          </p>
-        )}
-      </div>
+      <ConsentRow
+        rowRef={agreementRowRef}
+        checked={agreed}
+        onChange={onAgreedChange}
+        onReview={onOpenTerms}
+        reviewLabel="Review House Rules & Terms"
+        ariaLabel="Read and agree to House Rules and Terms & Conditions"
+        label={
+          <>
+            I have read and agree to the{" "}
+            <span className="text-primary font-medium">House Rules</span> and{" "}
+            <span className="text-primary font-medium">
+              Terms &amp; Conditions
+            </span>
+            .
+          </>
+        }
+        error={errors.agreed}
+      />
 
       <div className="p-4 rounded-xl bg-tertiary-container/20 border border-tertiary/10">
         <p className="font-body text-xs text-on-surface-variant">
@@ -1261,8 +1401,8 @@ function StepDetails({
    ====================================================================== */
 function StepReview({
   property,
-  selectedDate,
-  departureDate,
+  arrivalDatetime,
+  checkoutDatetime,
   guests,
   totalGuests,
   fullName,
@@ -1273,10 +1413,12 @@ function StepReview({
   partyFeeActive,
   onPartyFeeToggle,
   total,
+  submitError,
+  submitErrorRef,
 }: {
   property: PropertyInfo;
-  selectedDate: string | null;
-  departureDate: Date | null;
+  arrivalDatetime: string | null;
+  checkoutDatetime: string | null;
   guests: GuestCount;
   totalGuests: number;
   fullName: string;
@@ -1287,15 +1429,33 @@ function StepReview({
   partyFeeActive?: boolean;
   onPartyFeeToggle?: (active: boolean) => void;
   total: number;
+  submitError: string;
+  submitErrorRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
     <div>
+      {submitError && (
+        <div
+          ref={submitErrorRef}
+          role="alert"
+          className="mb-5 p-4 rounded-xl bg-error/5 border border-error/20"
+        >
+          <p className="font-body text-[13px] text-error">{submitError}</p>
+        </div>
+      )}
       <div className="space-y-0">
         <ReviewRow label="Villa" value={property.name} />
-        {selectedDate && departureDate && (
+        {arrivalDatetime && (
           <ReviewRow
-            label="Date"
-            value={`${formatDateShort(new Date(selectedDate))} — ${formatDateShort(departureDate)}`}
+            label="Arrival"
+            value={formatArrivalLabel(arrivalDatetime)}
+          />
+        )}
+        {checkoutDatetime && (
+          <ReviewRow
+            label="Checkout"
+            value={formatCheckoutLabel(checkoutDatetime)}
+            valueIcon={<Clock size={12} className="text-primary" />}
           />
         )}
         <ReviewRow

@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "types:generate": "supabase gen types typescript --local > src/types/generated/database.ts",
+    "types:generate": "supabase gen types typescript --linked > src/types/generated/database.ts",
     "types:check-stale": "npm run types:generate && git diff --exit-code src/types/generated/",
     "env:check": "node scripts/check-env.mjs"
   },

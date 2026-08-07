@@ -7,6 +7,7 @@ interface TermsModalProps {
   isOpen: boolean
   onClose: () => void
   onAgree: () => void
+  section?: 'terms' | 'privacy'
   triggerRef?: React.RefObject<HTMLElement | null>
 }
 
@@ -32,9 +33,9 @@ const panelVariants = {
   },
 }
 
-function TermsSection({ title, children }: { title: string; children: React.ReactNode }) {
+function TermsSection({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div id={id}>
       <h3 className="font-display text-base text-on-surface mb-3 leading-snug">
         {title}
       </h3>
@@ -45,7 +46,7 @@ function TermsSection({ title, children }: { title: string; children: React.Reac
   )
 }
 
-export function TermsModal({ isOpen, onClose, onAgree, triggerRef }: TermsModalProps) {
+export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', triggerRef }: TermsModalProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const agreeButtonRef = useRef<HTMLButtonElement>(null)
@@ -110,8 +111,14 @@ export function TermsModal({ isOpen, onClose, onAgree, triggerRef }: TermsModalP
   useEffect(() => {
     if (!isOpen) {
       triggerRef?.current?.focus()
+    } else if (section === 'privacy') {
+      setTimeout(() => {
+        scrollContainerRef.current
+          ?.querySelector('#privacy-notice')
+          ?.scrollIntoView({ block: 'start' })
+      }, 100)
     }
-  }, [isOpen, triggerRef])
+  }, [isOpen, section, triggerRef])
 
   const handleAgree = useCallback(() => {
     onAgree()
@@ -132,7 +139,7 @@ export function TermsModal({ isOpen, onClose, onAgree, triggerRef }: TermsModalP
           }}
           role="dialog"
           aria-modal="true"
-          aria-label="Terms & Conditions"
+          aria-label={section === 'privacy' ? 'Privacy Notice' : 'Terms & Conditions'}
         >
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
 
@@ -152,13 +159,13 @@ export function TermsModal({ isOpen, onClose, onAgree, triggerRef }: TermsModalP
             {/* Header */}
             <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-outline-variant/30">
               <h2 className="font-display text-lg text-on-surface">
-                Terms & Conditions
+                {section === 'privacy' ? 'Privacy Notice' : 'Terms & Conditions'}
               </h2>
               <button
                 ref={closeButtonRef}
                 onClick={onClose}
                 className="w-9 h-9 flex items-center justify-center text-on-surface-variant/50 hover:text-on-surface hover:bg-surface-container-high rounded-full transition-all duration-200 cursor-pointer"
-                aria-label="Close terms and conditions"
+                aria-label={section === 'privacy' ? 'Close privacy notice' : 'Close terms and conditions'}
               >
                 <X size={16} />
               </button>
@@ -190,23 +197,23 @@ export function TermsModal({ isOpen, onClose, onAgree, triggerRef }: TermsModalP
                     All reservations are requests and are subject to owner approval. Submitting a reservation does not guarantee availability. Our team will review your request and confirm availability before any payment is required.
                   </p>
                   <p>
-                    Each reservation is a 21-hour stay, from check-in at 2:00 PM until check-out at 11:00 AM the following day.
+                    Each reservation is a 21-hour stay, starting at your selected arrival time.
                   </p>
                 </TermsSection>
 
                 <TermsSection title="Cancellation Policy">
                   <p>
-                    Cancellations made at least 7 days before the scheduled check-in date will receive a full refund of any deposits made. Cancellations within 7 days of check-in are non-refundable.
+                    Pending reservation requests can be cancelled at any time at no cost. Approved reservations cancelled at least 7 days before the scheduled arrival are also free of charge.
                   </p>
                   <p>
-                    No-shows will be treated as cancellations and will not receive a refund. We recommend coordinating with us if you need to reschedule — we will do our best to accommodate date changes.
+                    Cancellations made within 7 days of arrival may be subject to a fee. No-shows will be treated as cancellations. We recommend coordinating with us if you need to reschedule — we will do our best to accommodate date changes.
                   </p>
                 </TermsSection>
 
                 <TermsSection title="Check-in / Check-out">
                   <ul className="list-none space-y-1.5">
-                    <li><strong className="text-on-surface">Check-in:</strong> 2:00 PM</li>
-                    <li><strong className="text-on-surface">Check-out:</strong> 11:00 AM</li>
+                    <li><strong className="text-on-surface">Check-in:</strong> Your selected arrival time.</li>
+                    <li><strong className="text-on-surface">Check-out:</strong> 21 hours after your arrival.</li>
                     <li>Early check-in and late check-out may be arranged in advance, subject to availability on your booking date.</li>
                   </ul>
                 </TermsSection>
@@ -229,7 +236,7 @@ export function TermsModal({ isOpen, onClose, onAgree, triggerRef }: TermsModalP
                   </p>
                 </TermsSection>
 
-                <TermsSection title="Privacy Notice">
+                <TermsSection id="privacy-notice" title="Privacy Notice">
                   <p>
                     We collect personal information (name, email, phone number) solely for the purpose of processing and managing your reservation. This information is not shared with third parties and is stored securely.
                   </p>
@@ -244,13 +251,7 @@ export function TermsModal({ isOpen, onClose, onAgree, triggerRef }: TermsModalP
                       <strong className="text-on-surface">No payment is required until your reservation has been approved.</strong> Submitting a reservation request does not obligate you to any payment.
                     </p>
                     <p>
-                      Once your reservation is approved by our team, you will receive payment instructions for the required <strong className="text-on-surface">50% down payment</strong>. This down payment secures your booking.
-                    </p>
-                    <p>
-                      The remaining balance follows the property&apos;s payment policy and must be settled according to the terms provided upon approval.
-                    </p>
-                    <p>
-                      <strong className="text-on-surface">Reservations are not confirmed until the required payment has been successfully received.</strong>
+                      Once your reservation is approved by our team, we will contact you with the final confirmation and any payment instructions. Approval by our team confirms your booking.
                     </p>
                   </div>
                 </TermsSection>

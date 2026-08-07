@@ -1,4 +1,4 @@
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 import {
   CalendarDays,
   Users,
@@ -6,9 +6,9 @@ import {
   Hash,
   DoorOpen,
   PartyPopper,
-} from "lucide-react"
-import { cn } from "../../lib/cn"
-import type { Reservation } from "../../lib/reservationData"
+} from "lucide-react";
+import { cn } from "../../lib/cn";
+import type { Reservation } from "../../lib/reservationData";
 import {
   getVillaImage,
   formatDate,
@@ -17,16 +17,23 @@ import {
   getStayDuration,
   formatPrice,
   getStatusDisplay,
-} from "../../lib/reservationData"
+} from "../../lib/reservationData";
+import { formatArrivalLabel, formatCheckoutLabel } from "../../lib/bookingTime";
 
 interface Props {
-  reservation: Reservation
+  reservation: Reservation;
 }
 
 export function ReservationOverviewCard({ reservation }: Props) {
-  const s = getStatusDisplay(reservation.status)
-  const image = getVillaImage(reservation.villaName)
-  const hasPartyFee = (reservation.partyFee ?? 0) > 0
+  const s = getStatusDisplay(reservation.status);
+  const image = getVillaImage(reservation.villaName);
+  const hasPartyFee = (reservation.partyFee ?? 0) > 0;
+  const arrivalLabel = reservation.arrivalDatetime
+    ? formatArrivalLabel(reservation.arrivalDatetime)
+    : formatDate(reservation.checkIn);
+  const checkoutLabel = reservation.checkoutDatetime
+    ? formatCheckoutLabel(reservation.checkoutDatetime)
+    : formatDate(reservation.checkOut);
 
   return (
     <motion.div
@@ -85,14 +92,14 @@ export function ReservationOverviewCard({ reservation }: Props) {
           <div className="grid grid-cols-2 gap-x-6 gap-y-5">
             <DetailItem
               icon={CalendarDays}
-              label="Check-in"
-              value={formatDate(reservation.checkIn)}
+              label="Arrival"
+              value={arrivalLabel}
               emphasis
             />
             <DetailItem
               icon={CalendarDays}
-              label="Check-out"
-              value={formatDate(reservation.checkOut)}
+              label="Checkout"
+              value={checkoutLabel}
             />
             <DetailItem
               icon={Clock}
@@ -148,7 +155,9 @@ export function ReservationOverviewCard({ reservation }: Props) {
           <div className="space-y-3">
             <PricingRow
               label="Base Rate (21-Hour Stay)"
-              value={reservation.baseRate ? formatPrice(reservation.baseRate) : "—"}
+              value={
+                reservation.baseRate ? formatPrice(reservation.baseRate) : "—"
+              }
             />
 
             {hasPartyFee && (
@@ -158,16 +167,18 @@ export function ReservationOverviewCard({ reservation }: Props) {
                 icon={<PartyPopper size={12} className="text-secondary/60" />}
               />
             )}
-
-
           </div>
 
           {/* Total */}
           <div className="mt-4 pt-4 border-t border-outline-variant/30">
             <div className="flex justify-between items-baseline">
-              <span className="font-body text-sm font-semibold text-on-surface">Total</span>
+              <span className="font-body text-sm font-semibold text-on-surface">
+                Total
+              </span>
               <span className="font-display text-headline-sm text-primary">
-                {reservation.totalAmount ? formatPrice(reservation.totalAmount) : "—"}
+                {reservation.totalAmount
+                  ? formatPrice(reservation.totalAmount)
+                  : "—"}
               </span>
             </div>
           </div>
@@ -196,7 +207,7 @@ export function ReservationOverviewCard({ reservation }: Props) {
         </div>
       </div>
     </motion.div>
-  )
+  );
 }
 
 function DetailItem({
@@ -205,10 +216,10 @@ function DetailItem({
   value,
   emphasis,
 }: {
-  icon: typeof CalendarDays
-  label: string
-  value: string
-  emphasis?: boolean
+  icon: typeof CalendarDays;
+  label: string;
+  value: string;
+  emphasis?: boolean;
 }) {
   return (
     <div>
@@ -218,14 +229,18 @@ function DetailItem({
           {label}
         </span>
       </div>
-      <p className={cn(
-        "font-body text-sm leading-snug",
-        emphasis ? "text-primary font-semibold" : "text-on-surface font-medium",
-      )}>
+      <p
+        className={cn(
+          "font-body text-sm leading-snug",
+          emphasis
+            ? "text-primary font-semibold"
+            : "text-on-surface font-medium",
+        )}
+      >
         {value}
       </p>
     </div>
-  )
+  );
 }
 
 function PricingRow({
@@ -234,10 +249,10 @@ function PricingRow({
   icon,
   valueClassName,
 }: {
-  label: string
-  value: string
-  icon?: React.ReactNode
-  valueClassName?: string
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  valueClassName?: string;
 }) {
   return (
     <div className="flex justify-between items-center">
@@ -245,9 +260,14 @@ function PricingRow({
         {icon}
         {label}
       </span>
-      <span className={cn("font-body text-sm text-on-surface font-medium tabular-nums", valueClassName)}>
+      <span
+        className={cn(
+          "font-body text-sm text-on-surface font-medium tabular-nums",
+          valueClassName,
+        )}
+      >
         {value}
       </span>
     </div>
-  )
+  );
 }

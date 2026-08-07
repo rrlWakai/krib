@@ -1,3 +1,5 @@
+import { corsHeaders } from './cors.ts'
+
 export interface AppError {
   code: string
   message: string
@@ -10,9 +12,7 @@ export function errorResponse(error: AppError): Response {
     JSON.stringify({ code: error.code, message: error.message }),
     {
       status: error.status,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     },
   )
 }
@@ -25,7 +25,7 @@ export function methodNotAllowed(method: string): Response {
     }),
     {
       status: 405,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     },
   )
 }
@@ -38,7 +38,7 @@ export function notImplemented(name: string): Response {
     }),
     {
       status: 501,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     },
   )
 }
@@ -46,14 +46,14 @@ export function notImplemented(name: string): Response {
 export function badRequest(message: string): Response {
   return new Response(
     JSON.stringify({ code: 'BAD_REQUEST', message }),
-    { status: 400, headers: { 'Content-Type': 'application/json' } },
+    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   )
 }
 
 export function unauthorized(message = 'Unauthorized'): Response {
   return new Response(
     JSON.stringify({ code: 'UNAUTHORIZED', message }),
-    { status: 401, headers: { 'Content-Type': 'application/json' } },
+    { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   )
 }
 
@@ -64,6 +64,6 @@ export function internalError(cause?: unknown): Response {
       code: 'INTERNAL_ERROR',
       message: 'An unexpected error occurred',
     }),
-    { status: 500, headers: { 'Content-Type': 'application/json' } },
+    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   )
 }

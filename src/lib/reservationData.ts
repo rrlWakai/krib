@@ -17,6 +17,8 @@ export interface Reservation {
   maxGuests: number
   checkIn: string
   checkOut: string
+  arrivalDatetime?: string
+  checkoutDatetime?: string
   guests: {
     adults: number
     children: number
@@ -142,21 +144,25 @@ export function getTimelineStepForStatus(status: ReservationStatus): number {
   return STATUS_TO_STEP[status] ?? -1
 }
 
+function toDate(dateStr: string): Date {
+  return dateStr.includes("T") ? new Date(dateStr) : new Date(dateStr + "T12:00:00")
+}
+
 export function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00')
-  return d.toLocaleDateString('en-PH', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+  const d = toDate(dateStr)
+  return d.toLocaleDateString("en-PH", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   })
 }
 
 export function formatDateShort(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00')
-  return d.toLocaleDateString('en-PH', {
-    month: 'short',
-    day: 'numeric',
+  const d = toDate(dateStr)
+  return d.toLocaleDateString("en-PH", {
+    month: "short",
+    day: "numeric",
   })
 }
 
@@ -175,8 +181,8 @@ export function formatGuestCount(g: { adults: number; children: number; infants:
 }
 
 export function getStayDuration(checkIn: string, checkOut: string): string {
-  const start = new Date(checkIn + 'T12:00:00')
-  const end = new Date(checkOut + 'T12:00:00')
+  const start = toDate(checkIn)
+  const end = toDate(checkOut)
   const hours = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60))
   if (hours === 21) return '21-Hour Stay'
   return `${hours}-Hour Stay`
