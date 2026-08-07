@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -157,10 +159,10 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          arrival_datetime: string
           cancelled_at: string | null
           cancelled_by: string | null
-          check_in: string
-          check_out: string
+          checkout_datetime: string
           completed_at: string | null
           created_at: string
           declined_at: string | null
@@ -168,6 +170,7 @@ export type Database = {
           guest_count: number
           guest_id: string
           id: string
+          privacy_accepted: boolean
           reference_code: string
           special_requests: string
           status: Database["public"]["Enums"]["reservation_status"]
@@ -179,10 +182,10 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          arrival_datetime: string
           cancelled_at?: string | null
           cancelled_by?: string | null
-          check_in: string
-          check_out: string
+          checkout_datetime: string
           completed_at?: string | null
           created_at?: string
           declined_at?: string | null
@@ -190,6 +193,7 @@ export type Database = {
           guest_count: number
           guest_id: string
           id?: string
+          privacy_accepted?: boolean
           reference_code: string
           special_requests?: string
           status?: Database["public"]["Enums"]["reservation_status"]
@@ -201,10 +205,10 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          arrival_datetime?: string
           cancelled_at?: string | null
           cancelled_by?: string | null
-          check_in?: string
-          check_out?: string
+          checkout_datetime?: string
           completed_at?: string | null
           created_at?: string
           declined_at?: string | null
@@ -212,6 +216,7 @@ export type Database = {
           guest_count?: number
           guest_id?: string
           id?: string
+          privacy_accepted?: boolean
           reference_code?: string
           special_requests?: string
           status?: Database["public"]["Enums"]["reservation_status"]

@@ -11,7 +11,7 @@ interface WorkspaceHeaderProps {
 
 export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderProps) {
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, admin } = useAuth()
 
   const currentPage = NAV_ITEMS.find(
     (item) =>
@@ -28,15 +28,15 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
     day: 'numeric',
   })
 
-  const initials = user?.email
-    ? user.email
-        .split('@')[0]
-        .split(/[._-]/)
-        .map((part) => part[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : 'KA'
+  const displayName = admin?.full_name ?? user?.email ?? 'Admin'
+
+  const initials = displayName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .filter(Boolean)
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 
   return (
     <header
@@ -91,7 +91,7 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
         </button>
         <div
           className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0A1F44] font-body text-[12px] font-medium leading-none text-white"
-          title={user?.email ?? ''}
+          title={displayName}
         >
           {initials}
         </div>

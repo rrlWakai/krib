@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
+import { LoadingBlock, ErrorBlock } from '../components/AdminState'
+import { useAdminQuery } from '../hooks/useAdminQuery'
+import { useAuth } from '../../hooks/auth/useAuth'
 import { formatCurrency, getDaysUntil } from '../data/constants'
-import type { Reservation } from '../types'
+import { estimateReservationValue, computeDashboard } from '../services/api'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -21,23 +24,76 @@ function formatFullDate(dateStr: string) {
   })
 }
 
+function timeGreeting(): string {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good Morning'
+  if (hour < 18) return 'Good Afternoon'
+  return 'Good Evening'
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
-  const stats = {
-    pendingReservations: 0,
-    todayCheckins: 0,
-    todayCheckouts: 0,
-    occupancyRate: 0,
-    confirmedUpcoming: 0,
-    recentlyApproved: 0,
-    totalGuests: 0,
-    totalReservations: 0,
+  const { admin } = useAuth()
+
+  const reservationsQuery = useAdminQuery('reservations', async () => {
+    const { fetchAllReservations } = await import('../services/api')
+    return fetchAllReservations()
+  })
+
+  const villasQuery = useAdminQuery('villas', async () => {
+    const { fetchVillas } = await import('../services/api')
+    return fetchVillas()
+  })
+
+  const guestsQuery = useAdminQuery('guests', async () => {
+    const { fetchGuests } = await import('../services/api')
+    return fetchGuests()
+  })
+
+  const loading = reservationsQuery.loading || villasQuery.loading || guestsQuery.loading
+  const error = reservationsQuery.error ?? villasQuery.error ?? guestsQuery.error
+
+  if (loading) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <PageHeader
+          title={timeGreeting()}
+          subtitle={new Date().toLocaleDateString('en-PH', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        />
+        <LoadingBlock />
+      </motion.div>
+    )
   }
 
-  const recentReservations: Reservation[] = []
-  const upcomingReservations: Reservation[] = []
-  const todayCheckins: Reservation[] = []
-  const todayCheckouts: Reservation[] = []
+  if (error) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <PageHeader
+          title={timeGreeting()}
+          subtitle={new Date().toLocaleDateString('en-PH', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        />
+        <ErrorBlock message={error} onRetry={reservationsQuery.refetch} />
+      </motion.div>
+    )
+  }
+
+  const reservations = reservationsQuery.data ?? []
+  const villas = villasQuery.data ?? []
+  const guests = guestsQuery.data ?? []
+  const dashboard = computeDashboard(reservations, villas, guests)
+
+  const firstName = admin?.full_name?.split(' ')[0] ?? 'Admin'
+  const { stats, recentReservations, todayCheckins, todayCheckouts, upcomingArrivals } = dashboard
 
   return (
     <motion.div
@@ -46,7 +102,7 @@ export default function Dashboard() {
       transition={{ duration: 0.3 }}
     >
       <PageHeader
-        title="Good Morning, Karen"
+        title={`${timeGreeting()}, ${firstName}`}
         subtitle={`${new Date().toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`}
       />
 
@@ -104,8 +160,8 @@ export default function Dashboard() {
                 className="flex cursor-pointer items-center justify-between py-2 transition-colors hover:text-[#C9A227]"
               >
                 <div>
-                  <p className="font-body text-[14px] font-medium text-[#0A1F44]">{r.guestName}</p>
-                  <p className="font-body text-[12px] text-[#757575]">{r.villaName}</p>
+                  <p className="font-body text-[14px] font-medium text-[#0A1F44]">{r.guest?.full_name}</p>
+                  <p className="font-body text-[12px] text-[#757575]">{r.villa?.name}</p>
                 </div>
               </div>
             ))}
@@ -123,8 +179,8 @@ export default function Dashboard() {
                 className="flex cursor-pointer items-center justify-between py-2 transition-colors hover:text-[#C9A227]"
               >
                 <div>
-                  <p className="font-body text-[14px] font-medium text-[#0A1F44]">{r.guestName}</p>
-                  <p className="font-body text-[12px] text-[#757575]">{r.villaName}</p>
+                  <p className="font-body text-[14px] font-medium text-[#0A1F44]">{r.guest?.full_name}</p>
+                  <p className="font-body text-[12px] text-[#757575]">{r.villa?.name}</p>
                 </div>
               </div>
             ))}
@@ -173,14 +229,14 @@ export default function Dashboard() {
                   className="cursor-pointer border-b border-[#ECECEC]/50 transition-colors hover:bg-[#f0f2f7]/50"
                 >
                   <td className="py-3.5 pr-4">
-                    <span className="font-body text-[14px] text-[#0A1F44]">{res.guestName}</span>
+                    <span className="font-body text-[14px] text-[#0A1F44]">{res.guest?.full_name}</span>
                   </td>
                   <td className="py-3.5 pr-4 hidden sm:table-cell">
-                    <span className="font-body text-[13px] text-[#757575]">{res.villaName}</span>
+                    <span className="font-body text-[13px] text-[#757575]">{res.villa?.name}</span>
                   </td>
                   <td className="py-3.5 pr-4 hidden lg:table-cell">
                     <span className="font-body text-[13px] text-[#757575]">
-                      {formatDate(res.checkIn)} – {formatDate(res.checkOut)}
+                      {formatDate(res.arrival_datetime)} – {formatDate(res.checkout_datetime)}
                     </span>
                   </td>
                   <td className="py-3.5 pr-4">
@@ -188,7 +244,7 @@ export default function Dashboard() {
                   </td>
                   <td className="py-3.5 text-right">
                     <span className="font-body text-[14px] font-medium text-[#0A1F44]">
-                      {formatCurrency(res.totalAmount)}
+                      {formatCurrency(estimateReservationValue(res))}
                     </span>
                   </td>
                 </tr>
@@ -210,14 +266,14 @@ export default function Dashboard() {
         </h2>
       </div>
 
-      {upcomingReservations.length === 0 ? (
+      {upcomingArrivals.length === 0 ? (
         <div className="border border-[#ECECEC] rounded-lg p-6">
           <p className="font-body text-[14px] text-[#757575]">No upcoming reservations.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {upcomingReservations.map((res) => {
-            const daysUntil = getDaysUntil(res.checkIn)
+          {upcomingArrivals.map((res) => {
+            const daysUntil = getDaysUntil(res.arrival_datetime)
             return (
               <div
                 key={res.id}
@@ -228,20 +284,20 @@ export default function Dashboard() {
                   <StatusBadge status={res.status} size="sm" />
                 </div>
                 <p className="mb-0.5 font-body text-[14px] font-medium text-[#0A1F44]">
-                  {res.guestName}
+                  {res.guest?.full_name}
                 </p>
                 <p className="mb-2 font-body text-[12px] text-[#757575]">
-                  {res.villaName}
+                  {res.villa?.name}
                 </p>
                 <p className="font-body text-[12px] text-[#757575]">
-                  {formatFullDate(res.checkIn)}
+                  {formatFullDate(res.arrival_datetime)}
                 </p>
                 <p className="mb-3 font-body text-[12px] text-[#757575]">
-                  → {formatFullDate(res.checkOut)}
+                  → {formatFullDate(res.checkout_datetime)}
                 </p>
                 <div className="flex items-center justify-between border-t border-[#ECECEC] pt-3">
                   <span className="font-body text-[14px] font-medium text-[#0A1F44]">
-                    {formatCurrency(res.totalAmount)}
+                    {formatCurrency(estimateReservationValue(res))}
                   </span>
                   <span className="font-body text-[11px] text-[#757575]">
                     {daysUntil === 0

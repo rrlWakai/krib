@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
@@ -7,13 +6,14 @@ import {
   Mail,
   CheckCircle2,
   Ban,
-  LogIn,
-  LogOut,
+  XCircle,
+  Send,
 } from 'lucide-react'
 import type { Reservation, ReservationStatus } from '../../types'
 import { StatusBadge } from '../StatusBadge'
-import { formatCurrency } from '../../data/mockData'
-import { updateReservationStatus } from '../../services/calendarService'
+import { formatCurrency } from '../../data/constants'
+import { useAdminMutation } from '../../hooks/useAdminQuery'
+import { estimateReservationValue, reservationNights } from '../../services/api'
 
 interface ReservationDrawerProps {
   reservation: Reservation | null
@@ -21,71 +21,99 @@ interface ReservationDrawerProps {
   onStatusChange: () => void
 }
 
-const STATUS_ACTIONS: {
+interface DrawerAction {
   label: string
   icon: React.FC<{ size?: number; className?: string }>
-  status: ReservationStatus
+  run: (r: Reservation) => Promise<unknown>
+  loadingLabel: string
   variant: 'primary' | 'danger'
   showFor: ReservationStatus[]
-}[] = [
-  {
-    label: 'Approve',
-    icon: CheckCircle2,
-    status: 'approved',
-    variant: 'primary',
-    showFor: ['pending'],
-  },
-  {
-    label: 'Mark Checked In',
-    icon: LogIn,
-    status: 'confirmed',
-    variant: 'primary',
-    showFor: ['approved'],
-  },
-  {
-    label: 'Mark Checked Out',
-    icon: LogOut,
-    status: 'completed',
-    variant: 'primary',
-    showFor: ['confirmed'],
-  },
-  {
-    label: 'Cancel',
-    icon: Ban,
-    status: 'cancelled',
-    variant: 'danger',
-    showFor: ['pending', 'approved', 'awaiting_payment'],
-  },
-]
+}
+
+function useDrawerMutations() {
+  const approve = useAdminMutation(async (id: string) => {
+    const { approveReservation } = await import('../../services/mutations')
+    return approveReservation(id)
+  })
+  const decline = useAdminMutation(async (id: string) => {
+    const { declineReservation } = await import('../../services/mutations')
+    return declineReservation(id, '')
+  })
+  const cancel = useAdminMutation(async (id: string) => {
+    const { cancelReservation } = await import('../../services/mutations')
+    return cancelReservation(id)
+  })
+  const sms = useAdminMutation(async (id: string) => {
+    const { sendReservationSms } = await import('../../services/mutations')
+    return sendReservationSms(id, { type: 'confirmation' })
+  })
+  return { approve, decline, cancel, sms }
+}
 
 export default function ReservationDrawer({
   reservation,
   onClose,
   onStatusChange,
 }: ReservationDrawerProps) {
-  const [updating, setUpdating] = useState(false)
-  const [feedback, setFeedback] = useState<string | null>(null)
+  const { approve, decline, cancel, sms } = useDrawerMutations()
+  const updating = approve.loading || decline.loading || cancel.loading || sms.loading
+  const actionError = approve.error ?? decline.error ?? cancel.error ?? sms.error
 
   if (!reservation) return null
 
-  const handleAction = (status: ReservationStatus) => {
-    setUpdating(true)
-    setFeedback(null)
-    setTimeout(() => {
-      updateReservationStatus(reservation.id, status)
-      setUpdating(false)
-      setFeedback(
-        `${reservation.guestName}'s reservation has been ${status}.`,
-      )
-      setTimeout(() => {
-        setFeedback(null)
-        onStatusChange()
-      }, 1500)
-    }, 400)
+  const res = reservation
+
+  const activeMutation =
+    approve.loading ? approve
+    : decline.loading ? decline
+    : cancel.loading ? cancel
+    : sms
+
+  const STATUS_ACTIONS: DrawerAction[] = [
+    {
+      label: 'Approve',
+      icon: CheckCircle2,
+      run: (r) => approve.mutate(r.id),
+      loadingLabel: 'Approving…',
+      variant: 'primary',
+      showFor: ['pending'],
+    },
+    {
+      label: 'Decline',
+      icon: XCircle,
+      run: (r) => decline.mutate(r.id),
+      loadingLabel: 'Declining…',
+      variant: 'danger',
+      showFor: ['pending'],
+    },
+    {
+      label: 'Cancel',
+      icon: Ban,
+      run: (r) => cancel.mutate(r.id),
+      loadingLabel: 'Cancelling…',
+      variant: 'danger',
+      showFor: ['pending', 'approved'],
+    },
+    {
+      label: 'Send Confirmation SMS',
+      icon: Send,
+      run: (r) => sms.mutate(r.id),
+      loadingLabel: 'Sending…',
+      variant: 'primary',
+      showFor: ['approved'],
+    },
+  ]
+
+  const availableActions = STATUS_ACTIONS.filter((a) => a.showFor.includes(res.status))
+
+  async function handleAction(action: DrawerAction) {
+    await action.run(res)
+    onStatusChange()
   }
 
-  const checkInDate = new Date(reservation.checkIn + 'T00:00:00')
-  const checkOutDate = new Date(reservation.checkOut + 'T00:00:00')
+  const checkInDate = new Date(res.arrival_datetime)
+  const checkOutDate = new Date(res.checkout_datetime)
+  const nights = reservationNights(res)
 
   return (
     <AnimatePresence>
@@ -107,7 +135,7 @@ export default function ReservationDrawer({
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#ECECEC] bg-white px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7] font-body text-[13px] font-medium text-[#0A1F44]">
-              {reservation.guestName
+              {reservation.guest.full_name
                 .split(' ')
                 .map((n) => n[0])
                 .join('')
@@ -116,10 +144,10 @@ export default function ReservationDrawer({
             </div>
             <div>
               <p className="font-body text-[14px] font-medium text-[#0A1F44]">
-                {reservation.guestName}
+                {reservation.guest.full_name}
               </p>
               <p className="font-body text-[11px] text-[#757575]">
-                {reservation.id.toUpperCase()}
+                {reservation.reference_code}
               </p>
             </div>
           </div>
@@ -133,14 +161,10 @@ export default function ReservationDrawer({
         </div>
 
         <div className="p-6">
-          {feedback && (
-            <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 rounded-lg border border-[#ECECEC] bg-[#FAFAFA] px-4 py-3 font-body text-[13px] text-[#0A1F44]"
-            >
-              {feedback}
-            </motion.div>
+          {actionError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 font-body text-[13px] text-red-600">
+              {actionError}
+            </div>
           )}
 
           <div className="mb-6">
@@ -149,7 +173,7 @@ export default function ReservationDrawer({
 
           <div className="mb-6 space-y-1">
             <p className="font-body text-[13px] font-medium text-[#0A1F44]">
-              {reservation.villaName}
+              {reservation.villa.name}
             </p>
             <p className="font-body text-[13px] text-[#757575]">
               {checkInDate.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
@@ -165,19 +189,16 @@ export default function ReservationDrawer({
             <div className="space-y-2.5">
               <div className="flex items-center gap-3">
                 <Mail size={14} className="shrink-0 text-[#757575]" />
-                <span className="font-body text-[13px] text-[#0A1F44]">{reservation.guestEmail}</span>
+                <span className="font-body text-[13px] text-[#0A1F44]">{reservation.guest.email}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone size={14} className="shrink-0 text-[#757575]" />
-                <span className="font-body text-[13px] text-[#0A1F44]">{reservation.guestPhone}</span>
+                <span className="font-body text-[13px] text-[#0A1F44]">{reservation.guest.phone}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Users size={14} className="shrink-0 text-[#757575]" />
                 <span className="font-body text-[13px] text-[#0A1F44]">
-                  {reservation.guests.adults} Adult{reservation.guests.adults !== 1 ? 's' : ''}
-                  {reservation.guests.children > 0 && `, ${reservation.guests.children} Child${reservation.guests.children !== 1 ? 'ren' : ''}`}
-                  {reservation.guests.infants > 0 && `, ${reservation.guests.infants} Infant${reservation.guests.infants !== 1 ? 's' : ''}`}
-                  {reservation.guests.pets > 0 && `, ${reservation.guests.pets} Pet${reservation.guests.pets !== 1 ? 's' : ''}`}
+                  {reservation.guest_count} Guest{reservation.guest_count !== 1 ? 's' : ''}
                 </span>
               </div>
             </div>
@@ -189,23 +210,23 @@ export default function ReservationDrawer({
             </h4>
             <div className="space-y-2">
               <div className="flex justify-between font-body text-[13px] text-[#0A1F44]">
-                <span>Total Amount</span>
-                <span className="font-medium">{formatCurrency(reservation.totalAmount)}</span>
+                <span>Base Rate ({nights} night{nights !== 1 ? 's' : ''})</span>
+                <span>{formatCurrency(Number(reservation.villa.base_price) * nights)}</span>
               </div>
-              <div className="flex justify-between font-body text-[13px] text-[#757575]">
-                <span>Amount Due</span>
-                <span>{formatCurrency(reservation.amountDue)}</span>
+              <div className="flex justify-between font-body text-[13px] text-[#0A1F44]">
+                <span>Total Amount</span>
+                <span className="font-medium">{formatCurrency(estimateReservationValue(reservation))}</span>
               </div>
             </div>
           </div>
 
-          {reservation.specialRequests && (
+          {reservation.special_requests && (
             <div className="mb-6 space-y-3">
               <h4 className="font-body text-[11px] uppercase tracking-[0.08em] text-[#757575]">
                 Special Requests
               </h4>
               <p className="font-body text-[13px] leading-relaxed text-[#0A1F44]">
-                {reservation.specialRequests}
+                {reservation.special_requests}
               </p>
             </div>
           )}
@@ -225,18 +246,16 @@ export default function ReservationDrawer({
                         ? 'Cancellation SMS sent'
                         : 'Confirmation SMS sent'}
                 </p>
-                <p className="font-body text-[11px] text-[#757575]">via iProg SMS</p>
+                <p className="font-body text-[11px] text-[#757575]">via Semaphore SMS</p>
               </div>
             </div>
           </div>
 
           <div className="mt-8 space-y-2 border-t border-[#ECECEC] pt-6">
-            {STATUS_ACTIONS.filter((a) =>
-              a.showFor.includes(reservation.status),
-            ).map((action) => (
+            {availableActions.map((action) => (
               <button
-                key={action.status}
-                onClick={() => handleAction(action.status)}
+                key={action.label}
+                onClick={() => handleAction(action)}
                 disabled={updating}
                 className={`flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-body text-[14px] font-medium transition-all ${
                   updating && 'opacity-50'
@@ -247,17 +266,17 @@ export default function ReservationDrawer({
                 }`}
               >
                 <action.icon size={16} />
-                {updating ? 'Updating...' : action.label}
+                {updating ? (activeMutation === sms && sms.loading ? 'Sending…' : 'Updating…') : action.label}
               </button>
             ))}
-            {['cancelled', 'declined', 'expired'].includes(reservation.status) && (
+            {(['cancelled', 'declined', 'completed'].includes(reservation.status)) && availableActions.length === 0 && (
               <div className="rounded-lg bg-[#FAFAFA] px-4 py-3 text-center font-body text-[13px] text-[#757575]">
                 This reservation has been{' '}
                 {reservation.status === 'cancelled'
                   ? 'cancelled'
                   : reservation.status === 'declined'
                     ? 'declined'
-                    : 'expired'}
+                    : 'completed'}
                 .
               </div>
             )}

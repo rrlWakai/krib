@@ -6,13 +6,9 @@ import type {
 export const RESERVATION_STATUSES: ReservationStatus[] = [
   'pending',
   'approved',
-  'awaiting_payment',
-  'payment_submitted',
-  'confirmed',
   'completed',
-  'cancelled',
   'declined',
-  'expired',
+  'cancelled',
 ];
 
 export const NAV_ITEMS: NavItem[] = [
@@ -26,18 +22,13 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Settings', icon: 'Settings', path: '/admin/settings' },
 ];
 
-
 export function getReservationStatusLabel(status: ReservationStatus): string {
   const labels: Record<ReservationStatus, string> = {
     pending: 'Pending',
     approved: 'Approved',
-    awaiting_payment: 'Awaiting Payment',
-    payment_submitted: 'Payment Submitted',
-    confirmed: 'Confirmed',
     completed: 'Completed',
-    cancelled: 'Cancelled',
     declined: 'Declined',
-    expired: 'Expired',
+    cancelled: 'Cancelled',
   };
   return labels[status];
 }

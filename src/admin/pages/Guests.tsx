@@ -2,9 +2,12 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Mail, Phone, CalendarDays } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
+import { StatusBadge } from '../components/StatusBadge'
+import { LoadingBlock, ErrorBlock } from '../components/AdminState'
+import { useAdminQuery } from '../hooks/useAdminQuery'
 import { formatCurrency } from '../data/constants'
-import type { Guest, Reservation } from '../types'
-
+import { computeGuestProfiles, estimateReservationValue } from '../services/api'
+import type { GuestProfile } from '../types'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -14,48 +17,69 @@ function formatDate(dateStr: string) {
   })
 }
 
-function formatCurrencyShort(amount: number) {
-  return new Intl.NumberFormat('en-PH', {
-    style: 'currency',
-    currency: 'PHP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount)
-}
-
 function getInitials(name: string) {
   return name
     .split(' ')
     .map((n) => n[0])
+    .filter(Boolean)
     .join('')
     .slice(0, 2)
 }
 
 export default function Guests() {
-  const guests: Guest[] = []
-  const reservations: Reservation[] = []
+  const guestsQuery = useAdminQuery('guests', async () => {
+    const { fetchGuests } = await import('../services/api')
+    return fetchGuests()
+  })
+
+  const reservationsQuery = useAdminQuery('reservations', async () => {
+    const { fetchAllReservations } = await import('../services/api')
+    return fetchAllReservations()
+  })
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null)
 
+  const profiles: GuestProfile[] = useMemo(
+    () => computeGuestProfiles(guestsQuery.data ?? [], reservationsQuery.data ?? []),
+    [guestsQuery.data, reservationsQuery.data],
+  )
+
   const filtered = useMemo(() => {
-    if (!searchQuery) return guests
+    if (!searchQuery) return profiles
     const q = searchQuery.toLowerCase()
-    return guests.filter(
+    return profiles.filter(
       (g) =>
-        g.name.toLowerCase().includes(q) ||
+        g.full_name.toLowerCase().includes(q) ||
         g.email.toLowerCase().includes(q) ||
-        g.phone.includes(q)
+        g.phone.includes(q),
     )
-  }, [searchQuery])
+  }, [profiles, searchQuery])
 
   const selectedGuest = selectedGuestId
-    ? guests.find((g) => g.id === selectedGuestId)
+    ? profiles.find((g) => g.id === selectedGuestId)
     : null
 
-  const selectedGuestReservations = selectedGuest
-    ? reservations.filter((r) => selectedGuest.reservations.includes(r.id))
-    : []
+  if (guestsQuery.loading || reservationsQuery.loading) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <PageHeader title="Guests" subtitle="Loading guest directory..." />
+        <LoadingBlock />
+      </motion.div>
+    )
+  }
+
+  if (guestsQuery.error || reservationsQuery.error) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <PageHeader title="Guests" subtitle="Something went wrong." />
+        <ErrorBlock
+          message={guestsQuery.error ?? reservationsQuery.error ?? 'Unknown error'}
+          onRetry={guestsQuery.refetch}
+        />
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
@@ -108,16 +132,18 @@ export default function Guests() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f0f2f7] font-body text-[12px] font-medium text-[#0A1F44]">
-                          {getInitials(guest.name)}
+                          {getInitials(guest.full_name)}
                         </div>
-                        <span className="font-body text-[14px] font-medium text-[#0A1F44]">{guest.name}</span>
+                        <span className="font-body text-[14px] font-medium text-[#0A1F44]">{guest.full_name}</span>
                       </div>
                     </td>
                     <td className="hidden lg:table-cell px-5 py-3.5 font-body text-[13px] text-[#757575]">{guest.email}</td>
                     <td className="px-5 py-3.5 font-body text-[13px] text-[#757575]">{guest.phone}</td>
                     <td className="px-5 py-3.5 text-right font-body text-[14px] font-medium text-[#0A1F44]">{guest.totalStays}</td>
-                    <td className="px-5 py-3.5 text-right font-body text-[14px] font-medium text-[#0A1F44]">{formatCurrencyShort(guest.totalSpending)}</td>
-                    <td className="hidden lg:table-cell px-5 py-3.5 text-right font-body text-[12px] text-[#757575]">{formatDate(guest.lastVisit)}</td>
+                    <td className="px-5 py-3.5 text-right font-body text-[14px] font-medium text-[#0A1F44]">{formatCurrency(guest.totalSpending)}</td>
+                    <td className="hidden lg:table-cell px-5 py-3.5 text-right font-body text-[12px] text-[#757575]">
+                      {guest.lastVisit ? formatDate(guest.lastVisit) : '—'}
+                    </td>
                   </tr>
                 ))
               )}
@@ -141,16 +167,16 @@ export default function Guests() {
               >
                 <div className="mb-2 flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f0f2f7] font-body text-[12px] font-medium text-[#0A1F44]">
-                    {getInitials(guest.name)}
+                    {getInitials(guest.full_name)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-body text-[14px] font-medium text-[#0A1F44]">{guest.name}</p>
+                    <p className="truncate font-body text-[14px] font-medium text-[#0A1F44]">{guest.full_name}</p>
                     <p className="truncate font-body text-[12px] text-[#757575]">{guest.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[12px]">
                   <span className="text-[#757575]">{guest.totalStays} stays</span>
-                  <span className="font-medium text-[#0A1F44]">{formatCurrencyShort(guest.totalSpending)}</span>
+                  <span className="font-medium text-[#0A1F44]">{formatCurrency(guest.totalSpending)}</span>
                 </div>
               </div>
             ))}
@@ -188,9 +214,9 @@ export default function Guests() {
 
                 <div className="mb-6 flex flex-col items-center gap-3">
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f2f7] font-display text-[22px] font-medium text-[#0A1F44]">
-                    {getInitials(selectedGuest.name)}
+                    {getInitials(selectedGuest.full_name)}
                   </div>
-                  <h3 className="font-display text-[18px] font-medium text-[#0A1F44]">{selectedGuest.name}</h3>
+                  <h3 className="font-display text-[18px] font-medium text-[#0A1F44]">{selectedGuest.full_name}</h3>
                 </div>
 
                 <div className="mb-6 space-y-2.5 border-b border-[#ECECEC] pb-6">
@@ -204,7 +230,7 @@ export default function Guests() {
                   </div>
                   <div className="flex items-center gap-3">
                     <CalendarDays size={14} className="shrink-0 text-[#757575]" />
-                    <span className="font-body text-[13px] text-[#0A1F44]">Guest since {formatDate(selectedGuest.createdAt)}</span>
+                    <span className="font-body text-[13px] text-[#0A1F44]">Guest since {formatDate(selectedGuest.created_at)}</span>
                   </div>
                 </div>
 
@@ -221,21 +247,23 @@ export default function Guests() {
 
                 <div>
                   <h4 className="mb-3 font-body text-[11px] uppercase tracking-[0.08em] text-[#757575]">Reservation History</h4>
-                  {selectedGuestReservations.length === 0 ? (
+                  {selectedGuest.allReservations.length === 0 ? (
                     <p className="font-body text-[13px] text-[#757575]">No reservations found</p>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      {selectedGuestReservations.map((res) => (
+                      {selectedGuest.allReservations.map((res) => (
                         <div key={res.id} className="rounded-lg border border-[#ECECEC] p-4">
                           <div className="mb-1 flex items-center justify-between">
-                            <span className="font-body text-[11px] text-[#757575]">{res.id}</span>
-                            <span className="font-body text-[11px] text-[#0A1F44] capitalize">
-                              {res.status.replace(/_/g, ' ')}
-                            </span>
+                            <span className="font-body text-[11px] text-[#757575]">{res.reference_code}</span>
+                            <StatusBadge status={res.status} size="sm" />
                           </div>
-                          <p className="mb-1 font-body text-[13px] font-medium text-[#0A1F44]">{res.villaName}</p>
-                          <p className="font-body text-[12px] text-[#757575]">{formatDate(res.checkIn)} – {formatDate(res.checkOut)}</p>
-                          <p className="mt-1 font-body text-[13px] font-medium text-[#0A1F44]">{formatCurrency(res.totalAmount)}</p>
+                          <p className="mb-1 font-body text-[13px] font-medium text-[#0A1F44]">{res.villa.name}</p>
+                          <p className="font-body text-[12px] text-[#757575]">
+                            {formatDate(res.arrival_datetime)} – {formatDate(res.checkout_datetime)}
+                          </p>
+                          <p className="mt-1 font-body text-[13px] font-medium text-[#0A1F44]">
+                            {formatCurrency(estimateReservationValue(res))}
+                          </p>
                         </div>
                       ))}
                     </div>

@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../hooks/auth/useAuth'
 import { cn } from '../../lib/cn'
 
 export function AdminLogin() {
-  const { signIn } = useAuth()
+  const { signIn, signOut, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/admin'
+  const denied = searchParams.get('denied') === '1'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,6 +37,11 @@ export function AdminLogin() {
     navigate(from, { replace: true })
   }
 
+  async function handleSignOut() {
+    await signOut()
+    navigate('/admin/login', { replace: true })
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] px-4">
       <div className="w-full max-w-sm">
@@ -46,6 +53,25 @@ export function AdminLogin() {
             Control Center
           </div>
         </div>
+
+        {denied && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+            <p className="font-body text-[13px] font-medium text-red-600">
+              Access Denied
+            </p>
+            <p className="mt-1 font-body text-[12px] text-red-500">
+              Your account is not authorized to access the KRiB Control Center.
+            </p>
+            {user && (
+              <button
+                onClick={handleSignOut}
+                className="mt-2 font-body text-[12px] font-medium text-red-600 underline"
+              >
+                Sign out and use another account
+              </button>
+            )}
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}

@@ -1,67 +1,28 @@
 export type ReservationStatus =
   | 'pending'
   | 'approved'
-  | 'awaiting_payment'
-  | 'payment_submitted'
-  | 'confirmed'
   | 'completed'
-  | 'cancelled'
   | 'declined'
-  | 'expired';
+  | 'cancelled';
 
-export type PaymentStatus = 'pending' | 'submitted' | 'verified' | 'rejected';
+export type AdminRole = 'owner' | 'staff';
 
-export type VillaStatus = 'active' | 'maintenance' | 'inactive';
+export type VillaStatus = 'active' | 'inactive';
+
+export type SmsDirection = 'outbound_auto' | 'outbound_manual';
+
+export type SmsStatus = 'queued' | 'sent' | 'failed';
 
 export type DiscountStatus = 'active' | 'inactive' | 'expired';
 
-export type CalendarBlockType = 'reservation' | 'blocked' | 'maintenance';
-
 export type DiscountType = 'percentage' | 'fixed';
-
-export interface Guests {
-  adults: number;
-  children: number;
-  infants: number;
-  pets: number;
-}
-
-export interface Reservation {
-  id: string;
-  guestName: string;
-  guestEmail: string;
-  guestPhone: string;
-  villaId: string;
-  villaName: string;
-  checkIn: string;
-  checkOut: string;
-  guests: Guests;
-  status: ReservationStatus;
-  baseRate: number;
-  partyFee: number;
-  discount: number;
-  totalAmount: number;
-  amountDue: number;
-  paymentStatus: PaymentStatus;
-  paymentDeadline: string;
-  createdAt: string;
-  message?: string;
-  specialRequests: string;
-  approvalDate: string | null;
-  paymentDate: string | null;
-  confirmationNumber: string;
-}
 
 export interface Guest {
   id: string;
-  name: string;
+  full_name: string;
   email: string;
   phone: string;
-  totalStays: number;
-  totalSpending: number;
-  lastVisit: string;
-  reservations: string[];
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Villa {
@@ -69,28 +30,109 @@ export interface Villa {
   name: string;
   slug: string;
   description: string;
-  baseRate: number;
-  maxGuests: number;
-  amenities: string[];
-  status: VillaStatus;
-  image: string;
-  gallery: string[];
-  capacity: number;
-  bedrooms?: { name: string; capacity: number }[];
+  base_price: number;
+  max_guests: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Discount {
+export interface VillaAmenity {
   id: string;
-  code: string;
-  description: string;
-  type: DiscountType;
-  amount: number;
-  villaId: string;
-  startDate: string;
-  endDate: string;
-  status: DiscountStatus;
-  usageCount: number;
-  maxUsage: number;
+  villa_id: string;
+  label: string;
+  icon: string;
+  sort_order: number;
+}
+
+export interface GalleryImage {
+  id: string;
+  villa_id: string;
+  storage_path: string;
+  alt_text: string;
+  sort_order: number;
+}
+
+export interface Reservation {
+  id: string;
+  reference_code: string;
+  villa_id: string;
+  guest_id: string;
+  guest_count: number;
+  status: ReservationStatus;
+  special_requests: string;
+  terms_accepted: boolean;
+  privacy_accepted: boolean;
+  arrival_datetime: string;
+  checkout_datetime: string;
+  created_at: string;
+  updated_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  declined_at: string | null;
+  declined_by: string | null;
+  cancelled_at: string | null;
+  cancelled_by: string | null;
+  completed_at: string | null;
+  guest: Guest;
+  villa: Villa;
+}
+
+export interface SmsLog {
+  id: string;
+  reservation_id: string;
+  recipient: string;
+  message: string;
+  direction: SmsDirection;
+  status: SmsStatus;
+  provider_message_id: string;
+  error_message: string;
+  created_at: string;
+  reservation?: {
+    reference_code: string;
+    guest: Guest;
+  } | null;
+}
+
+export interface VillaAdmin extends Villa {
+  amenities: VillaAmenity[];
+  galleryCount: number;
+  upcomingReservations: number;
+  nextArrival: string | null;
+  availableToday: boolean;
+  occupancyNext30Days: number;
+}
+
+export interface GuestProfile extends Guest {
+  totalStays: number;
+  totalSpending: number;
+  lastVisit: string | null;
+  upcomingReservations: Reservation[];
+  completedReservations: Reservation[];
+  cancelledReservations: Reservation[];
+  declinedReservations: Reservation[];
+  allReservations: Reservation[];
+}
+
+export interface DashboardStats {
+  totalReservations: number;
+  pendingReservations: number;
+  todayCheckins: number;
+  todayCheckouts: number;
+  occupancyRate: number;
+  confirmedUpcoming: number;
+  recentlyApproved: number;
+  totalGuests: number;
+}
+
+export interface ReservationTrend {
+  month: string;
+  total: number;
+  pending: number;
+  approved: number;
+  completed: number;
+  declined: number;
+  cancelled: number;
 }
 
 export interface OccupancyData {
@@ -107,14 +149,6 @@ export interface VillaPopularity {
   averageStay: number;
 }
 
-export interface ReservationTrend {
-  month: string;
-  total: number;
-  confirmed: number;
-  pending: number;
-  cancelled: number;
-}
-
 export interface GuestStat {
   label: string;
   value: number;
@@ -127,21 +161,44 @@ export interface StatusDistribution {
   color: string;
 }
 
-export interface BusinessInfo {
-  name: string;
-  tagline: string;
-  address: string;
-  city: string;
-  province: string;
-  zipCode: string;
+export interface Discount {
+  id: string;
+  code: string;
+  description: string;
+  type: DiscountType;
+  amount: number;
+  villaId: string;
+  startDate: string;
+  endDate: string;
+  status: DiscountStatus;
+  usageCount: number;
+  maxUsage: number;
 }
 
-export interface ContactDetails {
-  phone: string;
-  email: string;
-  facebook: string;
-  instagram: string;
-  website: string;
+export interface Settings {
+  businessInfo: {
+    name: string;
+    tagline: string;
+    address: string;
+    city: string;
+    province: string;
+    zipCode: string;
+  };
+  contactDetails: {
+    phone: string;
+    email: string;
+    facebook: string;
+    instagram: string;
+    website: string;
+  };
+  notifications: {
+    emailOnReservation: boolean;
+    emailOnPayment: boolean;
+    emailOnCancellation: boolean;
+    smsOnReservation: boolean;
+    smsOnPayment: boolean;
+    dailyReport: boolean;
+  };
 }
 
 export interface NotificationSettings {
@@ -151,23 +208,6 @@ export interface NotificationSettings {
   smsOnReservation: boolean;
   smsOnPayment: boolean;
   dailyReport: boolean;
-}
-
-export interface Settings {
-  businessInfo: BusinessInfo;
-  contactDetails: ContactDetails;
-  notifications: NotificationSettings;
-}
-
-export interface DashboardStats {
-  totalReservations: number;
-  pendingReservations: number;
-  todayCheckins: number;
-  todayCheckouts: number;
-  occupancyRate: number;
-  confirmedUpcoming: number;
-  recentlyApproved: number;
-  totalGuests: number;
 }
 
 export interface NavItem {

@@ -8,20 +8,17 @@ interface StatusBadgeProps {
 
 const statusColorMap: Record<string, { dot: string; label: string }> = {
   pending:                { dot: 'bg-[#C9A227]', label: 'text-[#C9A227]' },
-  awaiting_confirmation:  { dot: 'bg-[#C9A227]', label: 'text-[#C9A227]' },
   approved:               { dot: 'bg-[#0A1F44]', label: 'text-[#0A1F44]' },
-  awaiting_payment:       { dot: 'bg-[#0A1F44]', label: 'text-[#0A1F44]' },
-  payment_submitted:      { dot: 'bg-[#0A1F44]', label: 'text-[#0A1F44]' },
-  confirmed:              { dot: 'bg-[#0A1F44]', label: 'text-[#0A1F44]' },
   completed:              { dot: 'bg-[#757575]', label: 'text-[#757575]' },
-  verified:               { dot: 'bg-[#0A1F44]', label: 'text-[#0A1F44]' },
-  cancelled:              { dot: 'bg-[#757575]', label: 'text-[#757575]' },
   declined:               { dot: 'bg-[#757575]', label: 'text-[#757575]' },
-  expired:                { dot: 'bg-[#757575]', label: 'text-[#757575]' },
-  rejected:               { dot: 'bg-[#757575]', label: 'text-[#757575]' },
+  cancelled:              { dot: 'bg-[#757575]', label: 'text-[#757575]' },
+  queued:                 { dot: 'bg-[#C9A227]', label: 'text-[#C9A227]' },
+  sent:                   { dot: 'bg-[#0A1F44]', label: 'text-[#0A1F44]' },
+  failed:                 { dot: 'bg-[#757575]', label: 'text-[#757575]' },
   active:                 { dot: 'bg-[#0A1F44]', label: 'text-[#0A1F44]' },
   inactive:               { dot: 'bg-[#757575]', label: 'text-[#757575]' },
   maintenance:            { dot: 'bg-[#C9A227]', label: 'text-[#C9A227]' },
+  expired:                { dot: 'bg-[#757575]', label: 'text-[#757575]' },
 }
 
 const dotSizeMap = {

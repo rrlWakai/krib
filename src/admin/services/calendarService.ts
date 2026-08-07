@@ -28,3 +28,7 @@ export function getInitials(name: string): string {
     ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
     : parts[0].slice(0, 2).toUpperCase()
 }
+
+export function reservationDayKey(ts: string): string {
+  return formatDateStr(new Date(ts))
+}

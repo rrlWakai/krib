@@ -36,12 +36,14 @@ function Toggle({
       </div>
       <button
         onClick={onChange}
+        disabled
         className={cn(
-          'relative inline-flex h-7 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200',
+          'relative inline-flex h-7 w-11 shrink-0 cursor-not-allowed items-center rounded-full transition-colors duration-200',
           enabled ? 'bg-[#0A1F44]' : 'bg-[#ECECEC]'
         )}
         role="switch"
         aria-checked={enabled}
+        aria-disabled="true"
       >
         <span className={cn(
           'inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
@@ -107,14 +109,11 @@ export default function SettingsPage() {
       dailyReport: false,
     },
   }
-  const [settingsData, setSettingsData] = useState<Settings>(defaultSettings)
+  const [settingsData] = useState<Settings>(defaultSettings)
   const [copied, setCopied] = useState<string | null>(null)
 
-  function toggleNotification(key: keyof NotificationSettings) {
-    setSettingsData((prev) => ({
-      ...prev,
-      notifications: { ...prev.notifications, [key]: !prev.notifications[key] },
-    }))
+  function toggleNotification(_key: keyof NotificationSettings) {
+    // No settings table in the backend yet — toggles are read-only.
   }
 
   function handleEdit(section: string) {
@@ -137,6 +136,13 @@ export default function SettingsPage() {
     >
       <PageHeader title="Settings" subtitle="Business configuration" />
 
+      <div className="mb-6 rounded-lg border border-[#C9A227]/40 bg-[#C9A227]/10 px-4 py-3">
+        <p className="font-body text-[13px] font-medium text-[#0A1F44]">Backend not implemented</p>
+        <p className="mt-0.5 font-body text-[12px] text-[#757575]">
+          There is no settings table in the database yet. These values are shown for reference only and cannot be saved.
+        </p>
+      </div>
+
       <div className="flex flex-col gap-5">
         <div className="border border-[#ECECEC] rounded-lg bg-white p-5">
           <div className="mb-4 flex items-center justify-between">
@@ -149,7 +155,7 @@ export default function SettingsPage() {
                 <p className="font-body text-[12px] text-[#757575]">Your business name, tagline, and address</p>
               </div>
             </div>
-            <button onClick={() => handleEdit('Business Information')} className="flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] text-[#0A1F44] transition-all hover:bg-[#f0f2f7]">
+            <button disabled onClick={() => handleEdit('Business Information')} className="flex min-h-[40px] cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] text-[#B0B0B0]">
               <Pencil size={13} /> Edit
             </button>
           </div>
@@ -178,7 +184,7 @@ export default function SettingsPage() {
                 <p className="font-body text-[12px] text-[#757575]">Phone, email, and social media</p>
               </div>
             </div>
-            <button onClick={() => handleEdit('Contact Details')} className="flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] text-[#0A1F44] transition-all hover:bg-[#f0f2f7]">
+            <button disabled onClick={() => handleEdit('Contact Details')} className="flex min-h-[40px] cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] text-[#B0B0B0]">
               <Pencil size={13} /> Edit
             </button>
           </div>
