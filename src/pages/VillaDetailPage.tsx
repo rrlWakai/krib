@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useScrollToHash } from "../hooks/useScrollToHash";
 import { useLiveVillas } from "../hooks/useLiveVillas";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 import { formatPeso, parsePesoAmount } from "../services/api/villas";
 import { villas, nearbyAttractions } from "../lib/data";
 import { fadeUp, pageTransition } from "../lib/animations";
@@ -21,7 +22,6 @@ import { Reveal } from "../components/ui/Reveal";
 import { SectionLabel } from "../components/ui/SectionLabel";
 import { StickyReservationCard } from "../components/ui/StickyReservationCard";
 import { StickyBookingBar } from "../components/ui/StickyBookingBar";
-import { AvailabilityCalendar } from "../components/ui/AvailabilityCalendar";
 import { PhotoGalleryModal } from "../components/ui/PhotoGalleryModal";
 import { VillaPolicies } from "../components/ui/VillaPolicies";
 import { VillaHeader } from "../components/ui/VillaHeader";
@@ -65,6 +65,8 @@ export function VillaDetailPage() {
   const staticVilla = villas.find((v) => v.slug === slug);
 
   const { liveVillas } = useLiveVillas();
+  const { settings: siteSettings } = useSiteSettings();
+  const partyFeeAmount = siteSettings?.business?.party_fee ?? 5000;
 
   const villa = useMemo(() => {
     if (!staticVilla) return undefined;
@@ -462,28 +464,6 @@ export function VillaDetailPage() {
                   </>
                 )}
               </section>
-
-              {/* ----- 5. AVAILABILITY CALENDAR ----- */}
-              <section id="availability">
-                <Reveal>
-                  <SectionLabel>AVAILABILITY</SectionLabel>
-                  <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-4">
-                    Availability Calendar
-                  </h2>
-                  <p className="font-body text-body-lg text-on-surface-variant mb-8">
-                    Select your preferred dates and instantly view this
-                    villa&apos;s availability before submitting your reservation
-                    inquiry.
-                  </p>
-                </Reveal>
-
-                <motion.div
-                  whileHover={{ boxShadow: "0 8px 32px rgba(0,0,0,0.08)" }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <AvailabilityCalendar />
-                </motion.div>
-              </section>
             </div>
 
             {/* Right Column - Sticky Card (Desktop only) */}
@@ -495,12 +475,13 @@ export function VillaDetailPage() {
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 className="lg:sticky lg:top-28"
               >
-                <StickyReservationCard
+            <StickyReservationCard
                   price={villa.priceDetails.perNight}
                   rateType={villa.priceDetails.rateType}
                   villaName={villa.name}
                   maxGuests={villa.maxGuests}
                   partyFeeActive={partyFeeActive}
+                  partyFeeAmount={partyFeeAmount}
                   onPartyFeeToggle={setPartyFeeActive}
                   onReserve={() => setReservationOpen(true)}
                 />
@@ -786,9 +767,10 @@ export function VillaDetailPage() {
             name: villa.name,
             priceDetails: villa.priceDetails,
             maxGuests: villa.maxGuests,
-            partyFeeLabel: '₱5,000',
+            partyFeeLabel: formatPeso(partyFeeAmount),
           }}
           partyFeeActive={partyFeeActive}
+          partyFeeAmount={partyFeeAmount}
           onPartyFeeToggle={setPartyFeeActive}
         />
       )}
@@ -798,6 +780,7 @@ export function VillaDetailPage() {
           rateType={villa.priceDetails.rateType}
           maxGuests={villa.maxGuests}
           partyFeeActive={partyFeeActive}
+          partyFeeAmount={partyFeeAmount}
           onPartyFeeToggle={setPartyFeeActive}
           onReserve={() => setReservationOpen(true)}
         />

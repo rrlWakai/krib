@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Search, Loader2, Mail, KeyRound } from "lucide-react"
 import { cn } from "../../lib/cn"
 
@@ -11,7 +11,6 @@ interface LookupFormProps {
 }
 
 export function LookupForm({ onFound, onError, onSearching, searching }: LookupFormProps) {
-  const [mode, setMode] = useState<"code" | "email">("code")
   const [code, setCode] = useState("")
   const [email, setEmail] = useState("")
   const [focused, setFocused] = useState<string | null>(null)
@@ -20,21 +19,16 @@ export function LookupForm({ onFound, onError, onSearching, searching }: LookupF
     e.preventDefault()
     onError("")
 
-    if (mode === "code") {
-      if (!code.trim()) {
-        onError("Please enter your reservation code.")
-        return
-      }
-      onSearching(true)
-      onFound({ id: code.trim(), email: "" })
-    } else {
-      if (!email.trim()) {
-        onError("Please enter your email address.")
-        return
-      }
-      onSearching(true)
-      onFound({ id: "", email: email.trim() })
+    if (!code.trim()) {
+      onError("Please enter your reservation code.")
+      return
     }
+    if (!email.trim()) {
+      onError("Please enter the email address you used to book.")
+      return
+    }
+    onSearching(true)
+    onFound({ id: code.trim(), email: email.trim() })
   }
 
   return (
@@ -55,79 +49,57 @@ export function LookupForm({ onFound, onError, onSearching, searching }: LookupF
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-            <AnimatePresence mode="wait">
-              {mode === "code" ? (
-                <motion.div
-                  key="code-mode"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <label className="font-body text-sm font-medium text-on-surface block mb-2">
-                    Reservation Code
-                  </label>
-                  <div className={cn(
-                    "relative flex items-center rounded-xl border transition-all duration-200",
-                    focused === "code"
-                      ? "border-primary ring-[3px] ring-primary/10"
-                      : "border-outline-variant hover:border-outline",
-                  )}>
-                    <KeyRound size={16} className="absolute left-4 text-on-surface-variant/40" />
-                    <input
-                      type="text"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.toUpperCase())}
-                      onFocus={() => setFocused("code")}
-                      onBlur={() => setFocused(null)}
-                      placeholder="KRB-XXXXXXXX"
-                      className="w-full pl-11 pr-4 py-4 bg-transparent font-body text-body-md text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none tracking-wide"
-                      autoComplete="off"
-                      disabled={searching}
-                    />
-                  </div>
-                  <p className="font-body text-xs text-on-surface-variant/50 mt-2.5 pl-1">
-                    Sent to your mobile number after you book (e.g. KRB-3F9A2B7).
-                  </p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="email-mode"
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <label className="font-body text-sm font-medium text-on-surface block mb-2">
-                    Email Address
-                  </label>
-                  <div className={cn(
-                    "relative flex items-center rounded-xl border transition-all duration-200",
-                    focused === "email"
-                      ? "border-primary ring-[3px] ring-primary/10"
-                      : "border-outline-variant hover:border-outline",
-                  )}>
-                    <Mail size={16} className="absolute left-4 text-on-surface-variant/40" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onFocus={() => setFocused("email")}
-                      onBlur={() => setFocused(null)}
-                      placeholder="you@example.com"
-                      className="w-full pl-11 pr-4 py-4 bg-transparent font-body text-body-md text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none"
-                      autoComplete="email"
-                      disabled={searching}
-                    />
-                  </div>
-                  <p className="font-body text-xs text-on-surface-variant/50 mt-2.5 pl-1">
-                    We&apos;ll find all reservations under this email.
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <label className="font-body text-sm font-medium text-on-surface block mb-2">
+              Reservation Code
+            </label>
+            <div className={cn(
+              "relative flex items-center rounded-xl border transition-all duration-200",
+              focused === "code"
+                ? "border-primary ring-[3px] ring-primary/10"
+                : "border-outline-variant hover:border-outline",
+            )}>
+              <KeyRound size={16} className="absolute left-4 text-on-surface-variant/40" />
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                onFocus={() => setFocused("code")}
+                onBlur={() => setFocused(null)}
+                placeholder="KRB-XXXXXXXX"
+                className="w-full pl-11 pr-4 py-4 bg-transparent font-body text-body-md text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none tracking-wide"
+                autoComplete="off"
+                disabled={searching}
+              />
+            </div>
+            <p className="font-body text-xs text-on-surface-variant/50 mt-2.5 pl-1">
+              Sent to your mobile number after you book (e.g. KRB-3F9A2B7).
+            </p>
 
-
+            <label className="font-body text-sm font-medium text-on-surface block mb-2 mt-6">
+              Email Address
+            </label>
+            <div className={cn(
+              "relative flex items-center rounded-xl border transition-all duration-200",
+              focused === "email"
+                ? "border-primary ring-[3px] ring-primary/10"
+                : "border-outline-variant hover:border-outline",
+            )}>
+              <Mail size={16} className="absolute left-4 text-on-surface-variant/40" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setFocused("email")}
+                onBlur={() => setFocused(null)}
+                placeholder="you@example.com"
+                className="w-full pl-11 pr-4 py-4 bg-transparent font-body text-body-md text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none"
+                autoComplete="email"
+                disabled={searching}
+              />
+            </div>
+            <p className="font-body text-xs text-on-surface-variant/50 mt-2.5 pl-1">
+              The email address you used when booking.
+            </p>
 
             {/* Submit */}
             <button
@@ -156,27 +128,11 @@ export function LookupForm({ onFound, onError, onSearching, searching }: LookupF
             </button>
           </form>
 
-          {/* Toggle lookup mode */}
+          {/* Trust signals */}
           <div className="mt-6 pt-5 border-t border-outline-variant/40">
-            {mode === "code" ? (
-              <button
-                type="button"
-                onClick={() => { setMode("email"); onError("") }}
-                className="w-full text-center font-body text-sm text-on-surface-variant/60 hover:text-primary transition-colors cursor-pointer"
-              >
-                Don&apos;t have your reservation code?{" "}
-                <span className="font-medium text-primary">Look up by email</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => { setMode("code"); onError("") }}
-                className="w-full text-center font-body text-sm text-on-surface-variant/60 hover:text-primary transition-colors cursor-pointer"
-              >
-                Back to{" "}
-                <span className="font-medium text-primary">reservation code</span>
-              </button>
-            )}
+            <p className="font-body text-xs text-on-surface-variant/50 text-center">
+              Both your reservation code and email are required to view your booking.
+            </p>
           </div>
         </div>
 

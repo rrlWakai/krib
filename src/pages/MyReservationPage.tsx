@@ -12,7 +12,6 @@ import type { Reservation, ReservationStatus } from "../lib/reservationData"
 import {
   lookupByReference,
   lookupById,
-  lookupByEmail,
   cancelReservation,
 } from "../services/api/lookup"
 
@@ -69,45 +68,17 @@ export function MyReservationPage() {
     setSearching(true)
     setError("")
 
-    let result: Reservation | null = null
-    let resultError: string | null = null
-
-    if (lookupData.id && !lookupData.email) {
-      // Code-only lookup
-      const res = await lookupByReference(lookupData.id)
-      result = res.reservation
-      resultError = res.error?.message ?? null
-      if (!result && !resultError) {
-        resultError = "No reservation found with that code. Please double-check and try again."
-      }
-    } else if (lookupData.email && !lookupData.id) {
-      // Email-only lookup
-      const res = await lookupByEmail(lookupData.email)
-      if (res.reservation) {
-        result = res.reservation
-      } else if (res.error) {
-        resultError = res.error.message
-      } else if (res.reservations && res.reservations.length > 0) {
-        // Multiple reservations — show the most recent one
-        result = res.reservations[0]
-      } else {
-        resultError = "No reservations found under that email address."
-      }
-    } else if (lookupData.id && lookupData.email) {
-      // Combined lookup (from auto-load)
-      const res = await lookupByReference(lookupData.id, lookupData.email)
-      result = res.reservation
-      resultError = res.error?.message ?? null
-      if (!result && !resultError) {
-        resultError = "No reservation found. Check your details and try again."
-      }
-    }
+    const res = await lookupByReference(lookupData.id, lookupData.email)
+    const result = res.reservation
+    const resultError = res.error?.message ?? null
 
     if (result) {
       setReservation(result)
       setPageStep("result")
     } else if (resultError) {
       setError(resultError)
+    } else {
+      setError("No reservation found with that code and email. Please double-check and try again.")
     }
     setSearching(false)
   }, [])

@@ -125,19 +125,6 @@ export async function lookupById(
   return { reservation: raw ? mapRawReservation(raw) : null, reservations: null };
 }
 
-export async function lookupByEmail(
-  email: string,
-): Promise<LookupResult> {
-  const { data, error } = await invoke("lookup_reservation", { email });
-  if (error) return { reservation: null, reservations: null, error };
-  const list = (data as { reservations?: LookupReservationResponse["reservation"][] } | null)
-    ?.reservations;
-  const mapped = (list ?? [])
-    .map(mapRawReservation)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  return { reservation: mapped.length === 1 ? mapped[0] : null, reservations: mapped };
-}
-
 export async function cancelReservation(
   referenceCode: string,
   email: string,

@@ -124,7 +124,7 @@ if (existingEmail) {
   const lkWrong = await invoke('lookup_reservation', { reference_code: KRB, email: 'wrong@example.com' }, ANON_KEY)
   check('lookup wrong email -> 401', lkWrong.status === 401 && lkWrong.body?.code === 'UNAUTHORIZED', `status=${lkWrong.status} code=${lkWrong.body?.code}`)
 }
-const lkMissing = await invoke('lookup_reservation', { reference_code: 'KRB-0000000' }, ANON_KEY)
+const lkMissing = await invoke('lookup_reservation', { reference_code: 'KRB-0000000', email: 'nobody@example.com' }, ANON_KEY)
 check('lookup unknown code -> 404', lkMissing.status === 404, `status=${lkMissing.status}`)
 const lkBadInput = await invoke('lookup_reservation', {}, ANON_KEY)
 check('lookup empty body -> 400', lkBadInput.status === 400, `status=${lkBadInput.status}`)

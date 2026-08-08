@@ -43,9 +43,6 @@ const AdminCalendar = lazy(() =>
 const AdminGuests = lazy(() =>
   import("./admin/pages/Guests").then((m) => ({ default: m.default })),
 );
-const AdminDiscounts = lazy(() =>
-  import("./admin/pages/Discounts").then((m) => ({ default: m.default })),
-);
 const AdminVillas = lazy(() =>
   import("./admin/pages/Villas").then((m) => ({ default: m.default })),
 );
@@ -167,7 +164,6 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                   <Route path="reservations/:id" element={<AdminReservationDetail />} />
                   <Route path="calendar" element={<AdminCalendar />} />
                   <Route path="guests" element={<AdminGuests />} />
-                  <Route path="discounts" element={<AdminDiscounts />} />
                   <Route path="villas" element={<AdminVillas />} />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="sms-activity" element={<AdminSmsActivity />} />

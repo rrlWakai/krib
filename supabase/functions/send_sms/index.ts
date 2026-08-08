@@ -7,8 +7,7 @@ import { isUuid, writeAudit } from '../_shared/reservations.ts'
 
 interface SendSmsInput {
   reservation_id: string
-  message?: string
-  type?: 'confirmation' | 'checkout' | 'cancellation'
+  type?: 'confirmation' | 'cancellation'
 }
 
 const SEMAPHORE_DEFAULT_URL = 'https://api.semaphore.co/api/v4/messages'
@@ -39,8 +38,6 @@ function buildTemplate(
   switch (type) {
     case 'confirmation':
       return `Hi ${firstName}! Your reservation ${r.reference_code} at ${r.villa_name} is confirmed. Arrival: ${arrivalLabel}. See you soon! - KRiB Beverly Place`
-    case 'checkout':
-      return `Hi ${firstName}! This is a reminder that your stay at ${r.villa_name} (${r.reference_code}) is coming to an end. Thank you for choosing KRiB Beverly Place!`
     case 'cancellation':
       return `Hi ${firstName}! Your reservation ${r.reference_code} at ${r.villa_name} has been cancelled as requested. We hope to host you another time. - KRiB Beverly Place`
   }
@@ -66,13 +63,12 @@ Deno.serve(async (req: Request) => {
     }
 
     const type = check.data.type
-    let message = (check.data.message ?? '').trim()
 
-    if (type && !['confirmation', 'checkout', 'cancellation'].includes(type)) {
-      return badRequest('type must be confirmation, checkout, or cancellation')
+    if (type && !['confirmation', 'cancellation'].includes(type)) {
+      return badRequest('type must be confirmation or cancellation')
     }
-    if (!message && !type) {
-      return badRequest('Either message or type is required')
+    if (!type) {
+      return badRequest('type is required')
     }
 
     const admin = getAdminClient()
@@ -100,14 +96,12 @@ Deno.serve(async (req: Request) => {
       return badRequest('Reservation has no guest phone number on file')
     }
 
-    if (type) {
-      message = buildTemplate(type, {
-        reference_code: reservation.reference_code,
-        arrival_datetime: reservation.arrival_datetime,
-        villa_name: villa?.name ?? 'KRiB Beverly Place',
-        guest_name: guest.full_name ?? '',
-      })
-    }
+    const message = buildTemplate(type, {
+      reference_code: reservation.reference_code,
+      arrival_datetime: reservation.arrival_datetime,
+      villa_name: villa?.name ?? 'KRiB Beverly Place',
+      guest_name: guest.full_name ?? '',
+    })
 
     const recipient = normalizePhone(guest.phone)
     if (recipient.length < 10) {

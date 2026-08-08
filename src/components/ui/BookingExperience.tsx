@@ -41,6 +41,7 @@ interface BookingExperienceProps {
   onClose: () => void;
   property: PropertyInfo;
   partyFeeActive?: boolean;
+  partyFeeAmount?: number;
   onPartyFeeToggle?: (active: boolean) => void;
 }
 
@@ -157,6 +158,7 @@ export function BookingExperience({
   onClose,
   property,
   partyFeeActive,
+  partyFeeAmount,
   onPartyFeeToggle,
 }: BookingExperienceProps) {
   const [step, setStep] = useState<Step>(1);
@@ -251,7 +253,8 @@ export function BookingExperience({
   }, [isOpen, onClose, submitState]);
 
   const basePrice = parsePrice(property.priceDetails.perNight);
-  const partyFee = partyFeeActive ? 5000 : 0;
+  const partyFeeRate = partyFeeAmount ?? 5000;
+  const partyFee = partyFeeActive ? partyFeeRate : 0;
   const total = basePrice + partyFee;
 
   const goNext = useCallback(() => {
@@ -369,7 +372,7 @@ export function BookingExperience({
       createdAt: r.created_at.slice(0, 10),
       status: r.status as ReservationStatus,
       baseRate: basePrice,
-      partyFee: partyFeeActive ? 5000 : 0,
+      partyFee: partyFeeActive ? partyFeeRate : 0,
       totalAmount: total,
       confirmationNumber: r.reference_code,
       message: r.special_requests,
@@ -488,7 +491,7 @@ export function BookingExperience({
               animate={{ opacity: 1 }}
               className="font-body text-sm text-on-surface font-medium tabular-nums"
             >
-              {partyFeeActive ? formatPrice(5000) : "—"}
+              {partyFeeActive ? formatPrice(partyFeeRate) : "—"}
             </motion.span>
           </div>
         )}
@@ -631,6 +634,7 @@ export function BookingExperience({
               message={message}
               basePrice={basePrice}
               partyFeeActive={partyFeeActive}
+              partyFeeAmount={partyFeeRate}
               onPartyFeeToggle={onPartyFeeToggle}
               total={total}
               submitError={submitError}
@@ -1436,6 +1440,7 @@ function StepReview({
   message,
   basePrice,
   partyFeeActive,
+  partyFeeAmount,
   onPartyFeeToggle,
   total,
   submitError,
@@ -1452,6 +1457,7 @@ function StepReview({
   message: string;
   basePrice: number;
   partyFeeActive?: boolean;
+  partyFeeAmount?: number;
   onPartyFeeToggle?: (active: boolean) => void;
   total: number;
   submitError: string;
@@ -1552,7 +1558,7 @@ function StepReview({
                 animate={{ opacity: 1 }}
                 className="font-body text-sm text-on-surface font-medium tabular-nums"
               >
-                {partyFeeActive ? formatPrice(5000) : "—"}
+                {partyFeeActive ? formatPrice(partyFeeAmount ?? 5000) : "—"}
               </motion.span>
             </div>
             {partyFeeActive && (

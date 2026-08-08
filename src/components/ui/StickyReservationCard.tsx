@@ -11,6 +11,7 @@ interface StickyReservationCardProps {
   villaName: string;
   maxGuests: number;
   partyFeeActive?: boolean;
+  partyFeeAmount?: number;
   onPartyFeeToggle?: (active: boolean) => void;
   onReserve?: () => void;
 }
@@ -29,6 +30,7 @@ export function StickyReservationCard({
   villaName,
   maxGuests,
   partyFeeActive,
+  partyFeeAmount,
   onPartyFeeToggle,
   onReserve,
 }: StickyReservationCardProps) {
@@ -40,7 +42,8 @@ export function StickyReservationCard({
   });
 
   const basePrice = parsePrice(price);
-  const total = partyFeeActive ? basePrice + 5000 : basePrice;
+  const partyFee = partyFeeAmount ?? 5000;
+  const total = partyFeeActive ? basePrice + partyFee : basePrice;
 
   return (
     <motion.div
@@ -152,7 +155,7 @@ export function StickyReservationCard({
                 animate={{ opacity: 1 }}
                 className="font-body text-body-md text-on-surface"
               >
-                {partyFeeActive ? formatPrice(5000) : "—"}
+                {partyFeeActive ? formatPrice(partyFee) : "—"}
               </motion.span>
             </div>
             {partyFeeActive && (

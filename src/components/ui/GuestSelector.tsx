@@ -22,7 +22,7 @@ const CATEGORIES = [
   { key: 'adults' as const, label: 'Adults', description: 'Age 13+', min: 1, max: Infinity },
   { key: 'children' as const, label: 'Children', description: 'Age 2-12', min: 0, max: Infinity },
   { key: 'infants' as const, label: 'Infants', description: 'Under 2', min: 0, max: Infinity },
-  { key: 'pets' as const, label: 'Pets', description: 'Maximum 2', min: 0, max: 10 },
+  { key: 'pets' as const, label: 'Pets', description: 'Maximum 2', min: 0, max: 2 },
 ]
 
 const overlayVariants = {

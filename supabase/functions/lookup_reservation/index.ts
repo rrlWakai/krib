@@ -28,81 +28,48 @@ Deno.serve(async (req: Request) => {
     const id = input.id?.toString().trim()
     const email = input.email?.toString().trim()
 
-    if (!referenceCode && !id && !email) {
-      return badRequest('Provide reference_code, id, or email')
+    // A reservation can only be retrieved when the guest proves ownership:
+    // a reservation identifier (reference_code or id) AND the matching email.
+    // Email-only lookups are intentionally not supported (PII protection).
+    if (!referenceCode && !id) {
+      return badRequest('Provide reference_code or id along with the email used to book')
     }
 
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email) {
+      return badRequest('email is required to look up a reservation')
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return badRequest('email must be a valid email address')
     }
 
     const admin = getAdminClient()
 
+    let query = admin.from('reservations').select(SELECT)
+
     if (referenceCode) {
-      const { data: reservation, error: fetchError } = await admin
-        .from('reservations')
-        .select(SELECT)
-        .eq('reference_code', referenceCode)
-        .maybeSingle()
-
-      if (fetchError) throw fetchError
-      if (!reservation) {
-        return notFound('No reservation found for that reference code')
-      }
-
-      if (email) {
-        const guestEmail = (reservation.guest as unknown as { email?: string })?.email ?? ''
-        if (guestEmail.toLowerCase() !== email.toLowerCase()) {
-          return unauthorized('Email does not match the reservation')
-        }
-      }
-
-      return new Response(
-        JSON.stringify({ reservation }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
-
-    if (id) {
+      query = query.eq('reference_code', referenceCode)
+    } else {
       if (!isUuid(id)) {
         return badRequest('id must be a valid UUID')
       }
-
-      const { data: reservation, error: fetchError } = await admin
-        .from('reservations')
-        .select(SELECT)
-        .eq('id', id)
-        .maybeSingle()
-
-      if (fetchError) throw fetchError
-      if (!reservation) {
-        return notFound('Reservation not found')
-      }
-
-      if (email) {
-        const guestEmail = (reservation.guest as unknown as { email?: string })?.email ?? ''
-        if (guestEmail.toLowerCase() !== email.toLowerCase()) {
-          return unauthorized('Email does not match the reservation')
-        }
-      }
-
-      return new Response(
-        JSON.stringify({ reservation }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
+      query = query.eq('id', id)
     }
 
-    // Email-only lookup -> all reservations under that email.
-    const { data: reservations, error: listError } = await admin
-      .from('reservations')
-      .select(SELECT)
-      .eq('guest.email', email)
-      .order('created_at', { ascending: false })
+    const { data: reservation, error: fetchError } = await query.maybeSingle()
 
-    if (listError) throw listError
+    if (fetchError) throw fetchError
+    if (!reservation) {
+      return notFound('No reservation found')
+    }
+
+    const guestEmail = (reservation.guest as unknown as { email?: string })?.email ?? ''
+    if (guestEmail.toLowerCase() !== email.toLowerCase()) {
+      return unauthorized('Email does not match the reservation')
+    }
 
     return new Response(
-      JSON.stringify({ reservations: reservations ?? [] }),
+      JSON.stringify({ reservation }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {

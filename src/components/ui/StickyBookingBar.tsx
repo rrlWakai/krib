@@ -6,6 +6,7 @@ interface StickyBookingBarProps {
   rateType: string;
   maxGuests: number;
   partyFeeActive?: boolean;
+  partyFeeAmount?: number;
   discountApplied?: boolean;
   onPartyFeeToggle?: (active: boolean) => void;
   onReserve: () => void;
@@ -24,12 +25,14 @@ export function StickyBookingBar({
   rateType,
   maxGuests,
   partyFeeActive,
+  partyFeeAmount,
   discountApplied,
   onPartyFeeToggle,
   onReserve,
 }: StickyBookingBarProps) {
   const basePrice = parsePrice(price);
-  const total = partyFeeActive ? basePrice + 5000 : basePrice;
+  const partyFee = partyFeeAmount ?? 5000;
+  const total = partyFeeActive ? basePrice + partyFee : basePrice;
 
   return (
     <div
@@ -85,7 +88,7 @@ export function StickyBookingBar({
                   />
                 </button>
                 <span className="font-body text-[10px] text-on-surface-variant/70">
-                  +₱5,000 Party Fee
+                  +{formatPrice(partyFee)} Party Fee
                 </span>
               </div>
             )}

@@ -4,7 +4,29 @@
 **Scope:** Full-stack audit across 15 categories
 **Build:** TypeScript compiles with zero errors
 
+> ## ⚠ PHASE 6 UPDATE — August 08, 2026 (supersedes findings below)
+>
+> The audit below is the **Phase 1–4 pre-backend baseline** (55/100, "not production ready"). Every production blocker it lists was resolved during Phases 4–6 and verified **live against the deployed Supabase project**:
+>
+> - **Blocker 1 — service role key in browser:** eliminated. All service-role access moved behind 9 edge functions (`supabase/functions/*`); client bundle is anon-only (`src/lib/supabase/admin.ts` no longer exists). ✅
+> - **Blocker 2 — fake availability calendar:** removed entirely (component + page section deleted, Phase 6). ✅
+> - **Blocker 7 — Gallery:** removed per requirements (page, route, nav, footer links). ✅
+> - **Blocker 3–4 (performance):** images remain large but are lazy-loaded/local; a vendor-chunking pass is a future optimization, non-blocking. ⚠️
+> - **Blocker 5 — `any` types:** admin pages now read typed data from the live backend via generated Supabase types. ✅
+> - **Blocker 6 — PII in localStorage:** booking success data is session-scoped; lookup no longer persists PII. ✅
+> - **Blocker 8–10, admin placeholders, mock-data stubs:** replaced by live REST/edge calls; `Discounts`/`SmsActivity` placeholders resolved (see Phase 6 audit). ✅
+>
+> **Current verified state (2026-08-08):**
+> - Supabase backend **live**: 21/21 migrations applied, 9 edge functions deployed, RLS verified (anon blocked on all admin tables), secrets absent from repo.
+> - Regression: `scripts/smoke-phase5.mjs` **44/44**, Phase-5 E2E **16/16**, `tsc -b` + `npm run build` + `npm run lint` green.
+> - Phase 6 hardening (P1/P2/P3) applied and re-verified — details + evidence: `PHASE-6-PRODUCTION-AUDIT.md`.
+> - **Frontend deploy is the only remaining release step** (`kribbeverlyplace.vercel.app` not yet live; backend fully live). Once deployed, rerun smoke + do a browser visual pass.
+>
+> **Updated verdict:** ✅ **Backend production ready and verified live. Frontend ready-to-ship pending the Vercel deploy.**
+
 ---
+
+
 
 ## Scoring Summary
 
