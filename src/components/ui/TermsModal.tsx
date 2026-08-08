@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { cn } from '../../lib/cn'
+import { useSiteSettings } from '../../hooks/useSiteSettings'
 
 interface TermsModalProps {
   isOpen: boolean
@@ -46,12 +47,71 @@ function TermsSection({ id, title, children }: { id?: string; title: string; chi
   )
 }
 
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') ? (
+      <strong key={i} className="text-on-surface">
+        {part.slice(2, -2)}
+      </strong>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  )
+}
+
+function renderMarkdown(md: string): React.ReactNode {
+  const lines = md.split('\n')
+  const blocks: React.ReactNode[] = []
+  let list: string[] = []
+  let key = 0
+
+  const flushList = () => {
+    if (list.length === 0) return
+    blocks.push(
+      <ul key={`ul-${key++}`} className="list-none space-y-1.5 mt-1.5">
+        {list.map((item, i) => (
+          <li key={i}>{renderInline(item.replace(/^-\s*/, ''))}</li>
+        ))}
+      </ul>,
+    )
+    list = []
+  }
+
+  for (const raw of lines) {
+    const line = raw.trimEnd()
+    if (!line.trim()) {
+      flushList()
+      continue
+    }
+    if (line.startsWith('## ')) {
+      flushList()
+      blocks.push(
+        <h3 key={`h-${key++}`} className="font-display text-base text-on-surface mb-3 leading-snug">
+          {renderInline(line.slice(3))}
+        </h3>,
+      )
+    } else if (line.startsWith('- ')) {
+      list.push(line.slice(2))
+    } else {
+      flushList()
+      blocks.push(<p key={`p-${key++}`}>{renderInline(line)}</p>)
+    }
+  }
+  flushList()
+
+  return <div className="space-y-2.5">{blocks}</div>
+}
+
 export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', triggerRef }: TermsModalProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const agreeButtonRef = useRef<HTMLButtonElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const { settings } = useSiteSettings()
+  const termsMd = settings?.legal?.terms_conditions
+  const privacyMd = settings?.legal?.privacy_policy
 
   useEffect(() => {
     if (isOpen) {
@@ -179,6 +239,12 @@ export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', trigge
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               <div className="space-y-7">
+                {section === 'privacy' && privacyMd ? (
+                  <div id="privacy-notice">{renderMarkdown(privacyMd)}</div>
+                ) : section === 'terms' && termsMd ? (
+                  renderMarkdown(termsMd)
+                ) : (
+                  <>
                 <TermsSection title="House Rules">
                   <p>
                     All guests are expected to respect the property and the surrounding Beverly Place community. These rules ensure a comfortable stay for everyone.
@@ -255,6 +321,8 @@ export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', trigge
                     </p>
                   </div>
                 </TermsSection>
+                  </>
+                )}
               </div>
             </div>
 

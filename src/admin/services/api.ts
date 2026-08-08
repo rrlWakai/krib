@@ -1,5 +1,6 @@
 import { getSupabaseClient } from '../../lib/supabase/client'
 import type {
+  AuditLog,
   DashboardStats,
   GalleryImage,
   Guest,
@@ -15,9 +16,22 @@ import type {
   VillaAmenity,
   VillaPopularity,
 } from '../types'
+import type { SiteSettings } from '../../services/api/settings'
 
 const RESERVATION_SELECT =
   'id, reference_code, villa_id, guest_id, guest_count, status, special_requests, terms_accepted, privacy_accepted, arrival_datetime, checkout_datetime, created_at, updated_at, approved_at, approved_by, declined_at, declined_by, cancelled_at, cancelled_by, completed_at, guest:guests(id, full_name, email, phone, created_at), villa:villas(id, name, slug, description, base_price, max_guests, is_active, created_at, updated_at)'
+
+export async function fetchSiteSettingsAdmin(): Promise<SiteSettings | null> {
+  const supabase = getSupabaseClient()
+  const { data, error } = await supabase
+    .from('settings')
+    .select('id, business, sms, legal, updated_at')
+    .eq('id', 1)
+    .maybeSingle()
+
+  if (error) throw new Error(error.message)
+  return (data ?? null) as SiteSettings | null
+}
 
 export async function fetchAllReservations(): Promise<Reservation[]> {
   const supabase = getSupabaseClient()
@@ -85,6 +99,30 @@ export async function fetchSmsLogs(): Promise<SmsLog[]> {
   return (data ?? []) as SmsLog[]
 }
 
+export async function fetchAuditLogs(): Promise<AuditLog[]> {
+  const supabase = getSupabaseClient()
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+
+  const { data: admins, error: adminError } = await supabase
+    .from('admin_users')
+    .select('id, auth_user_id, full_name')
+  if (adminError) throw new Error(adminError.message)
+
+  const adminMap: Record<string, { id: string; full_name: string }> = {}
+  for (const admin of admins ?? []) {
+    adminMap[admin.auth_user_id] = { id: admin.id, full_name: admin.full_name }
+  }
+
+  return (data ?? []).map((row) => ({
+    ...row,
+    admin: row.actor ? adminMap[row.actor] ?? null : null,
+  })) as unknown as AuditLog[]
+}
+
 // ──────────────────────────────────────────────
 // Derived helpers
 // ──────────────────────────────────────────────
@@ -136,6 +174,24 @@ export interface DashboardData {
   todayCheckins: Reservation[]
   todayCheckouts: Reservation[]
   upcomingArrivals: Reservation[]
+}
+
+export interface SmsStats {
+  total: number
+  sent: number
+  failed: number
+  thisWeek: number
+}
+
+export function computeSmsStats(smsLogs: SmsLog[]): SmsStats {
+  const now = new Date()
+  const weekStart = addDays(startOfDay(now), -6)
+  return {
+    total: smsLogs.length,
+    sent: smsLogs.filter((l) => l.status === 'sent').length,
+    failed: smsLogs.filter((l) => l.status === 'failed').length,
+    thisWeek: smsLogs.filter((l) => new Date(l.created_at) >= weekStart).length,
+  }
 }
 
 export function computeDashboard(

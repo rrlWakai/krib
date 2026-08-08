@@ -4,11 +4,13 @@ import {
   LayoutDashboard,
   CalendarCheck,
   Calendar,
+  BarChart3,
   Users,
   Tag,
   Building2,
   MessageSquare,
   Settings,
+  ScrollText,
   ChevronLeft,
   ChevronRight,
   X,
@@ -22,11 +24,13 @@ const iconMap: Record<string, React.FC<{ size?: number; className?: string }>> =
   LayoutDashboard,
   CalendarCheck,
   Calendar,
+  BarChart3,
   Users,
   Tag,
   Building2,
   MessageSquare,
   Settings,
+  ScrollText,
 }
 
 interface SidebarProps {

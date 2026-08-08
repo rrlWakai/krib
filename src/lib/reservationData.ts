@@ -1,15 +1,15 @@
 import { getVillaImageByName } from './images'
 
 export type ReservationStatus =
-  | 'awaiting_confirmation'
-  | 'confirmed'
+  | 'pending'
+  | 'approved'
   | 'completed'
-  | 'cancelled'
   | 'declined'
-  | 'expired'
+  | 'cancelled'
 
 export interface Reservation {
   id: string
+  referenceCode?: string
   email: string
   guestName?: string
   villaId: string
@@ -48,14 +48,14 @@ export function formatPrice(amount: number): string {
 
 export function getStatusDisplay(status: ReservationStatus): { label: string; color: string; bg: string; dot: string } {
   const map: Record<ReservationStatus, { label: string; color: string; bg: string; dot: string }> = {
-    awaiting_confirmation: {
-      label: 'Awaiting Confirmation',
+    pending: {
+      label: 'Pending',
       color: 'text-amber-800',
       bg: 'bg-amber-50 border-amber-200/60',
       dot: 'bg-amber-400',
     },
-    confirmed: {
-      label: 'Confirmed',
+    approved: {
+      label: 'Approved',
       color: 'text-green-800',
       bg: 'bg-green-50 border-green-200/60',
       dot: 'bg-[#7FAE87]',
@@ -66,23 +66,17 @@ export function getStatusDisplay(status: ReservationStatus): { label: string; co
       bg: 'bg-green-50 border-green-200/60',
       dot: 'bg-[#7FAE87]',
     },
-    cancelled: {
-      label: 'Cancelled',
-      color: 'text-on-surface-variant',
-      bg: 'bg-surface-container-low border-outline-variant/60',
-      dot: 'bg-outline',
-    },
     declined: {
       label: 'Declined',
       color: 'text-red-800',
       bg: 'bg-red-50 border-red-200/60',
       dot: 'bg-[#C86A5A]',
     },
-    expired: {
-      label: 'Expired',
-      color: 'text-red-800',
-      bg: 'bg-red-50 border-red-200/60',
-      dot: 'bg-[#C86A5A]',
+    cancelled: {
+      label: 'Cancelled',
+      color: 'text-on-surface-variant',
+      bg: 'bg-surface-container-low border-outline-variant/60',
+      dot: 'bg-outline',
     },
   }
   return map[status]
@@ -95,8 +89,8 @@ export const TIMELINE_STEPS: { key: string; label: string; description: string }
 ]
 
 const STATUS_TO_STEP: Record<string, number> = {
-  awaiting_confirmation: 1,
-  confirmed: 3,
+  pending: 1,
+  approved: 3,
   completed: 3,
 }
 
@@ -106,13 +100,13 @@ export function getTimelineCurrentStep(status: ReservationStatus): number {
 
 export function getStatusContext(status: ReservationStatus): { heading: string; body: string; emotion: string } {
   const map: Record<ReservationStatus, { heading: string; body: string; emotion: string }> = {
-    awaiting_confirmation: {
+    pending: {
       heading: 'We\'re reviewing your reservation.',
       body: 'Our team is carefully reviewing your reservation request and checking availability. We typically respond within a few hours during business hours.',
       emotion: 'calm',
     },
-    confirmed: {
-      heading: 'Your reservation is confirmed!',
+    approved: {
+      heading: 'Your reservation is approved!',
       body: 'Everything is set for your upcoming stay. An SMS containing your reservation details and check-in information has been sent to your registered mobile number.',
       emotion: 'excited',
     },
@@ -129,11 +123,6 @@ export function getStatusContext(status: ReservationStatus): { heading: string; 
     declined: {
       heading: 'We couldn\'t accommodate your dates.',
       body: 'Unfortunately, your requested dates aren\'t available. We\'d love to host you another time — browse our other available dates or reach out for help.',
-      emotion: 'empathy',
-    },
-    expired: {
-      heading: 'This reservation has expired.',
-      body: 'The reservation window for this request has passed. Please contact us if you\'d like to explore new dates.',
       emotion: 'empathy',
     },
   }

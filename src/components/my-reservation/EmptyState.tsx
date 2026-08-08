@@ -1,11 +1,16 @@
 import { motion } from "framer-motion"
 import { SearchX, Mail, ExternalLink } from "lucide-react"
+import { useSiteSettings } from "../../hooks/useSiteSettings"
 
 interface EmptyStateProps {
   message?: string
 }
 
 export function EmptyState({ message }: EmptyStateProps) {
+  const { settings } = useSiteSettings()
+  const business = settings?.business
+  const facebook = business?.facebook || "https://facebook.com"
+  const instagram = business?.instagram || "https://instagram.com"
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -48,7 +53,7 @@ export function EmptyState({ message }: EmptyStateProps) {
           transition={{ delay: 0.35, duration: 0.4 }}
           className="font-body text-sm text-on-surface-variant/60 mb-8"
         >
-          Reservation codes are case-sensitive and start with KRIB-.
+          Reservation codes follow the format KRB-XXXXXXXX (e.g. KRB-3F9A2B7).
         </motion.p>
 
         {/* Help links */}
@@ -63,7 +68,7 @@ export function EmptyState({ message }: EmptyStateProps) {
           </p>
           <div className="flex items-center justify-center gap-6">
             <a
-              href="https://facebook.com"
+              href={facebook}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 font-body text-sm text-primary hover:text-primary-hover transition-colors"
@@ -73,7 +78,7 @@ export function EmptyState({ message }: EmptyStateProps) {
               <ExternalLink size={10} className="opacity-40" />
             </a>
             <a
-              href="https://instagram.com"
+              href={instagram}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 font-body text-sm text-primary hover:text-primary-hover transition-colors"

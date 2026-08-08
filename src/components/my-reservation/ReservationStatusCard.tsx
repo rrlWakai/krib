@@ -3,6 +3,7 @@ import { Clock, ArrowRight, Heart, AlertTriangle, Frown, ExternalLink } from "lu
 import { cn } from "../../lib/cn"
 import type { ReservationStatus } from "../../lib/reservationData"
 import { getStatusContext } from "../../lib/reservationData"
+import { useSiteSettings } from "../../hooks/useSiteSettings"
 
 interface Props {
   status: ReservationStatus
@@ -14,13 +15,13 @@ const STATUS_VISUAL: Record<ReservationStatus, {
   iconColor: string
   icon: typeof Clock
 }> = {
-  awaiting_confirmation: {
+  pending: {
     bg: "bg-amber-50/60 border-amber-200/50",
     iconBg: "bg-amber-100",
     iconColor: "text-amber-600",
     icon: Clock,
   },
-  confirmed: {
+  approved: {
     bg: "bg-green-50/60 border-green-200/50",
     iconBg: "bg-green-100",
     iconColor: "text-[#7FAE87]",
@@ -44,18 +45,17 @@ const STATUS_VISUAL: Record<ReservationStatus, {
     iconColor: "text-[#C86A5A]",
     icon: AlertTriangle,
   },
-  expired: {
-    bg: "bg-red-50/40 border-red-200/40",
-    iconBg: "bg-red-50",
-    iconColor: "text-[#C86A5A]",
-    icon: Clock,
-  },
 }
 
 export function ReservationStatusCard({ status }: Props) {
   const ctx = getStatusContext(status)
   const visual = STATUS_VISUAL[status]
   const Icon = visual.icon
+  const { settings } = useSiteSettings()
+  const contactHref =
+    settings?.business?.facebook ||
+    settings?.business?.instagram ||
+    "https://facebook.com"
 
   return (
     <motion.div
@@ -84,7 +84,7 @@ export function ReservationStatusCard({ status }: Props) {
 
           {/* Contextual actions */}
           <div className="flex flex-wrap items-center gap-3">
-            {status === "awaiting_confirmation" && (
+            {status === "pending" && (
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -98,7 +98,7 @@ export function ReservationStatusCard({ status }: Props) {
               </motion.div>
             )}
 
-            {status === "confirmed" && (
+            {status === "approved" && (
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -107,7 +107,7 @@ export function ReservationStatusCard({ status }: Props) {
               >
                 <Heart size={13} className="text-[#7FAE87]" />
                 <span className="font-body text-xs text-green-800 font-medium">
-                  Guest guide will be sent 3 days before check-in
+                  Check-in details were sent to your mobile number
                 </span>
               </motion.div>
             )}
@@ -125,20 +125,7 @@ export function ReservationStatusCard({ status }: Props) {
               </motion.a>
             )}
 
-            {status === "expired" && (
-              <motion.a
-                href="/"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.3 }}
-                className="inline-flex items-center gap-2 font-body text-sm font-medium text-primary hover:text-primary-hover transition-colors"
-              >
-                Make a New Reservation
-                <ArrowRight size={14} />
-              </motion.a>
-            )}
-
-            {(status === "cancelled" || status === "declined" || status === "expired") && (
+            {(status === "cancelled" || status === "declined") && (
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -147,7 +134,7 @@ export function ReservationStatusCard({ status }: Props) {
               >
                 <span className="text-outline-variant/40">|</span>
                 <a
-                  href="https://facebook.com"
+                  href={contactHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 font-body text-sm text-on-surface-variant/60 hover:text-primary transition-colors"

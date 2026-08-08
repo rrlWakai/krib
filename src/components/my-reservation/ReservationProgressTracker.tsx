@@ -8,12 +8,11 @@ interface Props {
   status: ReservationStatus
 }
 
-const TERMINAL: ReservationStatus[] = ["cancelled", "declined", "expired"]
+const TERMINAL: ReservationStatus[] = ["cancelled", "declined"]
 
 const TERMINAL_LABELS: Record<string, string> = {
   cancelled: "Reservation Cancelled",
   declined: "Reservation Declined",
-  expired: "Reservation Expired",
 }
 
 function getStepStatus(
@@ -31,8 +30,8 @@ export function ReservationProgressTracker({ status }: Props) {
   const isTerminal = TERMINAL.includes(status)
 
   const STATUS_RANK: Record<string, number> = {
-    awaiting_confirmation: 1,
-    confirmed: 3,
+    pending: 1,
+    approved: 3,
     completed: 3,
   }
   const currentStep = isTerminal ? -1 : (STATUS_RANK[status] ?? -1)
@@ -300,9 +299,7 @@ export function ReservationProgressTracker({ status }: Props) {
               <p className="font-body text-sm text-on-surface-variant leading-relaxed">
                 {status === "declined"
                   ? "Your requested dates are not available. Please try booking a different date or contact us for assistance."
-                  : status === "cancelled"
-                    ? "This reservation has been cancelled. If you have any questions, please contact us."
-                    : "The reservation window for this request has passed. Please contact us if you would like to explore new dates."}
+                  : "This reservation has been cancelled. If you have any questions, please contact us."}
               </p>
               <a
                 href="/"

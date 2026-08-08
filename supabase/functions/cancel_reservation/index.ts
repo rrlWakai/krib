@@ -4,6 +4,12 @@ import { requireBody } from '../_shared/validate.ts'
 import { getAdminClient } from '../_shared/adminClient.ts'
 import { getAdminUser } from '../_shared/auth.ts'
 import { mapTransitionError, isUuid, writeAudit } from '../_shared/reservations.ts'
+import {
+  readSmsSettings,
+  sendSms,
+  guestCancelledMessage,
+  ownerGuestCancelledMessage,
+} from '../_shared/sms.ts'
 
 interface AdminCancelInput {
   reservation_id: string
@@ -93,7 +99,11 @@ async function handleAdminCancel(
   await writeAudit(admin, adminUser.id, 'cancel', 'reservation', reservationId, {
     status: 'cancelled',
     reference_code: reservation.reference_code,
+    actor: 'admin',
   })
+
+  // B2: notify the guest on cancellation (best-effort).
+  await notifyGuestCancelled(admin, reservationId, reservation)
 
   return new Response(
     JSON.stringify({ reservation }),
@@ -160,8 +170,82 @@ async function handleGuestCancel(parsed: unknown): Promise<Response> {
     throw updateError
   }
 
+  // C1: audit the guest-initiated cancellation.
+  const guestId = (reservation.guest as unknown as { id?: string })?.id ?? ''
+  await writeAudit(admin, guestId, 'cancel', 'reservation', reservation.id, {
+    status: 'cancelled',
+    reference_code: reservation.reference_code,
+    actor: 'guest',
+    actor_email: email,
+  })
+
+  // B2: notify the guest (confirmation) and the owner (best-effort).
+  await notifyGuestCancelled(admin, reservation.id, cancelled)
+  try {
+    const r = cancelled as unknown as {
+      id: string
+      reference_code: string
+      guest_count: number
+      arrival_datetime: string
+      guest: { full_name?: string; phone?: string }
+      villa: { name?: string }
+    }
+    const smsSettings = await readSmsSettings(admin)
+    if (smsSettings.enabled && smsSettings.ownerMobile) {
+      await sendSms(
+        admin,
+        r.id,
+        smsSettings.ownerMobile,
+        ownerGuestCancelledMessage({
+          reference_code: r.reference_code,
+          villa_name: r.villa?.name ?? 'KRiB Beverly Place',
+          guest_name: r.guest?.full_name ?? '',
+          guest_phone: r.guest?.phone ?? '',
+          arrival_datetime: r.arrival_datetime,
+        }),
+      )
+    }
+  } catch (err) {
+    console.error('Owner SMS notification failed:', err)
+  }
+
   return new Response(
     JSON.stringify({ reservation: cancelled }),
     { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   )
+}
+
+async function notifyGuestCancelled(
+  admin: ReturnType<typeof getAdminClient>,
+  reservationId: string,
+  reservation: {
+    reference_code: string
+    arrival_datetime: string
+    guest: unknown
+    villa: unknown
+  },
+): Promise<void> {
+  try {
+    const guest = reservation.guest as { full_name?: string; phone?: string }
+    const villa = reservation.villa as { name?: string }
+    if (!guest?.phone) return
+
+    const smsSettings = await readSmsSettings(admin)
+    if (!smsSettings.enabled) return
+
+    await sendSms(
+      admin,
+      reservationId,
+      guest.phone,
+      guestCancelledMessage({
+        reference_code: reservation.reference_code,
+        villa_name: villa?.name ?? 'KRiB Beverly Place',
+        guest_name: guest?.full_name ?? '',
+        guest_phone: guest?.phone ?? '',
+        arrival_datetime: reservation.arrival_datetime,
+      }),
+    )
+  } catch (err) {
+    console.error('Guest SMS notification failed:', err)
+  }
 }

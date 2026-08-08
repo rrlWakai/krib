@@ -84,7 +84,7 @@ export function ReservationOverviewCard({ reservation }: Props) {
           <div className="flex items-center gap-2 mb-6">
             <Hash size={12} className="text-on-surface-variant/40" />
             <span className="font-mono text-sm text-on-surface-variant/60 tracking-tight">
-              {reservation.id}
+              {reservation.referenceCode ?? reservation.id}
             </span>
           </div>
 

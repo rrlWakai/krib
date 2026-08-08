@@ -80,14 +80,14 @@ export function LookupForm({ onFound, onError, onSearching, searching }: LookupF
                       onChange={(e) => setCode(e.target.value.toUpperCase())}
                       onFocus={() => setFocused("code")}
                       onBlur={() => setFocused(null)}
-                      placeholder="KRIB-2026-00421"
+                      placeholder="KRB-XXXXXXXX"
                       className="w-full pl-11 pr-4 py-4 bg-transparent font-body text-body-md text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none tracking-wide"
                       autoComplete="off"
                       disabled={searching}
                     />
                   </div>
                   <p className="font-body text-xs text-on-surface-variant/50 mt-2.5 pl-1">
-                    Found in your confirmation email after booking.
+                    Sent to your mobile number after you book (e.g. KRB-3F9A2B7).
                   </p>
                 </motion.div>
               ) : (

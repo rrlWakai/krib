@@ -2,6 +2,8 @@ import { handleCors, corsHeaders } from '../_shared/cors.ts'
 import { badRequest, methodNotAllowed, internalError } from '../_shared/errors.ts'
 import { requireBody } from '../_shared/validate.ts'
 import { getAdminClient } from '../_shared/adminClient.ts'
+import { writeAudit } from '../_shared/reservations.ts'
+import { readSmsSettings, sendSms, ownerNewReservationMessage } from '../_shared/sms.ts'
 
 const STAY_HOURS = 21
 
@@ -172,6 +174,46 @@ Deno.serve(async (req: Request) => {
     if (reservationError) {
       return mapReservationError(reservationError)
     }
+
+    // B1: notify the owner on every new reservation request (best-effort).
+    try {
+      const r = reservation as unknown as {
+        id: string
+        reference_code: string
+        guest_count: number
+        arrival_datetime: string
+        guest: { full_name?: string; phone?: string }
+        villa: { name?: string }
+      }
+      const smsSettings = await readSmsSettings(admin)
+      if (smsSettings.enabled && smsSettings.ownerMobile) {
+        await sendSms(
+          admin,
+          r.id,
+          smsSettings.ownerMobile,
+          ownerNewReservationMessage(
+            {
+              reference_code: r.reference_code,
+              villa_name: r.villa?.name ?? 'KRiB Beverly Place',
+              guest_name: r.guest?.full_name ?? '',
+              guest_phone: r.guest?.phone ?? '',
+              arrival_datetime: r.arrival_datetime,
+            },
+            r.guest_count,
+          ),
+        )
+      }
+    } catch (err) {
+      console.error('Owner SMS notification failed:', err)
+    }
+
+    // C1: audit the guest-created reservation.
+    await writeAudit(admin, guest.id, 'create', 'reservation', reservation.id, {
+      status: 'pending',
+      reference_code: reservation.reference_code,
+      actor_name: fullName,
+      actor_email: email,
+    })
 
     return new Response(
       JSON.stringify({ reservation }),

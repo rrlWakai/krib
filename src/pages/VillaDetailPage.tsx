@@ -13,6 +13,8 @@ import {
   Expand,
 } from "lucide-react";
 import { useScrollToHash } from "../hooks/useScrollToHash";
+import { useLiveVillas } from "../hooks/useLiveVillas";
+import { formatPeso, parsePesoAmount } from "../services/api/villas";
 import { villas, nearbyAttractions } from "../lib/data";
 import { fadeUp, pageTransition } from "../lib/animations";
 import { Reveal } from "../components/ui/Reveal";
@@ -60,7 +62,48 @@ export function VillaDetailPage() {
   useScrollToHash();
   const location = useLocation();
   const slug = location.pathname.replace("/", "");
-  const villa = villas.find((v) => v.slug === slug);
+  const staticVilla = villas.find((v) => v.slug === slug);
+
+  const { liveVillas } = useLiveVillas();
+
+  const villa = useMemo(() => {
+    if (!staticVilla) return undefined;
+    const live = liveVillas[staticVilla.slug];
+    if (!live) return staticVilla;
+
+    const basePrice = Number(live.base_price)
+    const perNight = formatPeso(basePrice)
+    const rateType = staticVilla.priceDetails.rateType
+
+    let rates = staticVilla.rates.map((rate) => {
+      if (rate.label === "Regular Rate") return { ...rate, amount: perNight };
+      if (rate.label === "Capacity") return { ...rate, amount: `Up to ${live.max_guests} Guests` };
+      return rate;
+    })
+
+    const promoRate = rates.find((r) => r.label === "21-Hour Stay")
+    const promoAmount = promoRate ? parsePesoAmount(promoRate.amount) : 0
+    const savings = Math.max(0, basePrice - promoAmount)
+    rates = rates.map((rate) =>
+      rate.label === "Promotional Savings" ? { ...rate, amount: formatPeso(savings) } : rate,
+    )
+
+    const dbDescription = live.description?.trim()
+    const description =
+      dbDescription && dbDescription !== staticVilla.tagline
+        ? dbDescription
+        : staticVilla.description
+
+    return {
+      ...staticVilla,
+      name: live.name || staticVilla.name,
+      description,
+      maxGuests: live.max_guests,
+      price: `${perNight} / ${rateType}`,
+      priceDetails: { perNight, rateType },
+      rates,
+    }
+  }, [staticVilla, liveVillas]);
 
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Search } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
 import { LoadingBlock, ErrorBlock } from '../components/AdminState'
@@ -20,19 +20,17 @@ function formatDateTime(dateStr: string) {
 
 type StatusFilter = 'all' | SmsLog['status']
 
+const PAGE_SIZE = 15
+
 export default function AdminSmsActivity() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
 
   const smsQuery = useAdminQuery('sms-logs', async () => {
     const { fetchSmsLogs } = await import('../services/api')
     return fetchSmsLogs()
   })
-
-  const filtered = useMemo(() => {
-    const logs = smsQuery.data ?? []
-    if (statusFilter === 'all') return logs
-    return logs.filter((log) => log.status === statusFilter)
-  }, [smsQuery.data, statusFilter])
 
   const counts = useMemo(() => {
     const logs = smsQuery.data ?? []
@@ -43,6 +41,33 @@ export default function AdminSmsActivity() {
       failed: logs.filter((l) => l.status === 'failed').length,
     }
   }, [smsQuery.data])
+
+  const filtered = useMemo(() => {
+    let logs = smsQuery.data ?? []
+    if (statusFilter !== 'all') logs = logs.filter((log) => log.status === statusFilter)
+    const term = search.trim().toLowerCase()
+    if (term) {
+      logs = logs.filter((log) => {
+        const haystack = [
+          log.recipient,
+          log.message,
+          log.reservation?.reference_code ?? '',
+          log.reservation?.guest.full_name ?? '',
+          log.direction,
+        ].join(' ').toLowerCase()
+        return haystack.includes(term)
+      })
+    }
+    return logs
+  }, [smsQuery.data, statusFilter, search])
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage = Math.min(page, pageCount)
+  const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
+  function changePage(next: number) {
+    setPage(Math.min(Math.max(1, next), pageCount))
+  }
 
   if (smsQuery.loading) {
     return (
@@ -72,11 +97,11 @@ export default function AdminSmsActivity() {
         title="SMS Activity"
         subtitle="View and manage SMS communications with guests"
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {(['all', 'queued', 'sent', 'failed'] as StatusFilter[]).map((s) => (
               <button
                 key={s}
-                onClick={() => setStatusFilter(s)}
+                onClick={() => { setStatusFilter(s); setPage(1) }}
                 className={cn(
                   'rounded-md px-3 py-1.5 font-body text-[12px] capitalize transition-colors',
                   statusFilter === s
@@ -91,6 +116,16 @@ export default function AdminSmsActivity() {
         }
       />
 
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#757575]" />
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          placeholder="Search recipient, message, reservation code…"
+          className="w-full max-w-md rounded-lg border border-[#ECECEC] bg-white py-2 pl-9 pr-3 font-body text-[12px] text-[#0A1F44] outline-none transition-colors focus:border-[#0A1F44]"
+        />
+      </div>
+
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-[#ECECEC] py-20">
           <MessageSquare size={40} className="mb-4 text-[#ECECEC]" />
@@ -99,39 +134,65 @@ export default function AdminSmsActivity() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {filtered.map((log) => (
-            <div
-              key={log.id}
-              className="rounded-lg border border-[#ECECEC] bg-white p-4"
-            >
-              <div className="mb-1.5 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-body text-[12px] font-medium text-[#0A1F44]">
-                    To {log.recipient}
-                  </span>
-                  {log.reservation && (
-                    <span className="font-body text-[11px] text-[#757575]">
-                      · {log.reservation.reference_code} · {log.reservation.guest.full_name}
+        <>
+          <div className="flex flex-col gap-2">
+            {visible.map((log) => (
+              <div
+                key={log.id}
+                className="rounded-lg border border-[#ECECEC] bg-white p-4"
+              >
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-body text-[12px] font-medium text-[#0A1F44]">
+                      To {log.recipient}
                     </span>
-                  )}
+                    {log.reservation && (
+                      <span className="font-body text-[11px] text-[#757575]">
+                        · {log.reservation.reference_code} · {log.reservation.guest.full_name}
+                      </span>
+                    )}
+                  </div>
+                  <StatusBadge status={log.status} size="sm" />
                 </div>
-                <StatusBadge status={log.status} size="sm" />
+                <p className="mb-2 font-body text-[13px] leading-relaxed text-[#0A1F44]">
+                  {log.message}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="font-body text-[11px] uppercase tracking-wide text-[#757575]">
+                    {log.direction.replace('_', ' ')}
+                  </span>
+                  <span className="font-body text-[11px] text-[#757575]">
+                    {formatDateTime(log.created_at)}
+                  </span>
+                </div>
               </div>
-              <p className="mb-2 font-body text-[13px] leading-relaxed text-[#0A1F44]">
-                {log.message}
+            ))}
+          </div>
+
+          {filtered.length > PAGE_SIZE && (
+            <div className="mt-4 flex items-center justify-between">
+              <p className="font-body text-[12px] text-[#757575]">
+                {filtered.length} messages · Page {safePage} of {pageCount}
               </p>
-              <div className="flex items-center justify-between">
-                <span className="font-body text-[11px] uppercase tracking-wide text-[#757575]">
-                  {log.direction.replace('_', ' ')}
-                </span>
-                <span className="font-body text-[11px] text-[#757575]">
-                  {formatDateTime(log.created_at)}
-                </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => changePage(safePage - 1)}
+                  disabled={safePage <= 1}
+                  className="rounded-lg border border-[#ECECEC] bg-white px-3 py-1.5 font-body text-[12px] text-[#0A1F44] transition-colors hover:bg-[#f0f2f7] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => changePage(safePage + 1)}
+                  disabled={safePage >= pageCount}
+                  className="rounded-lg border border-[#ECECEC] bg-white px-3 py-1.5 font-body text-[12px] text-[#0A1F44] transition-colors hover:bg-[#f0f2f7] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </motion.div>
   )

@@ -70,6 +70,11 @@ export default function ReservationDetail() {
     return cancelReservation(reservationId)
   })
 
+  const completeMutation = useAdminMutation(async (reservationId: string) => {
+    const { completeReservation } = await import('../services/mutations')
+    return completeReservation(reservationId)
+  })
+
   const smsMutation = useAdminMutation(async (reservationId: string) => {
     const { sendReservationSms } = await import('../services/mutations')
     return sendReservationSms(reservationId, { type: 'confirmation' })
@@ -115,7 +120,7 @@ export default function ReservationDetail() {
   const nights = reservationNights(res)
   const statusIdx = getStatusIndex(res.status)
   const isTerminal = TERMINAL_STATUSES.includes(res.status)
-  const actionError = approveMutation.error ?? declineMutation.error ?? cancelMutation.error ?? smsMutation.error
+  const actionError = approveMutation.error ?? declineMutation.error ?? cancelMutation.error ?? completeMutation.error ?? smsMutation.error
 
   function afterMutation() {
     reservationQuery.refetch()
@@ -355,6 +360,16 @@ export default function ReservationDetail() {
                       className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-[#757575] px-4 py-2.5 font-body text-[13px] font-medium text-[#757575] transition-colors hover:bg-[#FAFAFA] disabled:opacity-50"
                     >
                       Cancel
+                    </button>
+                  )}
+                  {res.status === 'approved' && (
+                    <button
+                      onClick={() => completeMutation.mutate(res.id).then(afterMutation)}
+                      disabled={completeMutation.loading}
+                      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-[#C9A227] px-4 py-2.5 font-body text-[13px] font-medium text-[#0A1F44] transition-colors hover:bg-[#FBF7EA] disabled:opacity-50"
+                    >
+                      <CheckCircle2 size={16} />
+                      {completeMutation.loading ? 'Completing…' : 'Mark Completed'}
                     </button>
                   )}
                   {res.status === 'approved' && (

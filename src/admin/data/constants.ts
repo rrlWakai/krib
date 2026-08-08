@@ -15,10 +15,12 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Control Center', icon: 'LayoutDashboard', path: '/admin' },
   { label: 'Reservations', icon: 'CalendarCheck', path: '/admin/reservations' },
   { label: 'Calendar', icon: 'Calendar', path: '/admin/calendar' },
+  { label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
   { label: 'Villas', icon: 'Building2', path: '/admin/villas' },
   { label: 'Guests', icon: 'Users', path: '/admin/guests' },
   { label: 'Discounts', icon: 'Tag', path: '/admin/discounts' },
   { label: 'SMS Activity', icon: 'MessageSquare', path: '/admin/sms-activity' },
+  { label: 'Audit Logs', icon: 'ScrollText', path: '/admin/audit-logs' },
   { label: 'Settings', icon: 'Settings', path: '/admin/settings' },
 ];
 

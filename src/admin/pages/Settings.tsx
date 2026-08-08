@@ -1,232 +1,283 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Building2,
-  Pencil,
-  Phone,
-  Mail,
   Globe,
-  Facebook,
-  Instagram,
   Bell,
   BellOff,
-  Check,
-  Copy,
+  Save,
+  Smartphone,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
-import type { Settings, NotificationSettings } from '../types'
+import { LoadingBlock, ErrorBlock } from '../components/AdminState'
+import { useAdminQuery, useAdminMutation } from '../hooks/useAdminQuery'
+import { fetchSiteSettingsAdmin } from '../services/api'
+import { updateSiteSettings } from '../services/mutations'
+import { clearSiteSettingsCache } from '../../services/api/settings'
+import type { SiteSettings, BusinessSettings, SmsSettings, LegalSettings } from '../../services/api/settings'
 import { cn } from '../../lib/cn'
 
-function Toggle({
-  enabled,
-  onChange,
-  label,
-  description,
-}: {
-  enabled: boolean
-  onChange: () => void
-  label: string
-  description: string
-}) {
-  return (
-    <div className="flex items-center justify-between py-3">
-      <div className="min-w-0 flex-1 pr-4">
-        <span className="font-body text-[14px] font-medium text-[#0A1F44]">{label}</span>
-        <p className="font-body text-[12px] text-[#757575]">{description}</p>
-      </div>
-      <button
-        onClick={onChange}
-        disabled
-        className={cn(
-          'relative inline-flex h-7 w-11 shrink-0 cursor-not-allowed items-center rounded-full transition-colors duration-200',
-          enabled ? 'bg-[#0A1F44]' : 'bg-[#ECECEC]'
-        )}
-        role="switch"
-        aria-checked={enabled}
-        aria-disabled="true"
-      >
-        <span className={cn(
-          'inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
-          enabled ? 'translate-x-[22px]' : 'translate-x-[2px]'
-        )} />
-      </button>
-    </div>
-  )
-}
-
-function InfoRow({
-  icon,
+function Field({
   label,
   value,
-  onCopy,
+  onChange,
+  type = 'text',
+  textarea,
+  placeholder,
 }: {
-  icon: React.ReactNode
   label: string
-  value: string
-  onCopy?: () => void
+  value: string | number
+  onChange: (value: string | number) => void
+  type?: string
+  textarea?: boolean
+  placeholder?: string
 }) {
   return (
-    <div className="flex items-center gap-3 py-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f0f2f7]">
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-body text-[11px] text-[#757575]">{label}</p>
-        <p className="font-body text-[13px] text-[#0A1F44] truncate">{value}</p>
-      </div>
-      {onCopy && (
-        <button onClick={onCopy} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#757575] transition-colors hover:bg-[#f0f2f7] hover:text-[#0A1F44]" title="Copy">
-          <Copy size={13} />
-        </button>
+    <label className="block">
+      <span className="mb-1.5 block font-body text-[12px] font-medium text-[#0A1F44]">{label}</span>
+      {textarea ? (
+        <textarea
+          value={String(value)}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={8}
+          className="w-full resize-y rounded-lg border border-[#ECECEC] bg-white px-3.5 py-2.5 font-body text-[13px] text-[#0A1F44] outline-none transition-colors focus:border-[#0A1F44]"
+        />
+      ) : (
+        <input
+          type={type}
+          value={String(value)}
+          onChange={(e) => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
+          placeholder={placeholder}
+          className="w-full rounded-lg border border-[#ECECEC] bg-white px-3.5 py-2.5 font-body text-[13px] text-[#0A1F44] outline-none transition-colors focus:border-[#0A1F44]"
+        />
       )}
-    </div>
+    </label>
   )
 }
 
 export default function SettingsPage() {
-  const defaultSettings: Settings = {
-    businessInfo: {
-      name: 'KRiB Beverly Place',
-      tagline: 'Your luxury home away from home in Subic',
-      address: 'Beverly Place, Phase 3',
-      city: 'Subic',
-      province: 'Zambales',
-      zipCode: '2209',
-    },
-    contactDetails: {
-      phone: '+63 917 123 4567',
-      email: 'hello@kribbeverlyplace.com',
-      facebook: 'facebook.com/kribbeverlyplace',
-      instagram: 'instagram.com/kribbeverlyplace',
-      website: 'kribbeverlyplace.com',
-    },
-    notifications: {
-      emailOnReservation: true,
-      emailOnPayment: true,
-      emailOnCancellation: true,
-      smsOnReservation: true,
-      smsOnPayment: true,
-      dailyReport: false,
-    },
-  }
-  const [settingsData] = useState<Settings>(defaultSettings)
-  const [copied, setCopied] = useState<string | null>(null)
+  const settingsQuery = useAdminQuery('site-settings', fetchSiteSettingsAdmin, { ttlMs: 5_000 })
 
-  function toggleNotification(_key: keyof NotificationSettings) {
-    // No settings table in the backend yet — toggles are read-only.
-  }
+  const [business, setBusiness] = useState<Partial<BusinessSettings>>({})
+  const [sms, setSms] = useState<Partial<SmsSettings>>({})
+  const [legal, setLegal] = useState<Partial<LegalSettings>>({})
+  const [savedSection, setSavedSection] = useState<string | null>(null)
 
-  function handleEdit(section: string) {
-    alert(`Edit ${section} - Feature coming soon!`)
-  }
+  useEffect(() => {
+    if (settingsQuery.data) {
+      setBusiness(settingsQuery.data.business ?? {})
+      setSms(settingsQuery.data.sms ?? {})
+      setLegal(settingsQuery.data.legal ?? {})
+    }
+  }, [settingsQuery.data])
 
-  function copyToClipboard(text: string, key: string) {
-    navigator.clipboard.writeText(text)
-    setCopied(key)
-    setTimeout(() => setCopied(null), 1500)
+  const businessMutation = useAdminMutation<Partial<BusinessSettings>, SiteSettings>(async (payload) =>
+    updateSiteSettings({ business: payload }),
+  )
+  const smsMutation = useAdminMutation<Partial<SmsSettings>, SiteSettings>(async (payload) =>
+    updateSiteSettings({ sms: payload }),
+  )
+  const legalMutation = useAdminMutation<Partial<LegalSettings>, SiteSettings>(async (payload) =>
+    updateSiteSettings({ legal: payload }),
+  )
+
+  async function saveSection(section: 'business' | 'sms' | 'legal') {
+    setSavedSection(null)
+    let result
+    if (section === 'business') result = await businessMutation.mutate(business)
+    if (section === 'sms') result = await smsMutation.mutate(sms)
+    if (section === 'legal') result = await legalMutation.mutate(legal)
+    if (result?.data) {
+      clearSiteSettingsCache()
+      setSavedSection(section)
+      setTimeout(() => setSavedSection(null), 2000)
+    }
   }
 
-  const { businessInfo, contactDetails, notifications } = settingsData
+  if (settingsQuery.loading && !settingsQuery.data) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <PageHeader title="Settings" subtitle="Business configuration" />
+        <LoadingBlock />
+      </motion.div>
+    )
+  }
+
+  if (settingsQuery.error && !settingsQuery.data) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <PageHeader title="Settings" subtitle="Business configuration" />
+        <ErrorBlock message={settingsQuery.error} onRetry={settingsQuery.refetch} />
+      </motion.div>
+    )
+  }
+
+  const sectionSaving = {
+    business: businessMutation.loading,
+    sms: smsMutation.loading,
+    legal: legalMutation.loading,
+  }
+  const sectionError =
+    businessMutation.error ?? smsMutation.error ?? legalMutation.error
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <PageHeader title="Settings" subtitle="Business configuration" />
 
-      <div className="mb-6 rounded-lg border border-[#C9A227]/40 bg-[#C9A227]/10 px-4 py-3">
-        <p className="font-body text-[13px] font-medium text-[#0A1F44]">Backend not implemented</p>
-        <p className="mt-0.5 font-body text-[12px] text-[#757575]">
-          There is no settings table in the database yet. These values are shown for reference only and cannot be saved.
-        </p>
-      </div>
+      {sectionError && (
+        <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+          <p className="font-body text-[13px] text-red-700">{sectionError}</p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-5">
-        <div className="border border-[#ECECEC] rounded-lg bg-white p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]">
-                <Building2 size={16} className="text-[#0A1F44]" />
-              </div>
-              <div>
-                <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">Business Information</h2>
-                <p className="font-body text-[12px] text-[#757575]">Your business name, tagline, and address</p>
-              </div>
-            </div>
-            <button disabled onClick={() => handleEdit('Business Information')} className="flex min-h-[40px] cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] text-[#B0B0B0]">
-              <Pencil size={13} /> Edit
-            </button>
-          </div>
-          <div className="divide-y divide-[#ECECEC]">
-            <InfoRow icon={<Building2 size={14} className="text-[#757575]" />} label="Business Name" value={businessInfo.name} onCopy={() => copyToClipboard(businessInfo.name, 'name')} />
-            <InfoRow icon={<span className="font-display text-[13px] italic text-[#0A1F44]">K</span>} label="Tagline" value={`"${businessInfo.tagline}"`} />
-            <InfoRow icon={<Globe size={14} className="text-[#757575]" />} label="Address" value={`${businessInfo.address}, ${businessInfo.city}, ${businessInfo.province} ${businessInfo.zipCode}`}
-              onCopy={() => copyToClipboard(`${businessInfo.address}, ${businessInfo.city}, ${businessInfo.province} ${businessInfo.zipCode}`, 'address')} />
-          </div>
-          {copied && (
-            <div className="mt-3 flex items-center gap-1.5 rounded-md bg-[#f0f2f7] px-3 py-2">
-              <Check size={13} className="text-[#0A1F44]" />
-              <span className="font-body text-[12px] text-[#0A1F44]">Copied to clipboard</span>
-            </div>
-          )}
-        </div>
-
-        <div className="border border-[#ECECEC] rounded-lg bg-white p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]">
-                <Phone size={16} className="text-[#0A1F44]" />
-              </div>
-              <div>
-                <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">Contact Details</h2>
-                <p className="font-body text-[12px] text-[#757575]">Phone, email, and social media</p>
-              </div>
-            </div>
-            <button disabled onClick={() => handleEdit('Contact Details')} className="flex min-h-[40px] cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] text-[#B0B0B0]">
-              <Pencil size={13} /> Edit
-            </button>
-          </div>
-          <div className="divide-y divide-[#ECECEC]">
-            <InfoRow icon={<Phone size={14} className="text-[#757575]" />} label="Phone" value={contactDetails.phone} onCopy={() => copyToClipboard(contactDetails.phone, 'phone')} />
-            <InfoRow icon={<Mail size={14} className="text-[#757575]" />} label="Email" value={contactDetails.email} onCopy={() => copyToClipboard(contactDetails.email, 'email')} />
-            <InfoRow icon={<Facebook size={14} className="text-[#757575]" />} label="Facebook" value={contactDetails.facebook} onCopy={() => copyToClipboard(`https://${contactDetails.facebook}`, 'facebook')} />
-            <InfoRow icon={<Instagram size={14} className="text-[#757575]" />} label="Instagram" value={contactDetails.instagram} onCopy={() => copyToClipboard(`https://${contactDetails.instagram}`, 'instagram')} />
-            <InfoRow icon={<Globe size={14} className="text-[#757575]" />} label="Website" value={contactDetails.website} onCopy={() => copyToClipboard(`https://${contactDetails.website}`, 'website')} />
-          </div>
-        </div>
-
-        <div className="border border-[#ECECEC] rounded-lg bg-white p-5">
+        {/* Business Information */}
+        <section className="border border-[#ECECEC] rounded-lg bg-white p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]">
-              <Bell size={16} className="text-[#0A1F44]" />
+              <Building2 size={16} className="text-[#0A1F44]" />
             </div>
-            <div>
-              <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">Notification Settings</h2>
-              <p className="font-body text-[12px] text-[#757575]">Choose how you want to be notified</p>
+            <div className="flex-1">
+              <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">Business Information</h2>
+              <p className="font-body text-[12px] text-[#757575]">
+                Name, contact details, and stay times. Shown across the public website.
+              </p>
+            </div>
+            <SaveButton
+              saving={sectionSaving.business}
+              saved={savedSection === 'business'}
+              onClick={() => saveSection('business')}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="Business Name" value={business.business_name ?? ''} onChange={(v) => setBusiness({ ...business, business_name: String(v) })} />
+            <Field label="Tagline" value={business.tagline ?? ''} onChange={(v) => setBusiness({ ...business, tagline: String(v) })} />
+            <Field label="Phone" value={business.phone ?? ''} onChange={(v) => setBusiness({ ...business, phone: String(v) })} />
+            <Field label="Email" type="email" value={business.email ?? ''} onChange={(v) => setBusiness({ ...business, email: String(v) })} />
+            <Field label="Facebook URL" value={business.facebook ?? ''} onChange={(v) => setBusiness({ ...business, facebook: String(v) })} />
+            <Field label="Instagram URL" value={business.instagram ?? ''} onChange={(v) => setBusiness({ ...business, instagram: String(v) })} />
+            <Field label="Website" value={business.website ?? ''} onChange={(v) => setBusiness({ ...business, website: String(v) })} />
+            <Field label="Address" value={business.address ?? ''} onChange={(v) => setBusiness({ ...business, address: String(v) })} />
+            <Field label="Map URL" value={business.map_url ?? ''} onChange={(v) => setBusiness({ ...business, map_url: String(v) })} />
+            <Field label="Check-in Time" value={business.check_in_time ?? ''} onChange={(v) => setBusiness({ ...business, check_in_time: String(v) })} />
+            <Field label="Check-out Time" value={business.check_out_time ?? ''} onChange={(v) => setBusiness({ ...business, check_out_time: String(v) })} />
+            <Field label="Party Fee (₱)" type="number" value={business.party_fee ?? 0} onChange={(v) => setBusiness({ ...business, party_fee: Number(v) })} />
+          </div>
+        </section>
+
+        {/* SMS */}
+        <section className="border border-[#ECECEC] rounded-lg bg-white p-5">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]">
+              <Smartphone size={16} className="text-[#0A1F44]" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">SMS Notifications</h2>
+              <p className="font-body text-[12px] text-[#757575]">
+                Automatic SMS to you and your guests on reservation events.
+              </p>
+            </div>
+            <SaveButton
+              saving={sectionSaving.sms}
+              saved={savedSection === 'sms'}
+              onClick={() => saveSection('sms')}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="Owner Mobile (receiver)" value={sms.owner_mobile ?? ''} onChange={(v) => setSms({ ...sms, owner_mobile: String(v) })} />
+            <Field label="Sender Name" value={sms.sender_name ?? ''} onChange={(v) => setSms({ ...sms, sender_name: String(v) })} />
+            <div className="flex items-center justify-between gap-3 self-end rounded-lg border border-[#ECECEC] px-4 py-2.5">
+              <div>
+                <p className="font-body text-[13px] font-medium text-[#0A1F44]">Automatic SMS enabled</p>
+                <p className="font-body text-[11px] text-[#757575]">Send owner &amp; guest SMS on transitions</p>
+              </div>
+              <button
+                onClick={() => setSms({ ...sms, enabled: sms.enabled !== false })}
+                className={cn(
+                  'relative inline-flex h-7 w-11 shrink-0 items-center rounded-full transition-colors duration-200',
+                  sms.enabled !== false ? 'bg-[#0A1F44]' : 'bg-[#ECECEC]',
+                )}
+                role="switch"
+                aria-checked={sms.enabled !== false}
+              >
+                <span className={cn(
+                  'inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
+                  sms.enabled !== false ? 'translate-x-[22px]' : 'translate-x-[2px]',
+                )} />
+              </button>
             </div>
           </div>
-          <div className="divide-y divide-[#ECECEC]">
-            <Toggle enabled={notifications.emailOnReservation} onChange={() => toggleNotification('emailOnReservation')} label="Email on New Reservation" description="Receive an email when a new reservation request is submitted" />
-            <Toggle enabled={notifications.emailOnPayment} onChange={() => toggleNotification('emailOnPayment')} label="Email on Payment" description="Get notified when a guest submits or completes payment" />
-            <Toggle enabled={notifications.emailOnCancellation} onChange={() => toggleNotification('emailOnCancellation')} label="Email on Cancellation" description="Receive alerts when a reservation is cancelled" />
-            <Toggle enabled={notifications.smsOnReservation} onChange={() => toggleNotification('smsOnReservation')} label="SMS on Reservation" description="Receive an SMS for new reservation requests" />
-            <Toggle enabled={notifications.smsOnPayment} onChange={() => toggleNotification('smsOnPayment')} label="SMS on Payment" description="Get an SMS notification when payments are received" />
-            <Toggle enabled={notifications.dailyReport} onChange={() => toggleNotification('dailyReport')} label="Daily Report" description="Receive a daily summary of bookings, revenue, and occupancy" />
-          </div>
+
           <div className="mt-4 flex items-center gap-3 rounded-lg bg-[#FAFAFA] p-4">
-            {Object.values(notifications).some((v) => v) ? (
+            {sms.enabled !== false ? (
               <Bell size={14} className="shrink-0 text-[#0A1F44]" />
             ) : (
               <BellOff size={14} className="shrink-0 text-[#757575]" />
             )}
             <p className="font-body text-[12px] text-[#757575]">
-              {Object.values(notifications).filter(Boolean).length} of {Object.keys(notifications).length} notifications enabled
+              {sms.enabled !== false
+                ? 'Guests will receive SMS on approval, decline, and cancellation. You will receive SMS for new reservations and guest cancellations.'
+                : 'Automatic SMS is turned off. Manual SMS from the reservation page still works.'}
             </p>
           </div>
-        </div>
+        </section>
+
+        {/* Legal */}
+        <section className="border border-[#ECECEC] rounded-lg bg-white p-5">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]">
+              <Globe size={16} className="text-[#0A1F44]" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">Legal Documents</h2>
+              <p className="font-body text-[12px] text-[#757575]">
+                Privacy notice and terms shown in the booking flow. Markdown supported.
+              </p>
+            </div>
+            <SaveButton
+              saving={sectionSaving.legal}
+              saved={savedSection === 'legal'}
+              onClick={() => saveSection('legal')}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <Field
+              label="Privacy Policy"
+              textarea
+              value={legal.privacy_policy ?? ''}
+              onChange={(v) => setLegal({ ...legal, privacy_policy: String(v) })}
+            />
+            <Field
+              label="Terms & Conditions"
+              textarea
+              value={legal.terms_conditions ?? ''}
+              onChange={(v) => setLegal({ ...legal, terms_conditions: String(v) })}
+            />
+          </div>
+        </section>
       </div>
     </motion.div>
+  )
+}
+
+function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={saving}
+      className={cn(
+        'flex min-h-[40px] items-center justify-center gap-2 rounded-lg border px-4 py-1.5 font-body text-[12px] font-medium transition-colors disabled:opacity-50',
+        saved
+          ? 'border-[#7FAE87] bg-[#F0F7F1] text-[#2F6B3B]'
+          : 'border-[#0A1F44] text-[#0A1F44] hover:bg-[#f0f2f7]',
+      )}
+    >
+      <Save size={13} />
+      {saving ? 'Saving…' : saved ? 'Saved' : 'Save'}
+    </button>
   )
 }

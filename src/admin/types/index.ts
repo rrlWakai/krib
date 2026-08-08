@@ -13,10 +13,6 @@ export type SmsDirection = 'outbound_auto' | 'outbound_manual';
 
 export type SmsStatus = 'queued' | 'sent' | 'failed';
 
-export type DiscountStatus = 'active' | 'inactive' | 'expired';
-
-export type DiscountType = 'percentage' | 'fixed';
-
 export interface Guest {
   id: string;
   full_name: string;
@@ -94,6 +90,20 @@ export interface SmsLog {
   } | null;
 }
 
+export interface AuditLog {
+  id: string;
+  actor: string;
+  action: string;
+  entity: string;
+  entity_id: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  admin?: {
+    id: string;
+    full_name: string;
+  } | null;
+}
+
 export interface VillaAdmin extends Villa {
   amenities: VillaAmenity[];
   galleryCount: number;
@@ -159,55 +169,6 @@ export interface StatusDistribution {
   status: string;
   count: number;
   color: string;
-}
-
-export interface Discount {
-  id: string;
-  code: string;
-  description: string;
-  type: DiscountType;
-  amount: number;
-  villaId: string;
-  startDate: string;
-  endDate: string;
-  status: DiscountStatus;
-  usageCount: number;
-  maxUsage: number;
-}
-
-export interface Settings {
-  businessInfo: {
-    name: string;
-    tagline: string;
-    address: string;
-    city: string;
-    province: string;
-    zipCode: string;
-  };
-  contactDetails: {
-    phone: string;
-    email: string;
-    facebook: string;
-    instagram: string;
-    website: string;
-  };
-  notifications: {
-    emailOnReservation: boolean;
-    emailOnPayment: boolean;
-    emailOnCancellation: boolean;
-    smsOnReservation: boolean;
-    smsOnPayment: boolean;
-    dailyReport: boolean;
-  };
-}
-
-export interface NotificationSettings {
-  emailOnReservation: boolean;
-  emailOnPayment: boolean;
-  emailOnCancellation: boolean;
-  smsOnReservation: boolean;
-  smsOnPayment: boolean;
-  dailyReport: boolean;
 }
 
 export interface NavItem {

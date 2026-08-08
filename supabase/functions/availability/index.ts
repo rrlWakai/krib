@@ -50,9 +50,7 @@ Deno.serve(async (req: Request) => {
 
     let query = admin
       .from('reservations')
-      .select(
-        'id, reference_code, status, guest_count, arrival_datetime, checkout_datetime, guest:guests(full_name)',
-      )
+      .select('id, status, arrival_datetime, checkout_datetime')
       .eq('villa_id', villa.id)
       .in('status', ['pending', 'approved'])
       .gte('checkout_datetime', now)

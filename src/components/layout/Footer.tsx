@@ -1,8 +1,20 @@
 import { Link } from "react-router-dom";
 import { siteContent } from "../../lib/data";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
 
 export function Footer() {
   const { contact } = siteContent;
+  const { settings } = useSiteSettings();
+  const business = settings?.business;
+  const liveContact = {
+    email: business?.email || contact.email,
+    phone: business?.phone || contact.phone,
+    address: business?.address || contact.address,
+    social: {
+      facebook: business?.facebook || contact.social?.facebook,
+      instagram: business?.instagram || contact.social?.instagram,
+    },
+  };
 
   return (
     <footer className="bg-surface border-t border-outline-variant overflow-hidden">
@@ -67,19 +79,19 @@ export function Footer() {
             </p>
             <div className="flex flex-col gap-3">
               <a
-                href={`mailto:${contact.email}`}
+                href={`mailto:${liveContact.email}`}
                 className="font-body text-headline-xs text-on-surface hover:text-primary transition-colors duration-300 break-all"
               >
-                {contact.email}
+                {liveContact.email}
               </a>
               <a
-                href={`tel:${contact.phone.replace(/\s/g, "")}`}
+                href={`tel:${liveContact.phone.replace(/\s/g, "")}`}
                 className="font-body text-headline-xs text-on-surface hover:text-primary transition-colors duration-300"
               >
-                {contact.phone}
+                {liveContact.phone}
               </a>
               <p className="font-body text-body-md text-on-surface-variant mt-1">
-                {contact.address}
+                {liveContact.address}
               </p>
             </div>
           </div>
@@ -91,9 +103,9 @@ export function Footer() {
             &copy; {new Date().getFullYear()} KRiB Beverly Place. All rights reserved.
           </p>
           <div className="flex gap-6">
-            {contact.social.facebook && (
+            {liveContact.social.facebook && (
               <a
-                href={contact.social.facebook}
+                href={liveContact.social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="min-w-11 min-h-11 flex items-center font-body text-body-sm text-on-surface-variant/60 hover:text-primary transition-colors duration-300"
@@ -101,9 +113,9 @@ export function Footer() {
                 Facebook
               </a>
             )}
-            {contact.social.instagram && (
+            {liveContact.social.instagram && (
               <a
-                href={contact.social.instagram}
+                href={liveContact.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="min-w-11 min-h-11 flex items-center font-body text-body-sm text-on-surface-variant/60 hover:text-primary transition-colors duration-300"

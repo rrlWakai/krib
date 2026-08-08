@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import { ReservationHero } from "../components/my-reservation/ReservationHero"
 import { LookupForm } from "../components/my-reservation/LookupForm"
 import { EmptyState } from "../components/my-reservation/EmptyState"
@@ -9,19 +9,22 @@ import { ReservationOverviewCard } from "../components/my-reservation/Reservatio
 import { ReservationStatusCard } from "../components/my-reservation/ReservationStatusCard"
 import { BeforeCheckInSection } from "../components/my-reservation/BeforeCheckInSection"
 import type { Reservation, ReservationStatus } from "../lib/reservationData"
-
-const lookupReservation = async (_id: string, _email: string): Promise<Reservation | null> => null
-const lookupByCode = async (_code: string): Promise<Reservation | null> => null
-const lookupByEmail = async (_email: string): Promise<Reservation[]> => []
+import {
+  lookupByReference,
+  lookupById,
+  lookupByEmail,
+  cancelReservation,
+} from "../services/api/lookup"
 
 type PageStep = "lookup" | "result"
 
-const TERMINAL: ReservationStatus[] = ["cancelled", "declined", "expired"]
+const TERMINAL: ReservationStatus[] = ["cancelled", "declined"]
 
 export function MyReservationPage() {
   const [pageStep, setPageStep] = useState<PageStep>("lookup")
   const [error, setError] = useState("")
   const [searching, setSearching] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
   const [reservation, setReservation] = useState<Reservation | null>(null)
 
   // Auto-load from sessionStorage if redirected after booking
@@ -51,12 +54,12 @@ export function MyReservationPage() {
   async function handleAutoLookup(resId: string, resEmail: string) {
     setSearching(true)
     setError("")
-    const result = await lookupReservation(resId, resEmail)
-    if (result) {
-      setReservation(result)
+    const result = await lookupById(resId, resEmail)
+    if (result.reservation) {
+      setReservation(result.reservation)
       setPageStep("result")
     } else {
-      setError("Reservation not found.")
+      setError(result.error?.message ?? "Reservation not found.")
     }
     setSearching(false)
     sessionStorage.removeItem("krib_last_reservation")
@@ -67,37 +70,44 @@ export function MyReservationPage() {
     setError("")
 
     let result: Reservation | null = null
+    let resultError: string | null = null
 
     if (lookupData.id && !lookupData.email) {
       // Code-only lookup
-      result = await lookupByCode(lookupData.id)
-      if (!result) {
-        setError("No reservation found with that code. Please double-check and try again.")
+      const res = await lookupByReference(lookupData.id)
+      result = res.reservation
+      resultError = res.error?.message ?? null
+      if (!result && !resultError) {
+        resultError = "No reservation found with that code. Please double-check and try again."
       }
     } else if (lookupData.email && !lookupData.id) {
       // Email-only lookup
-      const results = await lookupByEmail(lookupData.email)
-      if (results.length === 0) {
-        setError("No reservations found under that email address.")
-      } else if (results.length === 1) {
-        result = results[0]
-      } else {
+      const res = await lookupByEmail(lookupData.email)
+      if (res.reservation) {
+        result = res.reservation
+      } else if (res.error) {
+        resultError = res.error.message
+      } else if (res.reservations && res.reservations.length > 0) {
         // Multiple reservations — show the most recent one
-        result = results.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        )[0]
+        result = res.reservations[0]
+      } else {
+        resultError = "No reservations found under that email address."
       }
     } else if (lookupData.id && lookupData.email) {
       // Combined lookup (from auto-load)
-      result = await lookupReservation(lookupData.id, lookupData.email)
-      if (!result) {
-        setError("No reservation found. Check your details and try again.")
+      const res = await lookupByReference(lookupData.id, lookupData.email)
+      result = res.reservation
+      resultError = res.error?.message ?? null
+      if (!result && !resultError) {
+        resultError = "No reservation found. Check your details and try again."
       }
     }
 
     if (result) {
       setReservation(result)
       setPageStep("result")
+    } else if (resultError) {
+      setError(resultError)
     }
     setSearching(false)
   }, [])
@@ -106,6 +116,24 @@ export function MyReservationPage() {
     setPageStep("lookup")
     setReservation(null)
     setError("")
+  }
+
+  async function handleCancelReservation() {
+    if (!reservation?.referenceCode) return
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this reservation? This action cannot be undone.",
+    )
+    if (!confirmed) return
+
+    setCancelling(true)
+    setError("")
+    const result = await cancelReservation(reservation.referenceCode, reservation.email)
+    if (result.reservation) {
+      setReservation((prev) => (prev ? { ...prev, status: "cancelled" } : prev))
+    } else if (result.error) {
+      setError(result.error.message)
+    }
+    setCancelling(false)
   }
 
   const isTerminal = reservation ? TERMINAL.includes(reservation.status) : false
@@ -184,11 +212,42 @@ export function MyReservationPage() {
 
                 {/* Reservation Summary */}
                 <div className="space-y-5 md:space-y-6">
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="rounded-2xl border border-red-200/60 bg-red-50/60 px-5 py-4 font-body text-sm text-red-800"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+
                   <ReservationOverviewCard reservation={reservation} />
 
                   <ReservationStatusCard status={reservation.status} />
 
                   {showGuide && <BeforeCheckInSection />}
+
+                  {reservation.status === "pending" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.4 }}
+                      className="pt-2"
+                    >
+                      <button
+                        onClick={handleCancelReservation}
+                        disabled={cancelling}
+                        className="inline-flex items-center gap-2 font-body text-sm text-red-700 hover:text-red-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {cancelling && (
+                          <Loader2 size={14} className="animate-spin" />
+                        )}
+                        {cancelling ? "Cancelling..." : "Cancel this reservation"}
+                      </button>
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             ) : null}

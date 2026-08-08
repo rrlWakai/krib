@@ -1,8 +1,10 @@
 import { ArrowRight, Users, Clock, Waves, Snowflake } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Reveal } from "../../ui/Reveal";
 import { villas } from "../../../lib/data";
-import type { LucideIcon } from "lucide-react";
+import { useLiveVillas } from "../../../hooks/useLiveVillas";
+import type { VillaDetail } from "../../../types";
 
 const quickInfoIcons: Record<string, LucideIcon> = {
   users: Users,
@@ -12,7 +14,17 @@ const quickInfoIcons: Record<string, LucideIcon> = {
 };
 
 export function ChooseYourStay() {
-  const [villa1, villa2] = villas;
+  const { liveVillas } = useLiveVillas();
+  const [staticVilla1, staticVilla2] = villas;
+
+  const mergeLive = (villa: VillaDetail): VillaDetail => {
+    const live = liveVillas[villa.slug];
+    if (!live) return villa;
+    return { ...villa, name: live.name || villa.name, maxGuests: live.max_guests };
+  };
+
+  const villa1 = mergeLive(staticVilla1);
+  const villa2 = mergeLive(staticVilla2);
 
   const villaQuickInfo = [
     { icon: "users", label: (n: number) => `Up to ${n} Guests` },

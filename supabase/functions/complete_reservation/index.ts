@@ -4,15 +4,13 @@ import { requireBody } from '../_shared/validate.ts'
 import { getAdminClient } from '../_shared/adminClient.ts'
 import { getAdminUser } from '../_shared/auth.ts'
 import { mapTransitionError, isUuid, writeAudit } from '../_shared/reservations.ts'
-import { readSmsSettings, sendSms, guestDeclinedMessage } from '../_shared/sms.ts'
 
-interface DeclineInput {
+interface CompleteInput {
   reservation_id: string
-  reason?: string
 }
 
 const SELECT =
-  'id, reference_code, status, guest_count, arrival_datetime, checkout_datetime, declined_at, declined_by, guest:guests(id, full_name, email, phone), villa:villas(slug, name)'
+  'id, reference_code, status, guest_count, arrival_datetime, checkout_datetime, completed_at, completed_by, guest:guests(id, full_name, email, phone), villa:villas(slug, name)'
 
 Deno.serve(async (req: Request) => {
   const cors = handleCors(req)
@@ -25,7 +23,7 @@ Deno.serve(async (req: Request) => {
     const adminUser = auth.admin
 
     const parsed = await req.json().catch(() => null)
-    const check = requireBody<DeclineInput>(parsed, ['reservation_id'])
+    const check = requireBody<CompleteInput>(parsed, ['reservation_id'])
     if (!check.ok) return check.response
 
     const reservationId = String(check.data.reservation_id).trim()
@@ -51,7 +49,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: reservation, error: updateError } = await admin
       .from('reservations')
-      .update({ status: 'declined', declined_by: adminUser.id })
+      .update({ status: 'completed', completed_by: adminUser.id })
       .eq('id', reservationId)
       .select(SELECT)
       .single()
@@ -62,39 +60,10 @@ Deno.serve(async (req: Request) => {
       throw updateError
     }
 
-    await writeAudit(admin, adminUser.id, 'decline', 'reservation', reservationId, {
-      status: 'declined',
+    await writeAudit(admin, adminUser.id, 'complete', 'reservation', reservationId, {
+      status: 'completed',
       reference_code: reservation.reference_code,
-      reason: check.data.reason ?? '',
     })
-
-    // B2: notify the guest on decline (best-effort).
-    try {
-      const r = reservation as unknown as {
-        id: string
-        reference_code: string
-        arrival_datetime: string
-        guest: { full_name?: string; phone?: string }
-        villa: { name?: string }
-      }
-      const smsSettings = await readSmsSettings(admin)
-      if (smsSettings.enabled && r.guest?.phone) {
-        await sendSms(
-          admin,
-          r.id,
-          r.guest.phone,
-          guestDeclinedMessage({
-            reference_code: r.reference_code,
-            villa_name: r.villa?.name ?? 'KRiB Beverly Place',
-            guest_name: r.guest?.full_name ?? '',
-            guest_phone: r.guest?.phone ?? '',
-            arrival_datetime: r.arrival_datetime,
-          }),
-        )
-      }
-    } catch (err) {
-      console.error('Guest SMS notification failed:', err)
-    }
 
     return new Response(
       JSON.stringify({ reservation }),

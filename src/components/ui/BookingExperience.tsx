@@ -20,7 +20,7 @@ import { TermsModal } from "./TermsModal";
 import { cn } from "../../lib/cn";
 import { images } from "../../lib/images";
 import { createReservation } from "../../services/api/reservations";
-import type { Reservation } from "../../lib/reservationData";
+import type { Reservation, ReservationStatus } from "../../lib/reservationData";
 import {
   combineArrivalDatetime,
   computeCheckout,
@@ -356,8 +356,8 @@ export function BookingExperience({
       villaId: r.villa.slug,
       villaName: r.villa.name,
       maxGuests: property.maxGuests,
-      checkIn: r.arrival_datetime.slice(0, 10),
-      checkOut: r.checkout_datetime.slice(0, 10),
+      checkIn: r.arrival_datetime,
+      checkOut: r.checkout_datetime,
       arrivalDatetime: r.arrival_datetime,
       checkoutDatetime: r.checkout_datetime,
       guests: {
@@ -367,7 +367,7 @@ export function BookingExperience({
         pets: guests.pets,
       },
       createdAt: r.created_at.slice(0, 10),
-      status: "awaiting_confirmation",
+      status: r.status as ReservationStatus,
       baseRate: basePrice,
       partyFee: partyFeeActive ? 5000 : 0,
       totalAmount: total,
@@ -1268,6 +1268,12 @@ function StepDetails({
 
   agreementRowRef,
 
+  privacyAgreed,
+  onPrivacyAgreedChange,
+  onOpenPrivacy,
+
+  privacyRowRef,
+
   errors,
 }: {
   fullName: string;
@@ -1384,6 +1390,25 @@ function StepDetails({
           </>
         }
         error={errors.agreed}
+      />
+
+      <ConsentRow
+        rowRef={privacyRowRef}
+        checked={privacyAgreed}
+        onChange={onPrivacyAgreedChange}
+        onReview={onOpenPrivacy}
+        reviewLabel="Review Privacy Notice"
+        ariaLabel="Read and agree to the Privacy Notice"
+        label={
+          <>
+            I have read and agree to the{" "}
+            <span className="text-primary font-medium">
+              Privacy Notice
+            </span>
+            .
+          </>
+        }
+        error={errors.privacyAgreed}
       />
 
       <div className="p-4 rounded-xl bg-tertiary-container/20 border border-tertiary/10">

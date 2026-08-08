@@ -263,6 +263,30 @@ export type Database = {
           },
         ]
       }
+      settings: {
+        Row: {
+          business: Json
+          id: number
+          legal: Json
+          sms: Json
+          updated_at: string
+        }
+        Insert: {
+          business?: Json
+          id: number
+          legal?: Json
+          sms?: Json
+          updated_at?: string
+        }
+        Update: {
+          business?: Json
+          id?: number
+          legal?: Json
+          sms?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sms_logs: {
         Row: {
           created_at: string

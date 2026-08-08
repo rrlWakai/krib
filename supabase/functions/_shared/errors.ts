@@ -57,6 +57,13 @@ export function unauthorized(message = 'Unauthorized'): Response {
   )
 }
 
+export function notFound(message: string): Response {
+  return new Response(
+    JSON.stringify({ code: 'NOT_FOUND', message }),
+    { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+  )
+}
+
 export function internalError(cause?: unknown): Response {
   console.error(cause)
   return new Response(

@@ -4,6 +4,7 @@ import { requireBody } from '../_shared/validate.ts'
 import { getAdminClient } from '../_shared/adminClient.ts'
 import { getAdminUser } from '../_shared/auth.ts'
 import { mapTransitionError, isUuid, writeAudit } from '../_shared/reservations.ts'
+import { readSmsSettings, sendSms, guestApprovedMessage } from '../_shared/sms.ts'
 
 interface ApproveInput {
   reservation_id: string
@@ -64,6 +65,34 @@ Deno.serve(async (req: Request) => {
       status: 'approved',
       reference_code: reservation.reference_code,
     })
+
+    // B2: notify the guest on approval (best-effort).
+    try {
+      const r = reservation as unknown as {
+        id: string
+        reference_code: string
+        arrival_datetime: string
+        guest: { full_name?: string; phone?: string }
+        villa: { name?: string }
+      }
+      const smsSettings = await readSmsSettings(admin)
+      if (smsSettings.enabled && r.guest?.phone) {
+        await sendSms(
+          admin,
+          r.id,
+          r.guest.phone,
+          guestApprovedMessage({
+            reference_code: r.reference_code,
+            villa_name: r.villa?.name ?? 'KRiB Beverly Place',
+            guest_name: r.guest?.full_name ?? '',
+            guest_phone: r.guest?.phone ?? '',
+            arrival_datetime: r.arrival_datetime,
+          }),
+        )
+      }
+    } catch (err) {
+      console.error('Guest SMS notification failed:', err)
+    }
 
     return new Response(
       JSON.stringify({ reservation }),

@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, MessageSquare } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
 import { LoadingBlock, ErrorBlock } from '../components/AdminState'
 import { useAdminQuery } from '../hooks/useAdminQuery'
 import { useAuth } from '../../hooks/auth/useAuth'
 import { formatCurrency, getDaysUntil } from '../data/constants'
-import { estimateReservationValue, computeDashboard } from '../services/api'
+import { estimateReservationValue, computeDashboard, computeSmsStats } from '../services/api'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -48,6 +48,11 @@ export default function Dashboard() {
   const guestsQuery = useAdminQuery('guests', async () => {
     const { fetchGuests } = await import('../services/api')
     return fetchGuests()
+  })
+
+  const smsQuery = useAdminQuery('sms-logs', async () => {
+    const { fetchSmsLogs } = await import('../services/api')
+    return fetchSmsLogs()
   })
 
   const loading = reservationsQuery.loading || villasQuery.loading || guestsQuery.loading
@@ -91,6 +96,7 @@ export default function Dashboard() {
   const villas = villasQuery.data ?? []
   const guests = guestsQuery.data ?? []
   const dashboard = computeDashboard(reservations, villas, guests)
+  const smsStats = computeSmsStats(smsQuery.data ?? [])
 
   const firstName = admin?.full_name?.split(' ')[0] ?? 'Admin'
   const { stats, recentReservations, todayCheckins, todayCheckouts, upcomingArrivals } = dashboard
@@ -138,6 +144,50 @@ export default function Dashboard() {
           <p className="mt-1 font-display text-[32px] leading-[38px] font-medium tracking-tight text-[#0A1F44]">
             {stats.occupancyRate}%
           </p>
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-display text-[18px] leading-[26px] font-medium text-[#0A1F44]">
+          SMS Activity
+        </h2>
+        <button
+          onClick={() => navigate('/admin/sms-activity')}
+          className="flex items-center gap-1 font-body text-[13px] text-[#757575] transition-colors hover:text-[#0A1F44]"
+        >
+          View all <ArrowRight size={14} />
+        </button>
+      </div>
+
+      <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="border border-[#ECECEC] rounded-lg p-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f0f2f7]">
+            <MessageSquare size={16} className="text-[#0A1F44]" />
+          </div>
+          <div>
+            <p className="font-display text-[22px] leading-7 font-medium text-[#0A1F44]">{smsStats.total}</p>
+            <p className="font-body text-[12px] text-[#757575]">Total SMS sent</p>
+          </div>
+        </div>
+        <div className="border border-[#ECECEC] rounded-lg p-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F0F7F1]">
+            <MessageSquare size={16} className="text-[#2F6B3B]" />
+          </div>
+          <div>
+            <p className="font-display text-[22px] leading-7 font-medium text-[#0A1F44]">{smsStats.sent}</p>
+            <p className="font-body text-[12px] text-[#757575]">Delivered</p>
+          </div>
+        </div>
+        <div className="border border-[#ECECEC] rounded-lg p-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">
+            <MessageSquare size={16} className="text-red-600" />
+          </div>
+          <div>
+            <p className="font-display text-[22px] leading-7 font-medium text-[#0A1F44]">{smsStats.failed}</p>
+            <p className="font-body text-[12px] text-[#757575]">
+              Failed · {smsStats.thisWeek} this week
+            </p>
+          </div>
         </div>
       </div>
 

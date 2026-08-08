@@ -1,47 +1,60 @@
 import { motion } from "framer-motion"
 import { Clock, MapPin, Shield, Phone, HelpCircle, Sun, ExternalLink } from "lucide-react"
+import { useSiteSettings } from "../../hooks/useSiteSettings"
 
-const GUIDE_ITEMS = [
-  {
-    icon: Clock,
-    label: "Check-in / Check-out",
-    value: "2:00 PM — 11:00 AM",
-    detail: "Your stay is a full 21-hour experience.",
-  },
-  {
-    icon: Shield,
-    label: "House Rules",
-    value: "Quiet hours 10 PM — 7 AM",
-    detail: "No smoking indoors. Maximum guest capacity applies.",
-  },
-  {
-    icon: MapPin,
-    label: "Location",
-    value: "Beverly Place, Pampanga",
-    link: "https://maps.app.goo.gl/1aYuBqXnG147AgWW6",
-    linkLabel: "View on Map",
-  },
-  {
-    icon: Phone,
-    label: "Emergency Contact",
-    value: "Available 24/7",
-    detail: "Details provided upon confirmation.",
-  },
-  {
-    icon: Sun,
-    label: "What to Bring",
-    value: "Swimwear, toiletries, and food",
-    detail: "Insect repellent recommended for outdoor areas.",
-  },
-  {
-    icon: HelpCircle,
-    label: "Guest Guide",
-    value: "Sent 3 days before check-in",
-    detail: "A detailed guide with everything you need to know.",
-  },
-]
+interface GuideItem {
+  icon: typeof Clock
+  label: string
+  value: string
+  detail?: string
+  link?: string
+  linkLabel?: string
+}
 
 export function BeforeCheckInSection() {
+  const { settings } = useSiteSettings()
+  const business = settings?.business
+
+  const GUIDE_ITEMS: GuideItem[] = [
+    {
+      icon: Clock,
+      label: "Check-in / Check-out",
+      value: `${business?.check_in_time || "2:00 PM"} — ${business?.check_out_time || "11:00 AM"}`,
+      detail: "Your stay is a full 21-hour experience.",
+    },
+    {
+      icon: Shield,
+      label: "House Rules",
+      value: "Quiet hours 10 PM — 7 AM",
+      detail: "No smoking indoors. Maximum guest capacity applies.",
+    },
+    {
+      icon: MapPin,
+      label: "Location",
+      value: business?.address || "Beverly Place, Pampanga",
+      link: business?.map_url || "https://maps.app.goo.gl/1aYuBqXnG147AgWW6",
+      linkLabel: "View on Map",
+    },
+    {
+      icon: Phone,
+      label: "Emergency Contact",
+      value: business?.phone || "Available 24/7",
+      detail: "Details provided upon confirmation.",
+    },
+    {
+      icon: Sun,
+      label: "What to Bring",
+      value: "Swimwear, toiletries, and food",
+      detail: "Insect repellent recommended for outdoor areas.",
+    },
+    {
+      icon: HelpCircle,
+      label: "Guest Guide",
+      value: "Sent 3 days before check-in",
+      detail: "A detailed guide with everything you need to know.",
+    },
+  ]
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
