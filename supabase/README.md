@@ -6,18 +6,18 @@
 supabase/
 ├── config.toml              # Supabase CLI project configuration
 ├── functions/
-│   ├── _shared/             # Shared utilities (admin client, CORS, errors, validation)
-│   └── v1/                  # Versioned Edge Functions (v1/)
-│       ├── health/               # Fully implemented — DB connectivity check
-│       ├── create_reservation/   # 501 Not Implemented
-│       ├── approve_reservation/  # 501 Not Implemented
-│       ├── decline_reservation/  # 501 Not Implemented
-│       ├── cancel_reservation/   # 501 Not Implemented
-│       ├── availability/         # 501 Not Implemented
-│       └── send_sms/             # 501 Not Implemented
+│   ├── _shared/             # Shared utilities (admin client, CORS, errors, validation, auth, sms)
+│   ├── health/              # Implemented — DB connectivity check
+│   ├── availability/        # Implemented — real availability query
+│   ├── create_reservation/  # Implemented — booking rules enforced
+│   ├── approve_reservation/ # Implemented — approval + guest SMS
+│   ├── decline_reservation/ # Implemented — decline + guest SMS
+│   ├── cancel_reservation/  # Implemented — cancel + guest/owner SMS
+│   ├── complete_reservation/# Implemented — completion transition
+│   ├── lookup_reservation/  # Implemented — reference + matching email lookup
+│   └── send_sms/            # Implemented — manual resend (confirmation | cancellation)
 ├── migrations/
-│   ├── 20260730000001_extensions.sql  # Extensions + timezone
-│   └── 20260730000002_storage.sql     # Storage buckets
+│   └── 20260731*.sql        # Enums, tables, RLS, seeds, indexes
 └── README.md
 ```
 

@@ -18,6 +18,12 @@ function formatDateTime(dateStr: string) {
   })
 }
 
+function redactError(text: string) {
+  return text
+    .replace(/apikey=([^&\s]+)/gi, 'apikey=[REDACTED]')
+    .replace(/[0-9a-f]{32,}/gi, '[REDACTED]')
+}
+
 type StatusFilter = 'all' | SmsLog['status']
 
 const PAGE_SIZE = 15
@@ -157,6 +163,11 @@ export default function AdminSmsActivity() {
                 <p className="mb-2 font-body text-[13px] leading-relaxed text-[#0A1F44]">
                   {log.message}
                 </p>
+                {log.status === 'failed' && log.error_message && (
+                  <p className="mb-2 rounded-md bg-red-50 px-2.5 py-1.5 font-body text-[11px] leading-snug text-red-600">
+                    {redactError(log.error_message)}
+                  </p>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="font-body text-[11px] uppercase tracking-wide text-[#757575]">
                     {log.direction.replace('_', ' ')}

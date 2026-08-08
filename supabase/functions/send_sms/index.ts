@@ -4,6 +4,7 @@ import { requireBody } from '../_shared/validate.ts'
 import { getAdminClient } from '../_shared/adminClient.ts'
 import { getAdminUser } from '../_shared/auth.ts'
 import { isUuid, writeAudit } from '../_shared/reservations.ts'
+import { classifyProviderStatus, sanitizeProviderError } from '../_shared/sms.ts'
 
 interface SendSmsInput {
   reservation_id: string
@@ -112,7 +113,7 @@ Deno.serve(async (req: Request) => {
     const senderName = Deno.env.get('SEMAPHORE_SENDER_NAME')
     const apiUrl = Deno.env.get('SEMAPHORE_API_URL') ?? SEMAPHORE_DEFAULT_URL
 
-    let status: 'sent' | 'failed' = 'failed'
+    let status: 'sent' | 'failed' | 'queued' = 'failed'
     let providerMessageId = ''
     let errorMessage = ''
 
@@ -133,10 +134,20 @@ Deno.serve(async (req: Request) => {
         })
         const body = await provider.json().catch(() => null)
         if (provider.ok && Array.isArray(body) && body[0]?.message_id) {
-          status = 'sent'
-          providerMessageId = body[0].message_id
+          status = classifyProviderStatus(body[0]?.status, true)
+          providerMessageId = String(body[0].message_id)
         } else {
-          errorMessage = `SMS provider returned ${provider.status}: ${JSON.stringify(body ?? provider.statusText)}`
+          errorMessage = sanitizeProviderError(
+            'Semaphore',
+            provider.status,
+            body ?? provider.statusText,
+            `request rejected (HTTP ${provider.status})`,
+          )
+          console.warn('[send_sms] provider rejected request', {
+            provider: 'semaphore',
+            http_status: provider.status,
+            provider_error: errorMessage,
+          })
         }
       } catch (err) {
         errorMessage = `SMS provider request failed: ${err instanceof Error ? err.message : String(err)}`

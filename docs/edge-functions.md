@@ -9,14 +9,18 @@ supabase/functions/
     cors.ts           CORS headers and OPTIONS handler
     errors.ts         Standardized error response helpers
     validate.ts       Request validation helpers
-  v1/
-    health/               Fully implemented — returns 200 with DB connectivity check
-    create_reservation/   501 Not Implemented
-    approve_reservation/  501 Not Implemented
-    decline_reservation/  501 Not Implemented
-    cancel_reservation/   501 Not Implemented
-    availability/          501 Not Implemented
-    send_sms/              501 Not Implemented
+    auth.ts           Admin JWT → admin_users lookup
+    reservations.ts   Shared UUID / audit / transition helpers
+    sms.ts            Semaphore sendSms (auto + manual) + sanitized diagnostics
+  health/                   Implemented — 200 with DB connectivity check
+  availability/             Implemented — real availability query
+  create_reservation/       Implemented — booking rules enforced
+  approve_reservation/      Implemented — approval + guest SMS
+  decline_reservation/      Implemented — decline + guest SMS
+  cancel_reservation/       Implemented — cancel + guest/owner SMS
+  complete_reservation/     Implemented — completion transition
+  lookup_reservation/       Implemented — reference + matching email lookup
+  send_sms/                 Implemented — manual resend (confirmation | cancellation)
 ```
 
 ## Versioning

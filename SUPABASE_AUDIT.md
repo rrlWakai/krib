@@ -63,13 +63,15 @@
 
 | Function | Path | Status |
 |----------|------|--------|
-| `health` | `v1/health/index.ts` | ✅ Fully implemented |
-| `approve_reservation` | `v1/approve_reservation/index.ts` | ⚠️ Stub only |
-| `availability` | `v1/availability/index.ts` | ⚠️ Stub only |
-| `cancel_reservation` | `v1/cancel_reservation/index.ts` | ⚠️ Stub only |
-| `create_reservation` | `v1/create_reservation/index.ts` | ⚠️ Stub only |
-| `decline_reservation` | `v1/decline_reservation/index.ts` | ⚠️ Stub only |
-| `send_sms` | `v1/send_sms/index.ts` | ⚠️ Stub only |
+| `health` | `health/index.ts` | ✅ Fully implemented |
+| `approve_reservation` | `approve_reservation/index.ts` | ✅ Fully implemented (live) |
+| `availability` | `availability/index.ts` | ✅ Fully implemented (live) |
+| `cancel_reservation` | `cancel_reservation/index.ts` | ✅ Fully implemented (live) |
+| `create_reservation` | `create_reservation/index.ts` | ✅ Fully implemented (live) |
+| `decline_reservation` | `decline_reservation/index.ts` | ✅ Fully implemented (live) |
+| `complete_reservation` | `complete_reservation/index.ts` | ✅ Fully implemented (live) |
+| `lookup_reservation` | `lookup_reservation/index.ts` | ✅ Fully implemented (live) |
+| `send_sms` | `send_sms/index.ts` | ✅ Fully implemented (live) — Semaphore v4, sanitized diagnostics |
 
 ### Shared helpers (`supabase/functions/_shared/`)
 | Helper | Status |

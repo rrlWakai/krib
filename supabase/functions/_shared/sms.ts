@@ -35,9 +35,67 @@ export async function readSmsSettings(client: AdminClient): Promise<SmsSettings>
 }
 
 export interface SmsResult {
-  status: 'sent' | 'failed'
+  status: 'sent' | 'failed' | 'queued'
   providerMessageId: string
   errorMessage: string
+}
+
+const PROVIDER_ERROR_LIMIT = 300
+
+function pickMessage(record: Record<string, unknown>): string {
+  for (const key of ['message', 'detail', 'error', 'description']) {
+    const value = record[key]
+    if (typeof value === 'string' && value) return value
+  }
+  return ''
+}
+
+/**
+ * Builds a sanitized, single-line provider diagnostic. Extracts only the
+ * provider's short `message`/`detail`/`error` text and strips anything that
+ * could echo credentials (apikey=..., long hex blobs). The request body,
+ * headers, and secrets are never included.
+ */
+export function sanitizeProviderError(
+  provider: string,
+  httpStatus: number,
+  body: unknown,
+  fallback: string,
+): string {
+  let message = ''
+  if (typeof body === 'string') {
+    message = body
+  } else if (Array.isArray(body)) {
+    const first = body[0]
+    if (first && typeof first === 'object') {
+      message = pickMessage(first as Record<string, unknown>)
+    }
+  } else if (body && typeof body === 'object') {
+    message = pickMessage(body as Record<string, unknown>)
+  }
+  message = message
+    .replace(/apikey=([^&\s]+)/gi, 'apikey=[REDACTED]')
+    .replace(/[0-9a-f]{32,}/gi, '[REDACTED]')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, PROVIDER_ERROR_LIMIT)
+  return `${provider} returned HTTP ${httpStatus}: ${message || fallback}`
+}
+
+/**
+ * Maps a provider acceptance to the locked sms_status enum. 'sent' is only set
+ * when the provider reports the message as dispatched; the provider's
+ * queued/pending state maps to 'queued'. Actual delivery is only confirmed by a
+ * later provider status/webhook and is UNKNOWN from this call.
+ */
+export function classifyProviderStatus(
+  raw: unknown,
+  hasMessageId: boolean,
+): 'sent' | 'failed' | 'queued' {
+  if (!hasMessageId) return 'failed'
+  const status = String(raw ?? '').toLowerCase()
+  if (status === 'queued' || status === 'pending' || status === 'accepted') return 'queued'
+  return 'sent'
 }
 
 /**
@@ -89,11 +147,20 @@ export async function sendSms(
       })
       const body = await provider.json().catch(() => null)
       if (provider.ok && Array.isArray(body) && body[0]?.message_id) {
-        result.status = 'sent'
-        result.providerMessageId = body[0].message_id
+        result.status = classifyProviderStatus(body[0]?.status, true)
+        result.providerMessageId = String(body[0].message_id)
       } else {
-        result.errorMessage =
-          `SMS provider returned ${provider.status}: ${JSON.stringify(body ?? provider.statusText)}`
+        result.errorMessage = sanitizeProviderError(
+          'Semaphore',
+          provider.status,
+          body ?? provider.statusText,
+          `request rejected (HTTP ${provider.status})`,
+        )
+        console.warn('[send_sms] provider rejected request', {
+          provider: 'semaphore',
+          http_status: provider.status,
+          provider_error: result.errorMessage,
+        })
       }
     } catch (err) {
       result.errorMessage =
