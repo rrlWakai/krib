@@ -178,8 +178,7 @@ export function BookingExperience({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [privacyAgreed, setPrivacyAgreed] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [termsSection, setTermsSection] = useState<"terms" | "privacy">(
     "terms",
@@ -191,8 +190,9 @@ export function BookingExperience({
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const agreementRowRef = useRef<HTMLDivElement>(null);
-  const privacyRowRef = useRef<HTMLDivElement>(null);
+  const consentRowRef = useRef<HTMLDivElement>(null);
+  const termsLinkRef = useRef<HTMLButtonElement>(null);
+  const privacyLinkRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -208,8 +208,7 @@ export function BookingExperience({
       setEmail("");
       setPhone("");
       setMessage("");
-      setAgreed(false);
-      setPrivacyAgreed(false);
+      setConsentAccepted(false);
       setTermsOpen(false);
       setErrors({});
       setSubmitError("");
@@ -246,11 +245,12 @@ export function BookingExperience({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && submitState === "idle") onClose();
+      if (e.key === "Escape" && submitState === "idle" && !termsOpen)
+        onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose, submitState]);
+  }, [isOpen, onClose, submitState, termsOpen]);
 
   const basePrice = parsePrice(property.priceDetails.perNight);
   const partyFeeRate = partyFeeAmount ?? 5000;
@@ -298,11 +298,9 @@ export function BookingExperience({
       if (!phone.trim()) errs.phone = "Phone is required";
       else if (!/^[\d\s+\-()]{7,20}$/.test(phone))
         errs.phone = "Enter a valid phone number";
-      if (!agreed)
-        errs.agreed =
-          "You must agree to the House Rules and Terms & Conditions";
-      if (!privacyAgreed)
-        errs.privacyAgreed = "You must agree to the Privacy Notice";
+      if (!consentAccepted)
+        errs.consent =
+          "Please review and agree to the Terms & Conditions and Privacy Policy before continuing.";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -330,8 +328,8 @@ export function BookingExperience({
       children: guests.children,
       infants: guests.infants,
       pets: guests.pets,
-      terms_accepted: agreed,
-      privacy_accepted: privacyAgreed,
+      terms_accepted: consentAccepted,
+      privacy_accepted: consentAccepted,
     });
 
     if (error || !data) {
@@ -388,6 +386,23 @@ export function BookingExperience({
     );
     setSubmitState("success");
   };
+
+  const handleConsentChange = (checked: boolean) => {
+    setConsentAccepted(checked);
+    if (checked) {
+      setErrors((prev) => {
+        if (!prev.consent) return prev;
+        const next = { ...prev };
+        delete next.consent;
+        return next;
+      });
+    }
+  };
+
+  const openReview = useCallback((reviewSection: "terms" | "privacy") => {
+    setTermsSection(reviewSection);
+    setTermsOpen(true);
+  }, []);
 
   const arrivalDatetime =
     arrivalDate && arrivalTime
@@ -604,20 +619,14 @@ export function BookingExperience({
               onPhoneChange={setPhone}
               message={message}
               onMessageChange={setMessage}
-              agreed={agreed}
-              onAgreedChange={setAgreed}
-              privacyAgreed={privacyAgreed}
-              onPrivacyAgreedChange={setPrivacyAgreed}
-              onOpenTerms={() => {
-                setTermsSection("terms");
-                setTermsOpen(true);
-              }}
-              onOpenPrivacy={() => {
-                setTermsSection("privacy");
-                setTermsOpen(true);
-              }}
-              agreementRowRef={agreementRowRef}
-              privacyRowRef={privacyRowRef}
+              consentAccepted={consentAccepted}
+              onConsentChange={handleConsentChange}
+              onOpenTerms={() => openReview("terms")}
+              onOpenPrivacy={() => openReview("privacy")}
+              onOpenReview={() => openReview("terms")}
+              consentRowRef={consentRowRef}
+              termsLinkRef={termsLinkRef}
+              privacyLinkRef={privacyLinkRef}
               errors={errors}
             />
           )}
@@ -974,11 +983,10 @@ export function BookingExperience({
       <TermsModal
         isOpen={termsOpen}
         onClose={() => setTermsOpen(false)}
-        onAgree={() => {
-          if (termsSection === "privacy") setPrivacyAgreed(true);
-          else setAgreed(true);
-        }}
+        onAgree={() => handleConsentChange(true)}
         section={termsSection}
+        reviewRequired
+        triggerRef={termsSection === "privacy" ? privacyLinkRef : termsLinkRef}
       />
     </>
   );
@@ -1150,108 +1158,112 @@ function StepGuests({
 /* ======================================================================
    STEP 3 — A Few Details About You
    ====================================================================== */
-function ConsentRow({
+function ConsentCheckbox({
   rowRef,
   checked,
   onChange,
-  onReview,
-  reviewLabel,
-  ariaLabel,
-  label,
+  onOpenTerms,
+  onOpenPrivacy,
+  onOpenReview,
+  termsLinkRef,
+  privacyLinkRef,
   error,
 }: {
   rowRef: React.RefObject<HTMLDivElement | null>;
   checked: boolean;
   onChange: (v: boolean) => void;
-  onReview: () => void;
-  reviewLabel: string;
-  ariaLabel: string;
-  label: React.ReactNode;
+  onOpenTerms: () => void;
+  onOpenPrivacy: () => void;
+  onOpenReview: () => void;
+  termsLinkRef: React.RefObject<HTMLButtonElement | null>;
+  privacyLinkRef: React.RefObject<HTMLButtonElement | null>;
   error?: string;
 }) {
   return (
-    <div
-      ref={rowRef}
-      role="button"
-      tabIndex={0}
-      aria-pressed={checked}
-      aria-label={ariaLabel}
-      onClick={() => onChange(!checked)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onChange(!checked);
-        }
-      }}
-      className={cn(
-        "p-4 rounded-xl border transition-all duration-200 cursor-pointer group",
-        checked
-          ? "bg-primary-container/15 border-primary/20"
-          : "bg-surface-container-low border-outline-variant/30 hover:border-primary/30 hover:bg-surface-container-low/80",
-      )}
-    >
-      <div className="flex items-start gap-3">
-        <div
+    <div ref={rowRef}>
+      <label className="flex items-start gap-3 cursor-pointer select-none group">
+        <input
+          type="checkbox"
+          checked={checked}
+          onClick={(e) => {
+            if (!checked) {
+              e.preventDefault();
+              onOpenReview();
+            }
+          }}
+          onChange={(e) => onChange(e.target.checked)}
+          aria-describedby={error ? "consent-error" : undefined}
+          aria-invalid={error ? true : undefined}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden="true"
           className={cn(
-            "shrink-0 mt-0.5 w-44px h-44px min-w-44px min-h-44px flex items-center justify-center rounded-full border-[1.5px] transition-all duration-300",
+            "mt-0.5 shrink-0 w-4 h-4 rounded-[4px] border-[1.5px] flex items-center justify-center transition-all duration-200",
             checked
               ? "bg-primary border-primary"
-              : "border-outline group-hover:border-primary/50",
+              : error
+                ? "border-error/60 group-hover:border-primary/60"
+                : "border-on-surface-variant/40 group-hover:border-primary/60",
+            "peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white",
           )}
-          aria-hidden="true"
         >
           <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
             fill="none"
             className={cn(
-              "transition-all duration-300",
+              "transition-all duration-200",
               checked ? "opacity-100 scale-100" : "opacity-0 scale-75",
             )}
           >
-            <motion.path
-              d="M2.5 7.5L5.5 10.5L11.5 3.5"
+            <path
+              d="M1.5 5.5L3.75 7.75L8.5 2.5"
               stroke="white"
-              strokeWidth="2"
+              strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: checked ? 1 : 0 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             />
           </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-body text-[13px] text-on-surface leading-relaxed">
-            {label}
-          </p>
-          <p className="font-body text-[11px] text-on-surface-variant/50 mt-1.5">
-            Click to agree.{" "}
-            <span
-              role="link"
-              tabIndex={0}
-              aria-label={reviewLabel}
-              onClick={(e) => {
-                e.stopPropagation();
-                onReview();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onReview();
-                }
-              }}
-              className="text-primary font-medium underline underline-offset-2 hover:text-primary-hover cursor-pointer"
-            >
-              Review before confirming.
-            </span>
-          </p>
-        </div>
-      </div>
+        </span>
+        <span className="font-body text-[13px] text-on-surface leading-relaxed">
+          I agree to the{" "}
+          <button
+            ref={termsLinkRef}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onOpenTerms();
+            }}
+            className="text-primary font-medium underline underline-offset-2 rounded-sm hover:text-primary-hover transition-colors duration-200 cursor-pointer"
+          >
+            Terms &amp; Conditions
+          </button>{" "}
+          and{" "}
+          <button
+            ref={privacyLinkRef}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onOpenPrivacy();
+            }}
+            className="text-primary font-medium underline underline-offset-2 rounded-sm hover:text-primary-hover transition-colors duration-200 cursor-pointer"
+          >
+            Privacy Policy
+          </button>
+          .
+        </span>
+      </label>
       {error && (
-        <p className="font-body text-[11px] text-error mt-2 ml-56px">{error}</p>
+        <p
+          id="consent-error"
+          className="font-body text-[11px] text-error mt-1.5 ml-7"
+        >
+          {error}
+        </p>
       )}
     </div>
   );
@@ -1266,18 +1278,14 @@ function StepDetails({
   onPhoneChange,
   message,
   onMessageChange,
-  agreed,
-  onAgreedChange,
+  consentAccepted,
+  onConsentChange,
   onOpenTerms,
-
-  agreementRowRef,
-
-  privacyAgreed,
-  onPrivacyAgreedChange,
   onOpenPrivacy,
-
-  privacyRowRef,
-
+  onOpenReview,
+  consentRowRef,
+  termsLinkRef,
+  privacyLinkRef,
   errors,
 }: {
   fullName: string;
@@ -1288,14 +1296,14 @@ function StepDetails({
   onPhoneChange: (v: string) => void;
   message: string;
   onMessageChange: (v: string) => void;
-  agreed: boolean;
-  onAgreedChange: (v: boolean) => void;
-  privacyAgreed: boolean;
-  onPrivacyAgreedChange: (v: boolean) => void;
+  consentAccepted: boolean;
+  onConsentChange: (v: boolean) => void;
   onOpenTerms: () => void;
   onOpenPrivacy: () => void;
-  agreementRowRef: React.RefObject<HTMLDivElement | null>;
-  privacyRowRef: React.RefObject<HTMLDivElement | null>;
+  onOpenReview: () => void;
+  consentRowRef: React.RefObject<HTMLDivElement | null>;
+  termsLinkRef: React.RefObject<HTMLButtonElement | null>;
+  privacyLinkRef: React.RefObject<HTMLButtonElement | null>;
   errors: Record<string, string>;
 }) {
   const nameRef = useRef<HTMLInputElement>(null);
@@ -1376,44 +1384,19 @@ function StepDetails({
         />
       </div>
 
-      <ConsentRow
-        rowRef={agreementRowRef}
-        checked={agreed}
-        onChange={onAgreedChange}
-        onReview={onOpenTerms}
-        reviewLabel="Review House Rules & Terms"
-        ariaLabel="Read and agree to House Rules and Terms & Conditions"
-        label={
-          <>
-            I have read and agree to the{" "}
-            <span className="text-primary font-medium">House Rules</span> and{" "}
-            <span className="text-primary font-medium">
-              Terms &amp; Conditions
-            </span>
-            .
-          </>
-        }
-        error={errors.agreed}
-      />
-
-      <ConsentRow
-        rowRef={privacyRowRef}
-        checked={privacyAgreed}
-        onChange={onPrivacyAgreedChange}
-        onReview={onOpenPrivacy}
-        reviewLabel="Review Privacy Notice"
-        ariaLabel="Read and agree to the Privacy Notice"
-        label={
-          <>
-            I have read and agree to the{" "}
-            <span className="text-primary font-medium">
-              Privacy Notice
-            </span>
-            .
-          </>
-        }
-        error={errors.privacyAgreed}
-      />
+      <div className="pt-1 border-t border-outline-variant/30">
+        <ConsentCheckbox
+          rowRef={consentRowRef}
+          checked={consentAccepted}
+          onChange={onConsentChange}
+          onOpenTerms={onOpenTerms}
+          onOpenPrivacy={onOpenPrivacy}
+          onOpenReview={onOpenReview}
+          termsLinkRef={termsLinkRef}
+          privacyLinkRef={privacyLinkRef}
+          error={errors.consent}
+        />
+      </div>
 
       <div className="p-4 rounded-xl bg-tertiary-container/20 border border-tertiary/10">
         <p className="font-body text-xs text-on-surface-variant">

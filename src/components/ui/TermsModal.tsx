@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
+import { X, Check } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useSiteSettings } from '../../hooks/useSiteSettings'
 
@@ -10,6 +10,7 @@ interface TermsModalProps {
   onAgree: () => void
   section?: 'terms' | 'privacy'
   triggerRef?: React.RefObject<HTMLElement | null>
+  reviewRequired?: boolean
 }
 
 const overlayVariants = {
@@ -103,15 +104,155 @@ function renderMarkdown(md: string): React.ReactNode {
   return <div className="space-y-2.5">{blocks}</div>
 }
 
-export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', triggerRef }: TermsModalProps) {
+function TermsFallbackContent() {
+  return (
+    <>
+      <TermsSection title="House Rules">
+        <p>
+          All guests are expected to respect the property and the surrounding Beverly Place community. These rules ensure a comfortable stay for everyone.
+        </p>
+        <ul className="list-none space-y-1.5 mt-2">
+          <li><strong className="text-on-surface">Quiet hours</strong> are observed after 10:00 PM. Indoor conversations and low-volume music are acceptable.</li>
+          <li><strong className="text-on-surface">Smoking</strong> is permitted in outdoor areas only. No smoking inside the villa.</li>
+          <li><strong className="text-on-surface">Pool rules</strong> — No diving. Children must be supervised at all times.</li>
+          <li><strong className="text-on-surface">Pets</strong> are not allowed inside the villa.</li>
+          <li><strong className="text-on-surface">Children</strong> are welcome. Please supervise them around the pool and outdoor areas.</li>
+        </ul>
+      </TermsSection>
+
+      <TermsSection title="Reservation Policy">
+        <p>
+          All reservations are requests and are subject to owner approval. Submitting a reservation does not guarantee availability. Our team will review your request and confirm availability before any payment is required.
+        </p>
+        <p>
+          Each reservation is a 21-hour stay, starting at your selected arrival time.
+        </p>
+      </TermsSection>
+
+      <TermsSection title="Cancellation Policy">
+        <p>
+          Pending reservation requests can be cancelled at any time at no cost. Approved reservations cancelled at least 7 days before the scheduled arrival are also free of charge.
+        </p>
+        <p>
+          Cancellations made within 7 days of arrival may be subject to a fee. No-shows will be treated as cancellations. We recommend coordinating with us if you need to reschedule — we will do our best to accommodate date changes.
+        </p>
+      </TermsSection>
+
+      <TermsSection title="Check-in / Check-out">
+        <ul className="list-none space-y-1.5">
+          <li><strong className="text-on-surface">Check-in:</strong> Your selected arrival time.</li>
+          <li><strong className="text-on-surface">Check-out:</strong> 21 hours after your arrival.</li>
+          <li>Early check-in and late check-out may be arranged in advance, subject to availability on your booking date.</li>
+        </ul>
+      </TermsSection>
+
+      <TermsSection title="Guest Responsibilities">
+        <p>
+          Guests are responsible for the proper use and care of the property, furniture, appliances, and amenities during their stay. Any damage caused by negligence or misuse will be assessed and may result in additional charges.
+        </p>
+        <p>
+          Guests must ensure that all visitors and participants comply with the house rules and community guidelines. The primary guest is responsible for the conduct of all members of their group.
+        </p>
+      </TermsSection>
+
+      <TermsSection title="Damage & Liability">
+        <p>
+          KRiB Beverly Place is not responsible for any loss, theft, or damage to personal belongings during your stay. Guests are advised to keep valuables secure.
+        </p>
+        <p>
+          Any damage to the property, its contents, or amenities beyond normal wear and tear will be charged to the guest at replacement or repair cost. A security assessment may be conducted upon check-out.
+        </p>
+      </TermsSection>
+
+      <TermsSection title="Payment Process">
+        <div className="space-y-2.5">
+          <p>
+            <strong className="text-on-surface">No payment is required until your reservation has been approved.</strong> Submitting a reservation request does not obligate you to any payment.
+          </p>
+          <p>
+            Once your reservation is approved by our team, we will contact you with the final confirmation and any payment instructions. Approval by our team confirms your booking.
+          </p>
+        </div>
+      </TermsSection>
+    </>
+  )
+}
+
+function PrivacyFallbackContent() {
+  return (
+    <TermsSection id="privacy-notice" title="Privacy Notice">
+      <p>
+        We collect personal information (name, email, phone number) solely for the purpose of processing and managing your reservation. This information is not shared with third parties and is stored securely.
+      </p>
+      <p>
+        CCTV cameras are active in common areas of the property for security purposes. No cameras are present inside bedrooms or bathrooms.
+      </p>
+    </TermsSection>
+  )
+}
+
+function ReviewStatusItem({ reviewed, label }: { reviewed: boolean; label: string }) {
+  return (
+    <span className="flex items-center gap-1.5">
+      <span
+        aria-hidden="true"
+        className={cn(
+          'shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors duration-200',
+          reviewed ? 'bg-primary border-primary' : 'border-outline',
+        )}
+      >
+        {reviewed ? (
+          <Check size={10} strokeWidth={3} className="text-white" />
+        ) : (
+          <span className="w-1.5 h-1.5 rounded-full bg-on-surface-variant/40" />
+        )}
+      </span>
+      <span className="flex flex-col leading-tight">
+        <span
+          className={cn(
+            'font-body text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200',
+            reviewed ? 'text-primary' : 'text-on-surface-variant/60',
+          )}
+        >
+          {label}
+        </span>
+        <span
+          className={cn(
+            'font-body text-[10px] transition-colors duration-200',
+            reviewed ? 'text-primary' : 'text-on-surface-variant/40',
+          )}
+        >
+          {reviewed ? 'Reviewed' : 'Review required'}
+        </span>
+      </span>
+    </span>
+  )
+}
+
+export function TermsModal({
+  isOpen,
+  onClose,
+  onAgree,
+  section = 'terms',
+  triggerRef,
+  reviewRequired = false,
+}: TermsModalProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const agreeButtonRef = useRef<HTMLButtonElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const suppressScrollRef = useRef(false)
   const { settings } = useSiteSettings()
   const termsMd = settings?.legal?.terms_conditions
   const privacyMd = settings?.legal?.privacy_policy
+
+  const [activeSection, setActiveSection] = useState<'terms' | 'privacy'>(section)
+  const [termsReviewed, setTermsReviewed] = useState(false)
+  const [privacyReviewed, setPrivacyReviewed] = useState(false)
+
+  const allReviewed = termsReviewed && privacyReviewed
+  const canAgree = !reviewRequired || allReviewed
 
   useEffect(() => {
     if (isOpen) {
@@ -134,6 +275,23 @@ export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', trigge
       }
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+    setActiveSection(section ?? 'terms')
+    setTermsReviewed(false)
+    setPrivacyReviewed(false)
+  }, [isOpen, section])
+
+  useEffect(() => {
+    if (!isOpen || !reviewRequired) return
+    suppressScrollRef.current = true
+    scrollContainerRef.current?.scrollTo({ top: 0 })
+    const t = setTimeout(() => {
+      suppressScrollRef.current = false
+    }, 100)
+    return () => clearTimeout(t)
+  }, [isOpen, activeSection, reviewRequired])
 
   useEffect(() => {
     if (!isOpen) return
@@ -171,19 +329,55 @@ export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', trigge
   useEffect(() => {
     if (!isOpen) {
       triggerRef?.current?.focus()
-    } else if (section === 'privacy') {
+    } else if (section === 'privacy' && !reviewRequired) {
       setTimeout(() => {
         scrollContainerRef.current
           ?.querySelector('#privacy-notice')
           ?.scrollIntoView({ block: 'start' })
       }, 100)
     }
-  }, [isOpen, section, triggerRef])
+  }, [isOpen, section, triggerRef, reviewRequired])
+
+  useEffect(() => {
+    if (reviewRequired && isOpen && allReviewed) {
+      agreeButtonRef.current?.focus()
+    }
+  }, [reviewRequired, isOpen, allReviewed])
+
+  const markActiveReviewed = useCallback(() => {
+    if (activeSection === 'terms') setTermsReviewed(true)
+    else setPrivacyReviewed(true)
+  }, [activeSection])
+
+  const handleDocScroll = useCallback(() => {
+    if (!reviewRequired || suppressScrollRef.current) return
+    const el = scrollContainerRef.current
+    if (!el) return
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 16) {
+      markActiveReviewed()
+    }
+  }, [reviewRequired, markActiveReviewed])
+
+  const handleDocKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!reviewRequired) return
+    if (e.key === ' ' || e.key === 'End' || e.key === 'PageDown' || e.key === 'ArrowDown') {
+      requestAnimationFrame(handleDocScroll)
+    }
+  }
 
   const handleAgree = useCallback(() => {
+    if (!canAgree) return
     onAgree()
     onClose()
-  }, [onAgree, onClose])
+  }, [canAgree, onAgree, onClose])
+
+  const tabClass = (active: boolean) =>
+    cn(
+      'shrink-0 pb-3 -mb-px border-b-2 font-body text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200 cursor-pointer',
+      active
+        ? 'border-primary text-primary'
+        : 'border-transparent text-on-surface-variant/60 hover:text-on-surface',
+    )
 
   return (
     <AnimatePresence>
@@ -199,7 +393,7 @@ export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', trigge
           }}
           role="dialog"
           aria-modal="true"
-          aria-label={section === 'privacy' ? 'Privacy Notice' : 'Terms & Conditions'}
+          aria-label={reviewRequired ? 'Terms & Privacy review' : section === 'privacy' ? 'Privacy Notice' : 'Terms & Conditions'}
         >
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
 
@@ -219,144 +413,143 @@ export function TermsModal({ isOpen, onClose, onAgree, section = 'terms', trigge
             {/* Header */}
             <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-outline-variant/30">
               <h2 className="font-display text-lg text-on-surface">
-                {section === 'privacy' ? 'Privacy Notice' : 'Terms & Conditions'}
+                {reviewRequired ? 'Terms & Privacy' : activeSection === 'privacy' ? 'Privacy Notice' : 'Terms & Conditions'}
               </h2>
               <button
                 ref={closeButtonRef}
                 onClick={onClose}
                 className="w-9 h-9 flex items-center justify-center text-on-surface-variant/50 hover:text-on-surface hover:bg-surface-container-high rounded-full transition-all duration-200 cursor-pointer"
-                aria-label={section === 'privacy' ? 'Close privacy notice' : 'Close terms and conditions'}
+                aria-label={reviewRequired ? 'Cancel review' : activeSection === 'privacy' ? 'Close privacy notice' : 'Close terms and conditions'}
               >
                 <X size={16} />
               </button>
             </div>
 
+            {/* Section switcher (review mode) */}
+            {reviewRequired && (
+              <div className="shrink-0 flex gap-6 px-6 border-b border-outline-variant/30">
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('terms')}
+                  aria-pressed={activeSection === 'terms'}
+                  className={tabClass(activeSection === 'terms')}
+                >
+                  Terms &amp; Conditions
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('privacy')}
+                  aria-pressed={activeSection === 'privacy'}
+                  className={tabClass(activeSection === 'privacy')}
+                >
+                  Privacy Policy
+                </button>
+              </div>
+            )}
+
             {/* Scrollable Content */}
             <div
               ref={scrollContainerRef}
               data-lenis-prevent
+              tabIndex={reviewRequired ? 0 : undefined}
+              onScroll={reviewRequired ? handleDocScroll : undefined}
+              onWheel={reviewRequired ? handleDocScroll : undefined}
+              onTouchMove={reviewRequired ? handleDocScroll : undefined}
+              onKeyDown={reviewRequired ? handleDocKeyDown : undefined}
+              aria-label={
+                reviewRequired
+                  ? activeSection === 'terms'
+                    ? 'Terms & Conditions document. Scroll to the end to complete review.'
+                    : 'Privacy Policy document. Scroll to the end to complete review.'
+                  : undefined
+              }
               className="flex-1 overflow-y-auto overscroll-contain px-6 py-6"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               <div className="space-y-7">
-                {section === 'privacy' && privacyMd ? (
+                {activeSection === 'privacy' && privacyMd ? (
                   <div id="privacy-notice">{renderMarkdown(privacyMd)}</div>
-                ) : section === 'terms' && termsMd ? (
+                ) : activeSection === 'terms' && termsMd ? (
                   renderMarkdown(termsMd)
+                ) : activeSection === 'privacy' ? (
+                  <PrivacyFallbackContent />
                 ) : (
-                  <>
-                <TermsSection title="House Rules">
-                  <p>
-                    All guests are expected to respect the property and the surrounding Beverly Place community. These rules ensure a comfortable stay for everyone.
-                  </p>
-                  <ul className="list-none space-y-1.5 mt-2">
-                    <li><strong className="text-on-surface">Quiet hours</strong> are observed after 10:00 PM. Indoor conversations and low-volume music are acceptable.</li>
-                    <li><strong className="text-on-surface">Smoking</strong> is permitted in outdoor areas only. No smoking inside the villa.</li>
-                    <li><strong className="text-on-surface">Pool rules</strong> — No diving. Children must be supervised at all times.</li>
-                    <li><strong className="text-on-surface">Pets</strong> are not allowed inside the villa.</li>
-                    <li><strong className="text-on-surface">Children</strong> are welcome. Please supervise them around the pool and outdoor areas.</li>
-                  </ul>
-                </TermsSection>
-
-                <TermsSection title="Reservation Policy">
-                  <p>
-                    All reservations are requests and are subject to owner approval. Submitting a reservation does not guarantee availability. Our team will review your request and confirm availability before any payment is required.
-                  </p>
-                  <p>
-                    Each reservation is a 21-hour stay, starting at your selected arrival time.
-                  </p>
-                </TermsSection>
-
-                <TermsSection title="Cancellation Policy">
-                  <p>
-                    Pending reservation requests can be cancelled at any time at no cost. Approved reservations cancelled at least 7 days before the scheduled arrival are also free of charge.
-                  </p>
-                  <p>
-                    Cancellations made within 7 days of arrival may be subject to a fee. No-shows will be treated as cancellations. We recommend coordinating with us if you need to reschedule — we will do our best to accommodate date changes.
-                  </p>
-                </TermsSection>
-
-                <TermsSection title="Check-in / Check-out">
-                  <ul className="list-none space-y-1.5">
-                    <li><strong className="text-on-surface">Check-in:</strong> Your selected arrival time.</li>
-                    <li><strong className="text-on-surface">Check-out:</strong> 21 hours after your arrival.</li>
-                    <li>Early check-in and late check-out may be arranged in advance, subject to availability on your booking date.</li>
-                  </ul>
-                </TermsSection>
-
-                <TermsSection title="Guest Responsibilities">
-                  <p>
-                    Guests are responsible for the proper use and care of the property, furniture, appliances, and amenities during their stay. Any damage caused by negligence or misuse will be assessed and may result in additional charges.
-                  </p>
-                  <p>
-                    Guests must ensure that all visitors and participants comply with the house rules and community guidelines. The primary guest is responsible for the conduct of all members of their group.
-                  </p>
-                </TermsSection>
-
-                <TermsSection title="Damage & Liability">
-                  <p>
-                    KRiB Beverly Place is not responsible for any loss, theft, or damage to personal belongings during your stay. Guests are advised to keep valuables secure.
-                  </p>
-                  <p>
-                    Any damage to the property, its contents, or amenities beyond normal wear and tear will be charged to the guest at replacement or repair cost. A security assessment may be conducted upon check-out.
-                  </p>
-                </TermsSection>
-
-                <TermsSection id="privacy-notice" title="Privacy Notice">
-                  <p>
-                    We collect personal information (name, email, phone number) solely for the purpose of processing and managing your reservation. This information is not shared with third parties and is stored securely.
-                  </p>
-                  <p>
-                    CCTV cameras are active in common areas of the property for security purposes. No cameras are present inside bedrooms or bathrooms.
-                  </p>
-                </TermsSection>
-
-                <TermsSection title="Payment Process">
-                  <div className="space-y-2.5">
-                    <p>
-                      <strong className="text-on-surface">No payment is required until your reservation has been approved.</strong> Submitting a reservation request does not obligate you to any payment.
-                    </p>
-                    <p>
-                      Once your reservation is approved by our team, we will contact you with the final confirmation and any payment instructions. Approval by our team confirms your booking.
-                    </p>
-                  </div>
-                </TermsSection>
-                  </>
+                  <TermsFallbackContent />
                 )}
               </div>
             </div>
 
             {/* Footer */}
             <div className="shrink-0 px-6 py-5 border-t border-outline-variant/30">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={onClose}
-                  className={cn(
-                    'px-6 py-3 rounded-full',
-                    'border border-outline-variant/60',
-                    'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
-                    'text-on-surface-variant',
-                    'hover:bg-surface-container-low',
-                    'transition-all duration-200 cursor-pointer',
-                  )}
-                >
-                  Close
-                </button>
-                <button
-                  ref={agreeButtonRef}
-                  onClick={handleAgree}
-                  className={cn(
-                    'flex-1 px-6 py-3 rounded-full',
-                    'bg-primary text-on-primary',
-                    'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
-                    'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
-                    'hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]',
-                    'transition-all duration-300 cursor-pointer',
-                  )}
-                >
-                  I Understand &amp; Agree
-                </button>
-              </div>
+              {reviewRequired ? (
+                <>
+                  <div role="status" aria-live="polite" className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5 mb-4">
+                    <ReviewStatusItem reviewed={termsReviewed} label="Terms & Conditions" />
+                    <ReviewStatusItem reviewed={privacyReviewed} label="Privacy Policy" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={onClose}
+                      className={cn(
+                        'px-6 py-3 rounded-full',
+                        'border border-outline-variant/60',
+                        'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
+                        'text-on-surface-variant',
+                        'hover:bg-surface-container-low',
+                        'transition-all duration-200 cursor-pointer',
+                      )}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      ref={agreeButtonRef}
+                      onClick={handleAgree}
+                      disabled={!canAgree}
+                      className={cn(
+                        'flex-1 px-6 py-3 rounded-full',
+                        'bg-primary text-on-primary',
+                        'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
+                        'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
+                        'hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]',
+                        'disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-primary',
+                        'transition-all duration-300',
+                      )}
+                    >
+                      I Agree &amp; Continue
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={onClose}
+                    className={cn(
+                      'px-6 py-3 rounded-full',
+                      'border border-outline-variant/60',
+                      'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
+                      'text-on-surface-variant',
+                      'hover:bg-surface-container-low',
+                      'transition-all duration-200 cursor-pointer',
+                    )}
+                  >
+                    Close
+                  </button>
+                  <button
+                    ref={agreeButtonRef}
+                    onClick={handleAgree}
+                    className={cn(
+                      'flex-1 px-6 py-3 rounded-full',
+                      'bg-primary text-on-primary',
+                      'font-body text-[11px] font-semibold uppercase tracking-[0.1em]',
+                      'shadow-[0_2px_8px_rgba(0,71,171,0.25)]',
+                      'hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]',
+                      'transition-all duration-300 cursor-pointer',
+                    )}
+                  >
+                    I Understand &amp; Agree
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         </motion.div>
