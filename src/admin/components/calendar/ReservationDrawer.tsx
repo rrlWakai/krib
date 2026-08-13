@@ -14,20 +14,22 @@ import { StatusBadge } from '../StatusBadge'
 import { formatCurrency } from '../../data/constants'
 import { useAdminMutation } from '../../hooks/useAdminQuery'
 import { estimateReservationValue, reservationNights } from '../../services/api'
+import { formatManilaDate, formatManilaTime } from '../../services/calendarTime'
 
 interface ReservationDrawerProps {
   reservation: Reservation | null
   onClose: () => void
-  onStatusChange: () => void
+  onStatusChange: (updated?: Reservation) => void
 }
 
 interface DrawerAction {
   label: string
   icon: React.FC<{ size?: number; className?: string }>
-  run: (r: Reservation) => Promise<unknown>
+  run: (r: Reservation) => Promise<{ data: unknown; error: unknown }>
   loadingLabel: string
   variant: 'primary' | 'danger'
   showFor: ReservationStatus[]
+  syncs: boolean
 }
 
 function useDrawerMutations() {
@@ -77,6 +79,7 @@ export default function ReservationDrawer({
       loadingLabel: 'Approving…',
       variant: 'primary',
       showFor: ['pending'],
+      syncs: true,
     },
     {
       label: 'Decline',
@@ -85,6 +88,7 @@ export default function ReservationDrawer({
       loadingLabel: 'Declining…',
       variant: 'danger',
       showFor: ['pending'],
+      syncs: true,
     },
     {
       label: 'Cancel',
@@ -93,6 +97,7 @@ export default function ReservationDrawer({
       loadingLabel: 'Cancelling…',
       variant: 'danger',
       showFor: ['pending', 'approved'],
+      syncs: true,
     },
     {
       label: 'Send Confirmation SMS',
@@ -101,18 +106,21 @@ export default function ReservationDrawer({
       loadingLabel: 'Sending…',
       variant: 'primary',
       showFor: ['approved'],
+      syncs: false,
     },
   ]
 
   const availableActions = STATUS_ACTIONS.filter((a) => a.showFor.includes(res.status))
 
   async function handleAction(action: DrawerAction) {
-    await action.run(res)
-    onStatusChange()
+    const result = await action.run(res)
+    if (action.syncs && result.data) {
+      onStatusChange(result.data as Reservation)
+    } else {
+      onStatusChange()
+    }
   }
 
-  const checkInDate = new Date(res.arrival_datetime)
-  const checkOutDate = new Date(res.checkout_datetime)
   const nights = reservationNights(res)
 
   return (
@@ -176,9 +184,9 @@ export default function ReservationDrawer({
               {reservation.villa.name}
             </p>
             <p className="font-body text-[13px] text-[#757575]">
-              {checkInDate.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              {formatManilaDate(res.arrival_datetime)} · {formatManilaTime(res.arrival_datetime)}
               {' – '}
-              {checkOutDate.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              {formatManilaDate(res.checkout_datetime)} · {formatManilaTime(res.checkout_datetime)}
             </p>
           </div>
 

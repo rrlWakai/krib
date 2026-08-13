@@ -1,24 +1,27 @@
+import { businessDayKey } from './calendarTime'
+
 export function formatDateStr(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  return businessDayKey(date)
 }
 
 export function parseDate(str: string): Date {
   const [y, m, d] = str.split('-').map(Number)
-  return new Date(y, m - 1, d)
+  return new Date(Date.UTC(y, m - 1, d))
 }
 
 export function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate()
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
 }
 
 export function getFirstDayOfMonth(year: number, month: number): number {
-  return new Date(year, month, 1).getDay()
+  return new Date(Date.UTC(year, month, 1)).getUTCDay()
 }
 
 export function formatMonthYear(year: number, month: number): string {
-  return new Date(year, month).toLocaleDateString('en-PH', {
+  return new Date(Date.UTC(year, month, 1)).toLocaleDateString('en-PH', {
     month: 'long',
     year: 'numeric',
+    timeZone: 'UTC',
   })
 }
 
@@ -30,5 +33,5 @@ export function getInitials(name: string): string {
 }
 
 export function reservationDayKey(ts: string): string {
-  return formatDateStr(new Date(ts))
+  return businessDayKey(ts)
 }

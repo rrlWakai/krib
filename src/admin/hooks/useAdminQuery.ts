@@ -47,7 +47,10 @@ export function useAdminQuery<T>(
 ): QueryState<T> {
   const { ttlMs = DEFAULT_TTL, enabled = true } = options ?? {}
   const [data, setData] = useState<T | null>(() => (key ? getCached<T>(key) : null))
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (!key || !enabled) return false
+    return !getCached<T>(key)
+  })
   const [error, setError] = useState<string | null>(null)
   const fetcherRef = useRef(fetcher)
   fetcherRef.current = fetcher

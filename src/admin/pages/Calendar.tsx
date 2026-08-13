@@ -12,12 +12,22 @@ import { useAdminQuery } from '../hooks/useAdminQuery'
 import OccupancySummary from '../components/calendar/OccupancySummary'
 import ReservationDrawer from '../components/calendar/ReservationDrawer'
 import {
-  formatDateStr,
   getDaysInMonth,
   getFirstDayOfMonth,
   formatMonthYear,
   reservationDayKey,
 } from '../services/calendarService'
+import {
+  businessDayKey,
+  manilaDateKey,
+  manilaParts,
+  manilaDayOfKey,
+  addDaysKey,
+  weekdayOfKey,
+  formatManilaDateKey,
+  formatManilaTime,
+  formatManilaStayRange,
+} from '../services/calendarTime'
 import type { Reservation, ReservationStatus } from '../types'
 import { StatusBadge } from '../components/StatusBadge'
 import { cn } from '../../lib/cn'
@@ -25,6 +35,10 @@ import { cn } from '../../lib/cn'
 type ViewMode = 'month' | 'week' | 'day'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+const ACTIVE_STATUSES: ReservationStatus[] = ['pending', 'approved']
+const HISTORICAL_STATUSES: ReservationStatus[] = ['completed', 'declined', 'cancelled']
+const ALL_STATUSES: ReservationStatus[] = [...ACTIVE_STATUSES, ...HISTORICAL_STATUSES]
 
 const STATUS_STYLE: Record<string, { bar: string; dot: string }> = {
   pending:   { bar: 'bg-[#C9A227]/30', dot: 'bg-[#C9A227]' },
@@ -34,29 +48,23 @@ const STATUS_STYLE: Record<string, { bar: string; dot: string }> = {
   declined:  { bar: 'bg-[#757575]/10', dot: 'bg-[#757575]' },
 }
 
-const STATUS_CHIPS: ReservationStatus[] = [
-  'pending',
-  'approved',
-  'completed',
-  'cancelled',
-  'declined',
-]
-
 function overlapsDay(res: Reservation, dayKey: string): boolean {
-  return reservationDayKey(res.arrival_datetime) <= dayKey && dayKey < reservationDayKey(res.checkout_datetime)
+  return reservationDayKey(res.arrival_datetime) <= dayKey && dayKey <= reservationDayKey(res.checkout_datetime)
 }
 
 export default function Calendar() {
-  const today = new Date()
+  const todayKey = businessDayKey(new Date())
   const [view, setView] = useState<ViewMode>('month')
-  const [currentYear, setCurrentYear] = useState(today.getFullYear())
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth())
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const d = new Date(today); d.setDate(d.getDate() - d.getDay()); return d
+  const [currentYear, setCurrentYear] = useState(() => manilaParts(new Date()).year)
+  const [currentMonth, setCurrentMonth] = useState(() => manilaParts(new Date()).month - 1)
+  const [currentWeekStartKey, setCurrentWeekStartKey] = useState(() => {
+    const t = businessDayKey(new Date())
+    return addDaysKey(t, -weekdayOfKey(t))
   })
-  const [currentDay, setCurrentDay] = useState(() => new Date(today))
+  const [currentDayKey, setCurrentDayKey] = useState(() => businessDayKey(new Date()))
   const [villaFilter, setVillaFilter] = useState<string>('all')
-  const [statusFilters, setStatusFilters] = useState<ReservationStatus[]>([])
+  const [statusFilters, setStatusFilters] = useState<ReservationStatus[]>(ACTIVE_STATUSES)
+  const [showHistorical, setShowHistorical] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
@@ -75,8 +83,23 @@ export default function Calendar() {
   const reservations = reservationsQuery.data ?? []
   const villas = villasQuery.data ?? []
 
-  const refreshDrawer = useCallback(() => {
+  const refreshDrawer = useCallback((updated?: Reservation) => {
     setDrawerKey((k) => k + 1)
+    if (updated) {
+      reservationsQuery.setData((prev) => {
+        if (!prev) return [updated]
+        const idx = prev.findIndex((r) => r.id === updated.id)
+        if (idx === -1) return [updated, ...prev]
+        const next = [...prev]
+        next[idx] = { ...prev[idx], ...updated, guest: prev[idx].guest, villa: prev[idx].villa }
+        return next
+      })
+      setSelectedReservation((current) =>
+        current && current.id === updated.id
+          ? { ...current, ...updated, guest: current.guest, villa: current.villa }
+          : current,
+      )
+    }
     reservationsQuery.refetch()
   }, [reservationsQuery])
 
@@ -91,18 +114,21 @@ export default function Calendar() {
     return dates
   }, [firstDay, daysInMonth])
 
-  const weekDates = useMemo(() => {
-    const dates: Date[] = []
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(currentWeekStart); d.setDate(d.getDate() + i); dates.push(d)
-    }
-    return dates
-  }, [currentWeekStart])
+  const weekKeys = useMemo(() => {
+    const keys: string[] = []
+    for (let i = 0; i < 7; i++) keys.push(addDaysKey(currentWeekStartKey, i))
+    return keys
+  }, [currentWeekStartKey])
+
+  const effectiveStatuses = useMemo(() => {
+    if (statusFilters.length > 0) return statusFilters
+    return showHistorical ? ALL_STATUSES : ACTIVE_STATUSES
+  }, [statusFilters, showHistorical])
 
   const filteredReservations = useMemo(() => {
     let r = [...reservations]
     if (villaFilter !== 'all') r = r.filter((res) => res.villa.slug === villaFilter)
-    if (statusFilters.length > 0) r = r.filter((res) => statusFilters.includes(res.status))
+    r = r.filter((res) => effectiveStatuses.includes(res.status))
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       r = r.filter((res) =>
@@ -111,40 +137,47 @@ export default function Calendar() {
       )
     }
     return r
-  }, [reservations, villaFilter, statusFilters, searchQuery])
+  }, [reservations, villaFilter, effectiveStatuses, searchQuery])
 
   const getReservationsForDayInMonth = useCallback(
     (day: number) => {
-      const dateKey = formatDateStr(new Date(currentYear, currentMonth, day))
+      const dateKey = manilaDateKey(currentYear, currentMonth, day)
       return filteredReservations.filter((r) => overlapsDay(r, dateKey))
     },
     [currentYear, currentMonth, filteredReservations],
   )
 
   const isToday = useCallback(
-    (day: number) => day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear(),
-    [currentYear, currentMonth, today],
+    (day: number) => manilaDateKey(currentYear, currentMonth, day) === todayKey,
+    [currentYear, currentMonth, todayKey],
   )
 
   const occupancy = useMemo(() => {
     const now = new Date()
-    const todayKey = formatDateStr(now)
-    const tomorrowKey = formatDateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1))
+    const tomorrowKey = addDaysKey(todayKey, 1)
 
     const arrivals = reservations.filter((r) =>
-      r.status === 'approved' && reservationDayKey(r.arrival_datetime) === todayKey,
+      r.status === 'approved' && businessDayKey(r.arrival_datetime) === todayKey,
     )
     const departures = reservations.filter((r) =>
-      (r.status === 'approved' || r.status === 'completed') && reservationDayKey(r.checkout_datetime) === todayKey,
+      r.status === 'approved' && businessDayKey(r.checkout_datetime) === todayKey,
     )
     const inHouse = reservations.filter((r) =>
       r.status === 'approved' && new Date(r.arrival_datetime) <= now && new Date(r.checkout_datetime) > now,
     )
     const pending = reservations.filter((r) => r.status === 'pending')
-    const occupiedVillaIds = new Set(inHouse.map((r) => r.villa_id))
+    const occupiedVillaIds = new Set(
+      reservations
+        .filter((r) =>
+          (r.status === 'pending' || r.status === 'approved') &&
+          new Date(r.arrival_datetime) <= now &&
+          new Date(r.checkout_datetime) > now,
+        )
+        .map((r) => r.villa_id),
+    )
     const upcomingCheckins = reservations.filter((r) =>
       r.status === 'approved' &&
-      (reservationDayKey(r.arrival_datetime) === todayKey || reservationDayKey(r.arrival_datetime) === tomorrowKey),
+      (businessDayKey(r.arrival_datetime) === todayKey || businessDayKey(r.arrival_datetime) === tomorrowKey),
     )
 
     return {
@@ -156,7 +189,7 @@ export default function Calendar() {
       availableVillas: Math.max(0, villas.length - occupiedVillaIds.size),
       upcomingCheckins: upcomingCheckins.length,
     }
-  }, [reservations, villas])
+  }, [reservations, villas, todayKey])
 
   function navigateDelta(delta: number) {
     if (view === 'month') {
@@ -164,17 +197,19 @@ export default function Calendar() {
       if (m < 0) { m = 11; y-- } else if (m > 11) { m = 0; y++ }
       setCurrentMonth(m); setCurrentYear(y)
     } else if (view === 'week') {
-      const d = new Date(currentWeekStart); d.setDate(d.getDate() + delta * 7); setCurrentWeekStart(d)
+      setCurrentWeekStartKey((prev) => addDaysKey(prev, delta * 7))
     } else {
-      const d = new Date(currentDay); d.setDate(d.getDate() + delta); setCurrentDay(d)
+      setCurrentDayKey((prev) => addDaysKey(prev, delta))
     }
   }
 
   function goToToday() {
-    setCurrentYear(today.getFullYear())
-    setCurrentMonth(today.getMonth())
-    const d = new Date(today); d.setDate(d.getDate() - d.getDay()); setCurrentWeekStart(d)
-    setCurrentDay(new Date(today))
+    const t = businessDayKey(new Date())
+    const parts = manilaParts(new Date())
+    setCurrentYear(parts.year)
+    setCurrentMonth(parts.month - 1)
+    setCurrentWeekStartKey(addDaysKey(t, -weekdayOfKey(t)))
+    setCurrentDayKey(t)
   }
 
   function toggleStatusFilter(status: ReservationStatus) {
@@ -188,17 +223,16 @@ export default function Calendar() {
   function closeDrawer() { setSelectedReservation(null) }
 
   const weekReservations = useMemo(() => {
-    const firstKey = formatDateStr(weekDates[0])
-    const lastKey = formatDateStr(weekDates[6])
+    const firstKey = weekKeys[0]
+    const lastKey = weekKeys[6]
     return filteredReservations.filter((r) =>
-      reservationDayKey(r.arrival_datetime) <= lastKey && reservationDayKey(r.checkout_datetime) > firstKey,
+      reservationDayKey(r.arrival_datetime) <= lastKey && reservationDayKey(r.checkout_datetime) >= firstKey,
     )
-  }, [filteredReservations, weekDates])
+  }, [filteredReservations, weekKeys])
 
   const dayReservations = useMemo(() => {
-    const dateKey = formatDateStr(currentDay)
-    return filteredReservations.filter((r) => overlapsDay(r, dateKey))
-  }, [filteredReservations, currentDay])
+    return filteredReservations.filter((r) => overlapsDay(r, currentDayKey))
+  }, [filteredReservations, currentDayKey])
 
   if (reservationsQuery.loading || villasQuery.loading) {
     return (
@@ -310,7 +344,28 @@ export default function Calendar() {
             >
               <div className="flex flex-wrap items-center gap-2 px-5 py-3">
                 <span className="font-body text-[11px] text-[#757575]">Status:</span>
-                {STATUS_CHIPS.map((s) => (
+                {ACTIVE_STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => toggleStatusFilter(s)}
+                    className={cn(
+                      'rounded-md px-2.5 py-1 font-body text-[11px] capitalize transition-colors',
+                      statusFilters.includes(s) ? 'bg-[#0A1F44] text-white' : 'bg-[#FAFAFA] text-[#757575] hover:bg-[#f0f2f7]',
+                    )}
+                  >
+                    {s.replace('_', ' ')}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowHistorical((v) => !v)}
+                  className={cn(
+                    'rounded-md px-2.5 py-1 font-body text-[11px] transition-colors',
+                    showHistorical ? 'bg-[#0A1F44] text-white' : 'bg-[#FAFAFA] text-[#757575] hover:bg-[#f0f2f7]',
+                  )}
+                >
+                  Show historical
+                </button>
+                {showHistorical && HISTORICAL_STATUSES.map((s) => (
                   <button
                     key={s}
                     onClick={() => toggleStatusFilter(s)}
@@ -332,6 +387,15 @@ export default function Calendar() {
           )}
         </AnimatePresence>
 
+        <div className="flex flex-wrap items-center gap-4 border-b border-[#ECECEC] px-5 py-2">
+          {ALL_STATUSES.map((s) => (
+            <span key={s} className="flex items-center gap-1.5 font-body text-[11px] text-[#757575]">
+              <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_STYLE[s]?.dot ?? STATUS_STYLE.pending.dot)} />
+              {s.replace('_', ' ')}
+            </span>
+          ))}
+        </div>
+
         <div className="flex items-center justify-between px-5 pt-4">
           <button onClick={() => navigateDelta(-1)} className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[#f0f2f7]">
             <ChevronLeft size={18} className="text-[#0A1F44]" />
@@ -339,9 +403,9 @@ export default function Calendar() {
           <h2 className="font-display text-[20px] font-medium text-[#0A1F44]">
             {view === 'month' && formatMonthYear(currentYear, currentMonth)}
             {view === 'week' && (
-              <>{weekDates[0].toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })} – {weekDates[6].toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}</>
+              <>{formatManilaDateKey(weekKeys[0], { month: 'short', day: 'numeric' })} – {formatManilaDateKey(weekKeys[6], { month: 'short', day: 'numeric', year: 'numeric' })}</>
             )}
-            {view === 'day' && currentDay.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            {view === 'day' && formatManilaDateKey(currentDayKey, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </h2>
           <button onClick={() => navigateDelta(1)} className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[#f0f2f7]">
             <ChevronRight size={18} className="text-[#0A1F44]" />
@@ -359,14 +423,15 @@ export default function Calendar() {
           )}
           {view === 'week' && (
             <WeekView
-              dates={weekDates}
+              keys={weekKeys}
               reservations={weekReservations}
+              todayKey={todayKey}
               onReservationClick={handleReservationClick}
             />
           )}
           {view === 'day' && (
             <DayView
-              date={currentDay}
+              dayKey={currentDayKey}
               reservations={dayReservations}
               onReservationClick={handleReservationClick}
             />
@@ -379,13 +444,13 @@ export default function Calendar() {
           <h3 className="mb-3 font-display text-[16px] font-medium text-[#0A1F44]">Upcoming This Month</h3>
           <div className="flex flex-col gap-2">
             {filteredReservations
-              .filter((r) => reservationDayKey(r.arrival_datetime) >= formatDateStr(today))
+              .filter((r) => businessDayKey(r.arrival_datetime) >= todayKey)
               .slice(0, 8)
               .map((res) => (
                 <button key={res.id} onClick={() => setSelectedReservation(res)} className="flex items-center gap-3 rounded-lg border border-[#ECECEC] bg-white p-3 text-left">
                   <div className="flex w-10 flex-col items-center">
-                    <span className="font-body text-[10px] text-[#757575]">{new Date(res.arrival_datetime).toLocaleDateString('en-PH', { month: 'short' })}</span>
-                    <span className="font-body text-[14px] font-medium text-[#0A1F44]">{new Date(res.arrival_datetime).getDate()}</span>
+                    <span className="font-body text-[10px] text-[#757575]">{formatManilaDateKey(businessDayKey(res.arrival_datetime), { month: 'short' })}</span>
+                    <span className="font-body text-[14px] font-medium text-[#0A1F44]">{manilaDayOfKey(businessDayKey(res.arrival_datetime))}</span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-body text-[13px] font-medium text-[#0A1F44]">{res.guest.full_name}</p>
@@ -456,6 +521,9 @@ function MonthView({
                       <span className="font-body text-[9px] text-[#757575] leading-tight truncate w-full">
                         {res.guest.full_name}
                       </span>
+                      <span className="font-body text-[9px] text-[#757575] leading-tight truncate w-full">
+                        {formatManilaTime(res.arrival_datetime)}
+                      </span>
                     </button>
                   )
                 })}
@@ -472,39 +540,38 @@ function MonthView({
 }
 
 function WeekView({
-  dates, reservations, onReservationClick,
+  keys, reservations, todayKey, onReservationClick,
 }: {
-  dates: Date[]
+  keys: string[]
   reservations: Reservation[]
+  todayKey: string
   onReservationClick: (e: React.MouseEvent, r: Reservation) => void
 }) {
-  const getDayStr = (d: Date) => formatDateStr(d)
-  const firstDay = getDayStr(dates[0])
-  const lastDay = getDayStr(dates[6])
+  const firstKey = keys[0]
+  const lastKey = keys[6]
 
   const getReservationPosition = useCallback((r: Reservation) => {
     const startKey = reservationDayKey(r.arrival_datetime)
     const endKey = reservationDayKey(r.checkout_datetime)
-    const start = startKey < firstDay ? 0 : dates.findIndex((d) => getDayStr(d) >= startKey)
-    const end = endKey > lastDay ? 6 : dates.findIndex((d) => getDayStr(d) >= endKey) - 1
-    return { start: Math.max(0, start), end: Math.min(6, end < 0 ? 6 : end) }
-  }, [dates, firstDay, lastDay])
+    const start = startKey < firstKey ? 0 : keys.findIndex((k) => k >= startKey)
+    let end = endKey >= lastKey ? 6 : keys.findIndex((k) => k > endKey) - 1
+    if (end < start) end = start
+    return { start: Math.max(0, start), end: Math.min(6, end) }
+  }, [keys, firstKey, lastKey])
 
   return (
     <>
       <div className="mb-3 grid grid-cols-7 gap-1">
-        {dates.map((d, i) => (
+        {keys.map((k, i) => (
           <div key={i} className="text-center">
             <p className="font-body text-[11px] uppercase tracking-[0.08em] text-[#757575]">
-              {d.toLocaleDateString('en-PH', { weekday: 'short' })}
+              {formatManilaDateKey(k, { weekday: 'short' })}
             </p>
             <span className={cn(
               'mx-auto flex h-7 w-7 items-center justify-center rounded-full font-body text-[13px]',
-              d.getDate() === new Date().getDate() && d.getMonth() === new Date().getMonth() && d.getFullYear() === new Date().getFullYear()
-                ? 'bg-[#0A1F44] text-white'
-                : 'text-[#0A1F44]',
+              k === todayKey ? 'bg-[#0A1F44] text-white' : 'text-[#0A1F44]',
             )}>
-              {d.getDate()}
+              {manilaDayOfKey(k)}
             </span>
           </div>
         ))}
@@ -535,6 +602,7 @@ function WeekView({
               <div className={cn('h-0.5 w-full rounded-full mb-1', s.bar)} />
               <p className="truncate font-body text-[11px] font-medium text-[#0A1F44] w-full">{res.guest.full_name}</p>
               <p className="truncate font-body text-[10px] text-[#757575] w-full">{res.villa.name}</p>
+              <p className="truncate font-body text-[10px] text-[#757575] w-full">{formatManilaTime(res.arrival_datetime)}</p>
             </motion.button>
           )
         })}
@@ -544,17 +612,16 @@ function WeekView({
 }
 
 function DayView({
-  date, reservations, onReservationClick,
+  dayKey, reservations, onReservationClick,
 }: {
-  date: Date
+  dayKey: string
   reservations: Reservation[]
   onReservationClick: (e: React.MouseEvent, r: Reservation) => void
 }) {
-  const dateStr = formatDateStr(date)
-  const arrivals = reservations.filter((r) => reservationDayKey(r.arrival_datetime) === dateStr)
-  const departures = reservations.filter((r) => reservationDayKey(r.checkout_datetime) === dateStr)
+  const arrivals = reservations.filter((r) => reservationDayKey(r.arrival_datetime) === dayKey)
+  const departures = reservations.filter((r) => reservationDayKey(r.checkout_datetime) === dayKey)
   const inHouse = reservations.filter((r) =>
-    reservationDayKey(r.arrival_datetime) < dateStr && reservationDayKey(r.checkout_datetime) > dateStr,
+    reservationDayKey(r.arrival_datetime) < dayKey && reservationDayKey(r.checkout_datetime) > dayKey,
   )
 
   if (reservations.length === 0) {
@@ -603,7 +670,9 @@ function ReservationRow({ reservation, onClick }: { reservation: Reservation; on
     >
       <div className="min-w-0 flex-1">
         <p className="truncate font-body text-[13px] font-medium text-[#0A1F44]">{reservation.guest.full_name}</p>
-        <p className="truncate font-body text-[11px] text-[#757575]">{reservation.villa.name}</p>
+        <p className="truncate font-body text-[11px] text-[#757575]">
+          {reservation.villa.name} · {formatManilaStayRange(reservation.arrival_datetime, reservation.checkout_datetime)}
+        </p>
       </div>
       <StatusBadge status={reservation.status} size="sm" />
     </button>
