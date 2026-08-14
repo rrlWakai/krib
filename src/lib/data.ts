@@ -66,6 +66,7 @@ export const villas: VillaDetail[] = [
       perNight: '₱25,000',
       rateType: '21-hour stay',
     },
+    location: 'Near SM Pampanga & Robinsons Starmills',
     mapLink: 'https://maps.app.goo.gl/1aYuBqXnG147AgWW6',
     amenities: [
       {
@@ -189,6 +190,7 @@ export const villas: VillaDetail[] = [
       perNight: '₱30,000',
       rateType: '21-hour stay',
     },
+    location: 'Beverly Place, Pampanga',
     mapLink: 'https://www.google.com/maps/search/?api=1&query=KRiB%202+Beverley+Place+Yorkshire+San+Fernando+Pampanga',
     mapEmbed:
       'https://www.google.com/maps?q=3M8R+XWR+Beverley+Place+Yorkshire+San+Fernando+Pampanga&output=embed',

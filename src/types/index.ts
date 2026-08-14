@@ -38,6 +38,7 @@ export interface VillaDetail {
     perNight: string
     rateType: string
   }
+  location: string
   amenities: AmenityCategory[]
   rates: VillaRate[]
   policies: VillaPolicy[]

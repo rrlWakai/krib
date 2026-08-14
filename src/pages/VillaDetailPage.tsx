@@ -377,7 +377,7 @@ export function VillaDetailPage() {
                     <div className="flex items-center gap-2">
                       <MapPin size={20} className="text-on-surface-variant" />
                       <span className="font-body text-body-md text-on-surface">
-                        Beverly Place, Pampanga
+                        {villa.location}
                       </span>
                     </div>
                   </div>
@@ -659,7 +659,7 @@ export function VillaDetailPage() {
               <Reveal className="md:col-span-5">
                 <SectionLabel>LOCATION</SectionLabel>
                 <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-6">
-                  Beverly Place, Pampanga
+                  {villa.location}
                 </h2>
                 <p className="font-body text-body-lg text-on-surface-variant mb-10 leading-relaxed">
                   Tucked away in the quiet hills of Pampanga, KRiB Beverly Place

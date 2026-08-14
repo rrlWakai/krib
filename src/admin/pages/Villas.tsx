@@ -7,6 +7,7 @@ import { useAdminQuery } from '../hooks/useAdminQuery'
 import { formatCurrency } from '../data/constants'
 import { computeVillaAdmins } from '../services/api'
 import type { VillaAdmin } from '../types'
+import { villas as villaContent } from '../../lib/data'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -110,7 +111,7 @@ export default function Villas() {
                     {villa.name}
                   </h3>
                   <p className="mt-1 flex items-center gap-1 font-body text-[12px] text-[#757575]">
-                    <MapPin size={12} /> Beverly Place, Subic
+                    <MapPin size={12} /> {villaContent.find((v) => v.slug === villa.slug)?.location}
                   </p>
                 </div>
                 <div className="text-right">
