@@ -535,16 +535,16 @@ export const faqCategories: FAQCategory[] = [
 export const nearbyAttractions: NearbyAttraction[] = [
   {
     id: 'malls',
-    name: 'SM Clark & Marquee Mall',
-    description: 'Major shopping centers with retail, dining, and entertainment',
-    travelTime: '15\x9620 min drive',
+    name: 'SM City Pampanga & Robinsons Starmills',
+    description: 'Major shopping, dining, and entertainment destinations for guests and families',
+    travelTime: '≈ 10 min drive',
     icon: 'store',
   },
   {
     id: 'nlex',
     name: 'NLEX Access',
-    description: 'Easy access to North Luzon Expressway, approximately 2 hours from Manila',
-    travelTime: '2 hr from Manila',
+    description: 'Convenient access to North Luzon Expressway via nearby exits, making travel easy from Metro Manila and nearby cities',
+    travelTime: 'Easy access',
     icon: 'directions_car',
   },
 ]

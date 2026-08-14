@@ -662,9 +662,9 @@ export function VillaDetailPage() {
                   {villa.location}
                 </h2>
                 <p className="font-body text-body-lg text-on-surface-variant mb-10 leading-relaxed">
-                  Tucked away in the quiet hills of Pampanga, KRiB Beverly Place
-                  is close enough for a spontaneous weekend escape, yet feels
-                  like a world away.
+                  Tucked away in Beverly Place, Mexico, Pampanga, KRiB offers a
+                  peaceful escape while staying close to shopping, dining,
+                  entertainment, and major road connections.
                 </p>
 
                 <div className="space-y-6 mb-10">
