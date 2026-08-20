@@ -101,7 +101,7 @@ export const villas: VillaDetail[] = [
         items: [
           { icon: 'pool', label: 'Private Swimming Pool' },
           { icon: 'outdoor_grill', label: 'BBQ Area' },
-          { icon: 'local_parking', label: 'Parking' },
+          { icon: 'local_parking', label: 'Safe Street Parking' },
         ],
       },
     ],
@@ -377,7 +377,7 @@ export const faqCategories: FAQCategory[] = [
         id: 'both-villas',
         question: 'Can I book both villas for one event?',
         answer:
-          'Yes. If you are planning a larger celebration or family gathering, you can reserve both KRiB 1 and KRiB 2 together. Please coordinate with us in advance so we can ensure both properties are prepared for your group.',
+          'No. KRiB 1 and KRiB 2 are located separately, so each villa must be booked independently. A reservation for one villa does not include access to the other.',
       },
       {
         id: 'advance-booking',
@@ -485,7 +485,7 @@ export const faqCategories: FAQCategory[] = [
         id: 'pets',
         question: 'Are pets allowed?',
         answer:
-          'Pets are not allowed in the villas to ensure the comfort and safety of all guests. We appreciate your understanding.',
+          'Yes. Pets are welcome at KRiB. Please inform us in advance when making your reservation so we can properly prepare for your stay.',
       },
       {
         id: 'smoking',
@@ -521,7 +521,7 @@ export const faqCategories: FAQCategory[] = [
         id: 'parking',
         question: 'Is parking available?',
         answer:
-          'Yes. KRiB 1 has parking for up to 3 cars, and KRiB 2 has parking for up to 5 cars. Both are secure and located within the property.',
+          'Yes. Safe street parking is available near the property for guests.',
       },
       {
         id: 'getting-there',
