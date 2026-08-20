@@ -19,7 +19,7 @@ import type {
 import type { SiteSettings } from '../../services/api/settings'
 
 const RESERVATION_SELECT =
-  'id, reference_code, villa_id, guest_id, guest_count, status, special_requests, terms_accepted, privacy_accepted, arrival_datetime, checkout_datetime, created_at, updated_at, approved_at, approved_by, declined_at, declined_by, cancelled_at, cancelled_by, completed_at, guest:guests(id, full_name, email, phone, created_at), villa:villas(id, name, slug, description, base_price, max_guests, is_active, created_at, updated_at)'
+  'id, reference_code, villa_id, guest_id, guest_count, status, special_requests, terms_accepted, privacy_accepted, arrival_datetime, checkout_datetime, created_at, updated_at, approved_at, approved_by, declined_at, declined_by, cancelled_at, cancelled_by, completed_at, is_party, additional_guest_fee, party_fee, total_amount, guest:guests(id, full_name, email, phone, created_at), villa:villas(id, name, slug, description, base_price, max_guests, is_active, created_at, updated_at)'
 
 export async function fetchSiteSettingsAdmin(): Promise<SiteSettings | null> {
   const supabase = getSupabaseClient()
@@ -41,7 +41,7 @@ export async function fetchAllReservations(): Promise<Reservation[]> {
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
-  return (data ?? []) as Reservation[]
+  return (data ?? []) as unknown as Reservation[]
 }
 
 export async function fetchReservationById(id: string): Promise<Reservation | null> {
@@ -53,7 +53,7 @@ export async function fetchReservationById(id: string): Promise<Reservation | nu
     .maybeSingle()
 
   if (error) throw new Error(error.message)
-  return (data ?? null) as Reservation | null
+  return (data ?? null) as unknown as Reservation | null
 }
 
 export async function fetchVillas(): Promise<Villa[]> {
@@ -147,6 +147,7 @@ export function reservationNights(reservation: Reservation): number {
 }
 
 export function estimateReservationValue(reservation: Reservation): number {
+  if (reservation.total_amount) return Number(reservation.total_amount)
   const price = Number(reservation.villa?.base_price ?? 0)
   return price * reservationNights(reservation)
 }

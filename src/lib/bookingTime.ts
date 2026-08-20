@@ -16,6 +16,44 @@ export const ARRIVAL_TIME_SLOTS = [
 
 export const DEFAULT_ARRIVAL_TIME = '14:00'
 
+// KRiB 1: Fixed 2:00 PM check-in
+export const KRIB1_FIXED_CHECKIN_TIME = '14:00'
+export const KRIB1_STANDARD_CAPACITY = 20
+export const KRIB1_PARTY_MAX_CAPACITY = 60
+export const KRIB1_ADDITIONAL_GUEST_FEE = 200
+export const KRIB1_PARTY_FEE = 5000
+
+export function isKrib1(villaId: string): boolean {
+  return villaId === 'krib-1'
+}
+
+export function computeAdditionalGuestFee(
+  villaId: string,
+  guestCount: number,
+): number {
+  if (!isKrib1(villaId)) return 0
+  const additional = Math.max(0, guestCount - KRIB1_STANDARD_CAPACITY)
+  return additional * KRIB1_ADDITIONAL_GUEST_FEE
+}
+
+export function computePartyFee(
+  villaId: string,
+  isParty: boolean,
+): number {
+  if (!isKrib1(villaId)) return 0
+  return isParty ? KRIB1_PARTY_FEE : 0
+}
+
+export function computeTotalAdditionalCharges(
+  villaId: string,
+  guestCount: number,
+  isParty: boolean,
+): { additionalGuestFee: number; partyFee: number; total: number } {
+  const additionalGuestFee = computeAdditionalGuestFee(villaId, guestCount)
+  const partyFee = computePartyFee(villaId, isParty)
+  return { additionalGuestFee, partyFee, total: additionalGuestFee + partyFee }
+}
+
 export function toLocalDateString(d: Date): string {
   const shifted = new Date(d.getTime() + ASIA_MANILA_UTC_OFFSET_MINUTES * 60000)
   const y = shifted.getUTCFullYear()

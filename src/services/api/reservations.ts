@@ -15,6 +15,7 @@ export interface CreateReservationPayload {
   children: number;
   infants?: number;
   pets?: number;
+  is_party?: boolean;
   terms_accepted: boolean;
   privacy_accepted: boolean;
 }
@@ -29,6 +30,10 @@ export interface CreateReservationResult {
     checkout_datetime: string;
     created_at: string;
     special_requests: string;
+    is_party: boolean;
+    additional_guest_fee: number;
+    party_fee: number;
+    total_amount: number;
     guest: {
       id: string;
       full_name: string;

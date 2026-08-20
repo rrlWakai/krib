@@ -4,12 +4,15 @@ import { fadeUp } from "../../lib/animations";
 import { GuestSelector } from "./GuestSelector";
 import type { GuestCount } from "./GuestSelector";
 import { cn } from "../../lib/cn";
+import { isKrib1, KRIB1_ADDITIONAL_GUEST_FEE, KRIB1_STANDARD_CAPACITY } from "../../lib/bookingTime";
 
 interface StickyReservationCardProps {
   price: string;
   rateType: string;
   villaName: string;
+  villaId?: string;
   maxGuests: number;
+  maxAbsoluteCapacity?: number;
   partyFeeActive?: boolean;
   partyFeeAmount?: number;
   onPartyFeeToggle?: (active: boolean) => void;
@@ -28,7 +31,9 @@ export function StickyReservationCard({
   price,
   rateType,
   villaName,
+  villaId,
   maxGuests,
+  maxAbsoluteCapacity,
   partyFeeActive,
   partyFeeAmount,
   onPartyFeeToggle,
@@ -44,6 +49,11 @@ export function StickyReservationCard({
   const basePrice = parsePrice(price);
   const partyFee = partyFeeAmount ?? 5000;
   const total = partyFeeActive ? basePrice + partyFee : basePrice;
+  const krib1 = !!villaId && isKrib1(villaId);
+  const totalGuests = guests.adults + guests.children;
+  const additionalGuests = krib1 ? Math.max(0, totalGuests - KRIB1_STANDARD_CAPACITY) : 0;
+  const additionalGuestFee = additionalGuests * KRIB1_ADDITIONAL_GUEST_FEE;
+  const displayTotal = total + additionalGuestFee;
 
   return (
     <motion.div
@@ -56,13 +66,13 @@ export function StickyReservationCard({
       <div className="p-6">
         <div className="flex items-baseline gap-2 mb-1">
           <motion.span
-            key={total}
+            key={displayTotal}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="font-display text-headline-lg text-on-surface"
           >
-            {formatPrice(total)}
+            {formatPrice(displayTotal)}
           </motion.span>
           <span className="font-body text-body-md text-on-surface-variant">
             {rateType}
@@ -73,10 +83,10 @@ export function StickyReservationCard({
           <div className="border border-outline-variant rounded-default divide-y divide-outline-variant">
             <div className="p-4">
               <label className="font-body text-label-caps text-on-surface-variant/60 uppercase tracking-widest text-[11px] block mb-1">
-                Arrival date
+                {krib1 ? "Check-in" : "Arrival date"}
               </label>
               <span className="font-body text-body-md text-on-surface">
-                Select date
+                {krib1 ? "2:00 PM (Fixed)" : "Select date"}
               </span>
             </div>
             <div className="p-4 bg-surface-container/50">
@@ -93,12 +103,24 @@ export function StickyReservationCard({
               </label>
               <GuestSelector
                 maxGuests={maxGuests}
+                maxAbsoluteCapacity={maxAbsoluteCapacity}
                 villaName={villaName}
                 value={guests}
                 onChange={setGuests}
               />
             </div>
           </div>
+
+          {additionalGuestFee > 0 && (
+            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200/60">
+              <p className="font-body text-[11px] text-amber-800 font-medium">
+                {additionalGuests} additional guest{additionalGuests !== 1 ? "s" : ""} × ₱{KRIB1_ADDITIONAL_GUEST_FEE} = +{formatPrice(additionalGuestFee)}
+              </p>
+              <p className="font-body text-[10px] text-amber-700/80 mt-0.5">
+                Requires admin approval
+              </p>
+            </div>
+          )}
 
           <button
             onClick={onReserve}

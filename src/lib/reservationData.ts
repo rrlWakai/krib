@@ -28,8 +28,10 @@ export interface Reservation {
   createdAt: string
   status: ReservationStatus
   baseRate?: number
+  additionalGuestFee?: number
   partyFee?: number
   totalAmount?: number
+  isParty?: boolean
   amountDue?: number
   paymentDeadline?: string
   approvalDate?: string

@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { cn } from "../../lib/cn";
+import { isKrib1, KRIB1_ADDITIONAL_GUEST_FEE, KRIB1_STANDARD_CAPACITY } from "../../lib/bookingTime";
 
 interface StickyBookingBarProps {
   price: string;
   rateType: string;
+  villaId?: string;
   maxGuests: number;
   partyFeeActive?: boolean;
   partyFeeAmount?: number;
@@ -23,6 +25,7 @@ function formatPrice(amount: number): string {
 export function StickyBookingBar({
   price,
   rateType,
+  villaId,
   maxGuests,
   partyFeeActive,
   partyFeeAmount,
@@ -33,6 +36,7 @@ export function StickyBookingBar({
   const basePrice = parsePrice(price);
   const partyFee = partyFeeAmount ?? 5000;
   const total = partyFeeActive ? basePrice + partyFee : basePrice;
+  const krib1 = !!villaId && isKrib1(villaId);
 
   return (
     <div
@@ -61,7 +65,7 @@ export function StickyBookingBar({
               </span>
             </div>
             <p className="font-body text-[11px] text-on-surface-variant/50 mt-1">
-              21 Hours &bull; Up to {maxGuests} Guests
+              21 Hours &bull; Up to {maxGuests} Guests{krib1 ? ` (+${KRIB1_ADDITIONAL_GUEST_FEE}/pax above ${KRIB1_STANDARD_CAPACITY})` : ""}
             </p>
 
             {/* Party Fee Toggle */}

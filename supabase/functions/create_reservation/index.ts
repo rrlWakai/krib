@@ -7,6 +7,12 @@ import { readSmsSettings, sendSms, ownerNewReservationMessage } from '../_shared
 
 const STAY_HOURS = 21
 
+// KRiB 1 constants (server-authoritative)
+const KRIB1_STANDARD_CAPACITY = 20
+const KRIB1_PARTY_MAX_CAPACITY = 60
+const KRIB1_ADDITIONAL_GUEST_FEE = 200
+const KRIB1_PARTY_FEE = 5000
+
 interface CreateReservationInput {
   villa_id: string
   arrival_datetime: string
@@ -18,6 +24,7 @@ interface CreateReservationInput {
   children: number
   infants?: number
   pets?: number
+  is_party?: boolean
   terms_accepted: boolean
   privacy_accepted: boolean
 }
@@ -106,6 +113,7 @@ Deno.serve(async (req: Request) => {
     const children = Number(input.children)
     const infants = Number(input.infants ?? 0)
     const pets = Number(input.pets ?? 0)
+    const isParty = input.is_party === true
 
     if (!Number.isInteger(adults) || adults < 1) {
       return badRequest('adults must be a positive integer')
@@ -130,12 +138,21 @@ Deno.serve(async (req: Request) => {
 
     const { data: villa, error: villaError } = await admin
       .from('villas')
-      .select('id, slug, name, max_guests')
+      .select('id, slug, name, max_guests, base_price')
       .eq('slug', input.villa_id)
       .maybeSingle()
 
     if (villaError) throw villaError
     if (!villa) return badRequest(`Villa not found: ${input.villa_id}`)
+
+    // ── KRiB 1 server-side validation ──────────
+    if (villa.slug === 'krib-1') {
+      if (guestCount > KRIB1_PARTY_MAX_CAPACITY) {
+        return badRequest(
+          `KRiB 1 maximum capacity is ${KRIB1_PARTY_MAX_CAPACITY} guests. You requested ${guestCount}.`,
+        )
+      }
+    }
 
     const { data: guest, error: guestError } = await admin
       .from('guests')
@@ -153,6 +170,21 @@ Deno.serve(async (req: Request) => {
       throw guestError
     }
 
+    // ── Server-authoritative fee calculation ────
+    let additionalGuestFee = 0
+    let partyFee = 0
+    let totalAmount = Number(villa.base_price)
+
+    if (villa.slug === 'krib-1') {
+      const additionalGuests = Math.max(0, guestCount - KRIB1_STANDARD_CAPACITY)
+      additionalGuestFee = additionalGuests * KRIB1_ADDITIONAL_GUEST_FEE
+      partyFee = isParty ? KRIB1_PARTY_FEE : 0
+      totalAmount = Number(villa.base_price) + additionalGuestFee + partyFee
+    } else {
+      partyFee = isParty ? KRIB1_PARTY_FEE : 0
+      totalAmount = Number(villa.base_price) + partyFee
+    }
+
     const { data: reservation, error: reservationError } = await admin
       .from('reservations')
       .insert({
@@ -164,10 +196,11 @@ Deno.serve(async (req: Request) => {
         special_requests: input.special_requests ?? '',
         terms_accepted: input.terms_accepted,
         privacy_accepted: input.privacy_accepted,
+        is_party: isParty,
         status: 'pending',
       })
       .select(
-        'id, reference_code, status, guest_count, arrival_datetime, checkout_datetime, created_at, special_requests, guest:guests(id, full_name, email, phone), villa:villas(slug, name)',
+        'id, reference_code, status, guest_count, arrival_datetime, checkout_datetime, created_at, special_requests, is_party, additional_guest_fee, party_fee, total_amount, guest:guests(id, full_name, email, phone), villa:villas(slug, name)',
       )
       .single()
 
@@ -182,6 +215,7 @@ Deno.serve(async (req: Request) => {
         reference_code: string
         guest_count: number
         arrival_datetime: string
+        is_party: boolean
         guest: { full_name?: string; phone?: string }
         villa: { name?: string }
       }

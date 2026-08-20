@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   XCircle,
   Send,
+  AlertTriangle,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
@@ -19,6 +20,7 @@ import { formatCurrency } from '../data/constants'
 import { estimateReservationValue, reservationNights } from '../services/api'
 import type { ReservationStatus } from '../types'
 import { cn } from '../../lib/cn'
+import { KRIB1_STANDARD_CAPACITY } from '../../lib/bookingTime'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -227,10 +229,28 @@ export default function ReservationDetail() {
 
           <div className="border border-[#ECECEC] rounded-lg bg-white p-5">
             <h3 className="mb-4 font-display text-[17px] font-medium text-[#0A1F44]">Guest Count</h3>
+            {res.villa.slug === 'krib-1' && res.guest_count > KRIB1_STANDARD_CAPACITY && (
+              <div className="mb-4 flex items-start gap-2.5 rounded-lg bg-amber-50 border border-amber-200/60 p-3">
+                <AlertTriangle size={14} className="text-amber-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-body text-[12px] text-amber-800 font-medium">
+                    Over-capacity request: {res.guest_count} guests exceeds {KRIB1_STANDARD_CAPACITY} standard
+                  </p>
+                  <p className="font-body text-[11px] text-amber-700/80 mt-0.5">
+                    Requires admin approval. {res.guest_count - KRIB1_STANDARD_CAPACITY} additional guest{res.guest_count - KRIB1_STANDARD_CAPACITY !== 1 ? 's' : ''} × ₱200 = ₱{((res.guest_count - KRIB1_STANDARD_CAPACITY) * 200).toLocaleString('en-PH')}
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 { label: 'Guests', count: res.guest_count },
-                { label: 'Max Capacity', count: res.villa.max_guests },
+                ...(res.villa.slug === 'krib-1'
+                  ? [
+                      { label: 'Standard Capacity', count: KRIB1_STANDARD_CAPACITY },
+                      { label: 'Max Capacity', count: 60 },
+                    ]
+                  : [{ label: 'Max Capacity', count: res.villa.max_guests }]),
               ].map((g) => (
                 <div key={g.label} className="border border-[#ECECEC] rounded-lg p-3 text-center">
                   <p className="font-display text-[22px] font-medium text-[#0A1F44]">{g.count}</p>
@@ -314,13 +334,36 @@ export default function ReservationDetail() {
                     Base Rate ({nights} night{nights !== 1 ? 's' : ''})
                   </span>
                   <span className="font-body text-[13px] text-[#0A1F44]">
-                    {formatCurrency(Number(res.villa.base_price) * nights)}
+                    {formatCurrency(Number(res.villa.base_price))}
                   </span>
                 </div>
+
+                {res.additional_guest_fee > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="font-body text-[13px] text-[#757575]">
+                      Additional Guests ({res.guest_count - KRIB1_STANDARD_CAPACITY} × ₱200)
+                    </span>
+                    <span className="font-body text-[13px] text-[#0A1F44]">
+                      {formatCurrency(res.additional_guest_fee)}
+                    </span>
+                  </div>
+                )}
+
+                {res.is_party && (
+                  <div className="flex items-center justify-between">
+                    <span className="font-body text-[13px] text-[#757575]">
+                      Party / Event Fee
+                    </span>
+                    <span className="font-body text-[13px] text-[#0A1F44]">
+                      {formatCurrency(res.party_fee)}
+                    </span>
+                  </div>
+                )}
+
                 <div className="border-t border-[#ECECEC] pt-3">
                   <div className="flex items-center justify-between">
                     <span className="font-body text-[14px] font-medium text-[#0A1F44]">Total</span>
-                    <span className="font-display text-[17px] font-medium text-[#0A1F44]">{formatCurrency(estimateReservationValue(res))}</span>
+                    <span className="font-display text-[17px] font-medium text-[#0A1F44]">{formatCurrency(res.total_amount || estimateReservationValue(res))}</span>
                   </div>
                 </div>
               </div>

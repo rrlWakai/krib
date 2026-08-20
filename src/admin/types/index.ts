@@ -70,6 +70,10 @@ export interface Reservation {
   cancelled_at: string | null;
   cancelled_by: string | null;
   completed_at: string | null;
+  is_party: boolean;
+  additional_guest_fee: number;
+  party_fee: number;
+  total_amount: number;
   guest: Guest;
   villa: Villa;
 }

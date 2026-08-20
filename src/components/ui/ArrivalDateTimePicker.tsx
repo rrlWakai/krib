@@ -18,6 +18,8 @@ interface ArrivalDateTimePickerProps {
   onArrivalTimeChange: (time: string) => void
   dateError?: string
   timeError?: string
+  fixedTime?: string
+  fixedTimeLabel?: string
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -33,6 +35,8 @@ export function ArrivalDateTimePicker({
   onArrivalTimeChange,
   dateError,
   timeError,
+  fixedTime,
+  fixedTimeLabel,
 }: ArrivalDateTimePickerProps) {
   const todayStr = useMemo(() => toLocalDateString(new Date()), [])
   const [todayY, todayM] = todayStr.split('-').map(Number)
@@ -154,34 +158,61 @@ export function ArrivalDateTimePicker({
 
         <div className="h-px bg-outline-variant/40 my-6" />
 
-        <div className="flex items-center gap-2 mb-4">
-          <Clock size={16} className="text-primary" />
-          <span className="font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant">
-            Arrival Time
-          </span>
-        </div>
-
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-          {ARRIVAL_TIME_SLOTS.map((slot) => {
-            const active = slot === arrivalTime
-            return (
-              <button
-                key={slot}
-                type="button"
-                onClick={() => onArrivalTimeChange(slot)}
-                aria-pressed={active}
-                className={cn(
-                  'px-2 py-2.5 rounded-lg border font-body text-sm transition-all duration-150',
-                  active
-                    ? 'bg-primary border-primary text-on-primary font-semibold shadow-sm'
-                    : 'border-outline-variant/60 text-on-surface hover:border-primary/40 hover:text-primary cursor-pointer',
-                )}
-              >
-                {formatTimeLabel(slot)}
-              </button>
-            )
-          })}
-        </div>
+        {fixedTime ? (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Clock size={16} className="text-primary" />
+              <span className="font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant">
+                Arrival Time
+              </span>
+            </div>
+            <div className="px-4 py-3.5 rounded-lg bg-primary/5 border border-primary/15">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Clock size={14} className="text-primary" />
+                </div>
+                <div>
+                  <p className="font-body text-sm text-on-surface font-medium">
+                    {fixedTimeLabel ?? formatTimeLabel(fixedTime)}
+                  </p>
+                  <p className="font-body text-[11px] text-on-surface-variant/60 mt-0.5">
+                    Fixed check-in time for this villa
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Clock size={16} className="text-primary" />
+              <span className="font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant">
+                Arrival Time
+              </span>
+            </div>
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+              {ARRIVAL_TIME_SLOTS.map((slot) => {
+                const active = slot === arrivalTime
+                return (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => onArrivalTimeChange(slot)}
+                    aria-pressed={active}
+                    className={cn(
+                      'px-2 py-2.5 rounded-lg border font-body text-sm transition-all duration-150',
+                      active
+                        ? 'bg-primary border-primary text-on-primary font-semibold shadow-sm'
+                        : 'border-outline-variant/60 text-on-surface hover:border-primary/40 hover:text-primary cursor-pointer',
+                    )}
+                  >
+                    {formatTimeLabel(slot)}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {timeError && (
           <p className="font-body text-[12px] text-error mt-3">{timeError}</p>

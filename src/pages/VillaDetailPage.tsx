@@ -29,6 +29,7 @@ import { VillaAmenities } from "../components/sections/villa/VillaAmenities";
 import { BookingExperience } from "../components/ui/BookingExperience";
 import { getIcon } from "../lib/iconMap";
 import { cn } from "../lib/cn";
+import { isKrib1, KRIB1_PARTY_MAX_CAPACITY } from "../lib/bookingTime";
 
 function ParallaxImg({
   src,
@@ -479,7 +480,9 @@ export function VillaDetailPage() {
                   price={villa.priceDetails.perNight}
                   rateType={villa.priceDetails.rateType}
                   villaName={villa.name}
+                  villaId={villa.id}
                   maxGuests={villa.maxGuests}
+                  maxAbsoluteCapacity={isKrib1(villa.id) ? KRIB1_PARTY_MAX_CAPACITY : undefined}
                   partyFeeActive={partyFeeActive}
                   partyFeeAmount={partyFeeAmount}
                   onPartyFeeToggle={setPartyFeeActive}
@@ -767,6 +770,7 @@ export function VillaDetailPage() {
             name: villa.name,
             priceDetails: villa.priceDetails,
             maxGuests: villa.maxGuests,
+            maxAbsoluteCapacity: isKrib1(villa.id) ? KRIB1_PARTY_MAX_CAPACITY : undefined,
             partyFeeLabel: formatPeso(partyFeeAmount),
           }}
           partyFeeActive={partyFeeActive}
@@ -778,6 +782,7 @@ export function VillaDetailPage() {
         <StickyBookingBar
           price={villa.priceDetails.perNight}
           rateType={villa.priceDetails.rateType}
+          villaId={villa.id}
           maxGuests={villa.maxGuests}
           partyFeeActive={partyFeeActive}
           partyFeeAmount={partyFeeAmount}

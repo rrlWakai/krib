@@ -26,6 +26,11 @@ import {
   computeCheckout,
   formatArrivalLabel,
   formatCheckoutLabel,
+  isKrib1,
+  KRIB1_FIXED_CHECKIN_TIME,
+  KRIB1_STANDARD_CAPACITY,
+  KRIB1_PARTY_MAX_CAPACITY,
+  computeTotalAdditionalCharges,
 } from "../../lib/bookingTime";
 
 interface PropertyInfo {
@@ -33,6 +38,7 @@ interface PropertyInfo {
   name: string;
   priceDetails: { perNight: string; rateType: string };
   maxGuests: number;
+  maxAbsoluteCapacity?: number;
   partyFeeLabel?: string;
 }
 
@@ -174,6 +180,7 @@ export function BookingExperience({
     infants: 0,
     pets: 0,
   });
+  const [isParty, setIsParty] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -204,6 +211,7 @@ export function BookingExperience({
       setArrivalDate(null);
       setArrivalTime(null);
       setGuests({ adults: 2, children: 0, infants: 0, pets: 0 });
+      setIsParty(false);
       setFullName("");
       setEmail("");
       setPhone("");
@@ -253,9 +261,19 @@ export function BookingExperience({
   }, [isOpen, onClose, submitState, termsOpen]);
 
   const basePrice = parsePrice(property.priceDetails.perNight);
+  const totalGuests = guests.adults + guests.children;
+  const isKrib1Villa = isKrib1(property.id);
+  const maxCap = property.maxAbsoluteCapacity ?? property.maxGuests;
+  const isOverCapacity = isKrib1Villa && totalGuests > KRIB1_STANDARD_CAPACITY;
+  const isPartyValid = isParty && isKrib1Villa;
+  const { additionalGuestFee } =
+    computeTotalAdditionalCharges(property.id, totalGuests, isPartyValid);
   const partyFeeRate = partyFeeAmount ?? 5000;
-  const partyFee = partyFeeActive ? partyFeeRate : 0;
-  const total = basePrice + partyFee;
+  const partyFee = isPartyValid ? partyFeeRate : 0;
+  const total = basePrice + additionalGuestFee + partyFee;
+
+  // For KRiB 1: auto-set fixed arrival time when a date is selected
+  const effectiveArrivalTime = isKrib1Villa ? KRIB1_FIXED_CHECKIN_TIME : arrivalTime;
 
   const goNext = useCallback(() => {
     if (step < STEP_COUNT) {
@@ -288,7 +306,10 @@ export function BookingExperience({
     const errs: Record<string, string> = {};
     if (s === 1) {
       if (!arrivalDate) errs.date = "Please select a date";
-      if (!arrivalTime) errs.time = "Please select a time";
+      if (!isKrib1Villa && !arrivalTime) errs.time = "Please select a time";
+      if (isKrib1Villa && totalGuests > KRIB1_PARTY_MAX_CAPACITY) {
+        errs.guests = `KRiB 1 has a maximum capacity of ${KRIB1_PARTY_MAX_CAPACITY} guests`;
+      }
     }
     if (s === 3) {
       if (!fullName.trim()) errs.fullName = "Name is required";
@@ -315,7 +336,7 @@ export function BookingExperience({
     setSubmitError("");
     setSubmitState("submitting");
 
-    const arrivalDatetime = combineArrivalDatetime(arrivalDate!, arrivalTime!);
+    const arrivalDatetime = combineArrivalDatetime(arrivalDate!, effectiveArrivalTime!);
 
     const { data, error } = await createReservation({
       villa_id: property.id,
@@ -328,6 +349,7 @@ export function BookingExperience({
       children: guests.children,
       infants: guests.infants,
       pets: guests.pets,
+      is_party: isPartyValid,
       terms_accepted: consentAccepted,
       privacy_accepted: consentAccepted,
     });
@@ -370,8 +392,10 @@ export function BookingExperience({
       createdAt: r.created_at.slice(0, 10),
       status: r.status as ReservationStatus,
       baseRate: basePrice,
-      partyFee: partyFeeActive ? partyFeeRate : 0,
-      totalAmount: total,
+      additionalGuestFee: r.additional_guest_fee ?? 0,
+      partyFee: r.party_fee ?? 0,
+      totalAmount: r.total_amount ?? total,
+      isParty: r.is_party ?? false,
       confirmationNumber: r.reference_code,
       message: r.special_requests,
     };
@@ -405,13 +429,12 @@ export function BookingExperience({
   }, []);
 
   const arrivalDatetime =
-    arrivalDate && arrivalTime
-      ? combineArrivalDatetime(arrivalDate, arrivalTime)
+    arrivalDate && effectiveArrivalTime
+      ? combineArrivalDatetime(arrivalDate, effectiveArrivalTime)
       : null;
   const checkoutDatetime = arrivalDatetime
     ? computeCheckout(arrivalDatetime)
     : null;
-  const totalGuests = guests.adults + guests.children;
   const hasArrival = !!arrivalDatetime;
   const meta = STEP_META[step - 1];
 
@@ -473,7 +496,66 @@ export function BookingExperience({
           </span>
         </div>
 
-        {onPartyFeeToggle && (
+        {isOverCapacity && (
+          <div className="flex items-center justify-between py-1">
+            <span className="font-body text-sm text-on-surface-variant">
+              Additional guests ({totalGuests - KRIB1_STANDARD_CAPACITY} × ₱200)
+            </span>
+            <span className="font-body text-sm text-on-surface font-medium">
+              {formatPrice(additionalGuestFee)}
+            </span>
+          </div>
+        )}
+
+        {onPartyFeeToggle && isKrib1Villa && (
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !isParty;
+                  setIsParty(next);
+                  onPartyFeeToggle(next);
+                }}
+                className={cn(
+                  "relative inline-flex h-22px w-10 items-center rounded-full transition-colors duration-300 cursor-pointer shrink-0",
+                  isParty ? "bg-primary" : "bg-outline/40",
+                )}
+                role="switch"
+                aria-checked={isParty}
+                aria-label="Toggle party fee"
+              >
+                <motion.span
+                  layout
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className={cn(
+                    "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
+                    isParty ? "ml-22px" : "ml-3px",
+                  )}
+                />
+              </button>
+              <span className="font-body text-sm text-on-surface-variant">
+                Party fee
+              </span>
+            </div>
+            <motion.span
+              key={isParty ? "on" : "off"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="font-body text-sm text-on-surface font-medium tabular-nums"
+            >
+              {isParty ? formatPrice(partyFeeRate) : "—"}
+            </motion.span>
+          </div>
+        )}
+
+        {isParty && isKrib1Villa && (
+          <p className="font-body text-xs text-secondary/80 pl-52px -mt-1">
+            Includes venue setup for celebrations
+          </p>
+        )}
+
+        {!isKrib1Villa && onPartyFeeToggle && (
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2.5">
               <button
@@ -511,10 +593,18 @@ export function BookingExperience({
           </div>
         )}
 
-        {partyFeeActive && (
+        {!isKrib1Villa && partyFeeActive && (
           <p className="font-body text-xs text-secondary/80 pl-52px -mt-1">
             Includes venue setup for celebrations
           </p>
+        )}
+
+        {isOverCapacity && (
+          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200/60 mt-3">
+            <p className="font-body text-[11px] text-amber-800 font-medium">
+              More than {KRIB1_STANDARD_CAPACITY} guests requires admin approval.
+            </p>
+          </div>
         )}
 
         <div className="h-px bg-on-surface/10 my-4" />
@@ -599,14 +689,17 @@ export function BookingExperience({
               onArrivalTimeChange={setArrivalTime}
               dateError={errors.date}
               timeError={errors.time}
+              isKrib1={isKrib1Villa}
             />
           )}
           {step === 2 && (
             <StepGuests
               maxGuests={property.maxGuests}
+              maxAbsoluteCapacity={maxCap}
               villaName={property.name}
               guests={guests}
               onChange={setGuests}
+              isKrib1={isKrib1Villa}
             />
           )}
           {step === 3 && (
@@ -642,9 +735,10 @@ export function BookingExperience({
               phone={phone}
               message={message}
               basePrice={basePrice}
-              partyFeeActive={partyFeeActive}
+              isKrib1={isKrib1Villa}
+              isParty={isParty}
+              additionalGuestFee={additionalGuestFee}
               partyFeeAmount={partyFeeRate}
-              onPartyFeeToggle={onPartyFeeToggle}
               total={total}
               submitError={submitError}
               submitErrorRef={submitErrorRef}
@@ -1065,6 +1159,7 @@ function StepDate({
   onArrivalTimeChange,
   dateError,
   timeError,
+  isKrib1,
 }: {
   arrivalDate: string | null;
   arrivalTime: string | null;
@@ -1072,6 +1167,7 @@ function StepDate({
   onArrivalTimeChange: (time: string) => void;
   dateError?: string;
   timeError?: string;
+  isKrib1?: boolean;
 }) {
   return (
     <div>
@@ -1082,6 +1178,8 @@ function StepDate({
         onArrivalTimeChange={onArrivalTimeChange}
         dateError={dateError}
         timeError={timeError}
+        fixedTime={isKrib1 ? "14:00" : undefined}
+        fixedTimeLabel={isKrib1 ? "2:00 PM (Fixed)" : undefined}
       />
 
       <div className="mt-6 p-4 rounded-xl bg-tertiary-container/20 border border-tertiary/10">
@@ -1106,19 +1204,27 @@ function StepDate({
    ====================================================================== */
 function StepGuests({
   maxGuests,
+  maxAbsoluteCapacity,
   villaName,
   guests,
   onChange,
+  isKrib1,
 }: {
   maxGuests: number;
+  maxAbsoluteCapacity: number;
   villaName: string;
   guests: GuestCount;
   onChange: (g: GuestCount) => void;
+  isKrib1?: boolean;
 }) {
+  const totalGuests = guests.adults + guests.children;
+  const isOver = isKrib1 && totalGuests > maxGuests;
+
   return (
     <div>
       <GuestSelector
         maxGuests={maxGuests}
+        maxAbsoluteCapacity={maxAbsoluteCapacity}
         villaName={villaName}
         value={guests}
         onChange={onChange}
@@ -1141,16 +1247,45 @@ function StepGuests({
         <div className="flex items-start gap-3">
           <Sparkles size={15} className="text-secondary shrink-0 mt-0.5" />
           <div>
-            <p className="font-body text-[13px] text-on-surface font-medium">
-              Maximum {maxGuests} guests allowed
-            </p>
-            <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
-              Adults and children count toward the guest limit. Infants and pets
-              do not.
-            </p>
+            {isKrib1 ? (
+              <>
+                <p className="font-body text-[13px] text-on-surface font-medium">
+                  Standard capacity: {maxGuests} guests
+                </p>
+                <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
+                  Up to {maxAbsoluteCapacity} guests possible for parties (₱200/person above {maxGuests}). Requests above {maxGuests} guests require admin approval.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-body text-[13px] text-on-surface font-medium">
+                  Maximum {maxGuests} guests allowed
+                </p>
+                <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
+                  Adults and children count toward the guest limit. Infants and pets
+                  do not.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {isOver && (
+        <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200/60">
+          <div className="flex items-start gap-3">
+            <Sparkles size={15} className="text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-body text-[13px] text-amber-800 font-medium">
+                More than {maxGuests} guests requires approval
+              </p>
+              <p className="font-body text-xs text-amber-700/80 mt-0.5">
+                Additional guests are ₱200 per person. Our team will review your request before confirmation.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1422,9 +1557,10 @@ function StepReview({
   phone,
   message,
   basePrice,
-  partyFeeActive,
+  isKrib1,
+  isParty,
+  additionalGuestFee,
   partyFeeAmount,
-  onPartyFeeToggle,
   total,
   submitError,
   submitErrorRef,
@@ -1439,13 +1575,16 @@ function StepReview({
   phone: string;
   message: string;
   basePrice: number;
-  partyFeeActive?: boolean;
+  isKrib1?: boolean;
+  isParty?: boolean;
+  additionalGuestFee?: number;
   partyFeeAmount?: number;
-  onPartyFeeToggle?: (active: boolean) => void;
   total: number;
   submitError: string;
   submitErrorRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const isOver = isKrib1 && totalGuests > KRIB1_STANDARD_CAPACITY;
+
   return (
     <div>
       {submitError && (
@@ -1457,6 +1596,19 @@ function StepReview({
           <p className="font-body text-[13px] text-error">{submitError}</p>
         </div>
       )}
+
+      {isOver && (
+        <div className="mb-5 p-4 rounded-xl bg-amber-50 border border-amber-200/60">
+          <p className="font-body text-[13px] text-amber-800 font-medium">
+            This reservation requires admin approval due to {totalGuests} guests (standard capacity is {KRIB1_STANDARD_CAPACITY}).
+          </p>
+          <p className="font-body text-xs text-amber-700/80 mt-1">
+            Additional guests: {totalGuests - KRIB1_STANDARD_CAPACITY} × ₱200 = ₱{additionalGuestFee?.toLocaleString("en-PH")}
+            {isParty ? ` + ₱5,000 party fee` : ""}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-0">
         <ReviewRow label="Villa" value={property.name} />
         {arrivalDatetime && (
@@ -1485,6 +1637,9 @@ function StepReview({
           <ReviewRow label="Infants" value={`${guests.infants}`} />
         )}
         {guests.pets > 0 && <ReviewRow label="Pets" value={`${guests.pets}`} />}
+        {isParty && isKrib1 && (
+          <ReviewRow label="Event" value="Party / Event" />
+        )}
       </div>
 
       <div className="h-px bg-outline-variant/30 my-5" />
@@ -1507,53 +1662,15 @@ function StepReview({
         </p>
         <ReviewRow label="Base Rate" value={formatPrice(basePrice)} />
 
-        {onPartyFeeToggle && (
-          <div className="py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => onPartyFeeToggle(!partyFeeActive)}
-                  className={cn(
-                    "relative inline-flex h-22px w-10 items-center rounded-full transition-colors duration-300 cursor-pointer",
-                    partyFeeActive ? "bg-primary" : "bg-outline/40",
-                  )}
-                  role="switch"
-                  aria-checked={!!partyFeeActive}
-                  aria-label="Toggle party fee"
-                >
-                  <motion.span
-                    layout
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className={cn(
-                      "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
-                      partyFeeActive ? "ml-22px" : "ml-3px",
-                    )}
-                  />
-                </button>
-                <span className="font-body text-sm text-on-surface-variant">
-                  Party fee (+₱5,000)
-                </span>
-              </div>
-              <motion.span
-                key={partyFeeActive ? "on" : "off"}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="font-body text-sm text-on-surface font-medium tabular-nums"
-              >
-                {partyFeeActive ? formatPrice(partyFeeAmount ?? 5000) : "—"}
-              </motion.span>
-            </div>
-            {partyFeeActive && (
-              <motion.p
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="font-body text-xs text-secondary/80 mt-2 ml-52px overflow-hidden"
-              >
-                Includes venue setup for parties and celebrations
-              </motion.p>
-            )}
-          </div>
+        {isOver && additionalGuestFee && additionalGuestFee > 0 && (
+          <ReviewRow
+            label={`Additional guests (${totalGuests - KRIB1_STANDARD_CAPACITY} × ₱200)`}
+            value={formatPrice(additionalGuestFee)}
+          />
+        )}
+
+        {isParty && isKrib1 && (
+          <ReviewRow label="Party / Event Fee" value={formatPrice(partyFeeAmount ?? 5000)} />
         )}
 
         <div className="flex justify-between items-baseline pt-4 border-t border-on-surface/10">

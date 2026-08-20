@@ -11,6 +11,7 @@ export interface GuestCount {
 
 interface GuestSelectorProps {
   maxGuests: number
+  maxAbsoluteCapacity?: number
   villaName: string
   value?: GuestCount
   onChange?: (guests: GuestCount) => void
@@ -43,7 +44,7 @@ const sheetVariants = {
   exit: { y: '100%', transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const } },
 }
 
-export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSelectorProps) {
+export function GuestSelector({ maxGuests, maxAbsoluteCapacity, villaName, value, onChange }: GuestSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [guests, setGuests] = useState<GuestCount>(value ?? defaultGuests)
   const [isMobile, setIsMobile] = useState(false)
@@ -110,14 +111,16 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
   }, [isOpen])
 
   const totalOccupancy = guests.adults + guests.children
-  const atCapacity = totalOccupancy >= maxGuests
+  const effectiveMax = maxAbsoluteCapacity ?? maxGuests
+  const atCapacity = totalOccupancy >= effectiveMax
+  const overStandard = totalOccupancy > maxGuests
 
   const updateCount = useCallback((key: keyof GuestCount, delta: number) => {
     setGuests((prev) => {
       const next = { ...prev, [key]: Math.max(prev[key] + delta, 0) }
       if (key === 'adults' || key === 'children') {
         const newOcc = next.adults + next.children
-        if (newOcc > maxGuests) return prev
+        if (newOcc > effectiveMax) return prev
       }
       if (key === 'adults' && next.adults < 1) return prev
       const cat = CATEGORIES.find((c) => c.key === key)
@@ -125,7 +128,7 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
       onChange?.(next)
       return next
     })
-  }, [maxGuests, onChange])
+  }, [effectiveMax, onChange])
 
   const canIncrement = useCallback((key: keyof GuestCount) => {
     if (key === 'adults' || key === 'children') {
@@ -227,8 +230,6 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
                 <PanelContent
                   guests={guests}
                   maxGuests={maxGuests}
-                  villaName={villaName}
-                  atCapacity={atCapacity}
                   updateCount={updateCount}
                   canIncrement={canIncrement}
                 />
@@ -279,8 +280,6 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
                 <PanelContent
                   guests={guests}
                   maxGuests={maxGuests}
-                  villaName={villaName}
-                  atCapacity={atCapacity}
                   updateCount={updateCount}
                   canIncrement={canIncrement}
                 />
@@ -289,6 +288,22 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
           </motion.div>
         )}
       </AnimatePresence>
+
+      {atCapacity && (
+        <div className="mt-2 p-3 rounded-lg bg-surface-container-low border border-outline-variant/20">
+          <p className="font-body text-[13px] text-primary font-medium">
+            Maximum occupancy of {effectiveMax} guests reached for {villaName}.
+          </p>
+        </div>
+      )}
+
+      {overStandard && !atCapacity && (
+        <div className="mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200/60">
+          <p className="font-body text-[13px] text-amber-800 font-medium">
+            More than {maxGuests} guests requires admin approval. Additional guests are ₱200 per person.
+          </p>
+        </div>
+      )}
     </>
   )
 }
@@ -296,15 +311,11 @@ export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSe
 function PanelContent({
   guests,
   maxGuests,
-  villaName,
-  atCapacity,
   updateCount,
   canIncrement,
 }: {
   guests: GuestCount
   maxGuests: number
-  villaName: string
-  atCapacity: boolean
   updateCount: (key: keyof GuestCount, delta: number) => void
   canIncrement: (key: keyof GuestCount) => boolean
 }) {
@@ -361,14 +372,6 @@ function PanelContent({
           </div>
         )
       })}
-
-      {atCapacity && (
-        <div className="pb-4">
-          <p className="font-body text-[13px] text-primary font-medium">
-            Maximum occupancy of {maxGuests} guests reached for {villaName}.
-          </p>
-        </div>
-      )}
 
       <div className="py-4 flex items-center justify-between border-t border-outline-variant/60">
         <p className="font-body text-[13px] font-semibold text-on-surface-variant">

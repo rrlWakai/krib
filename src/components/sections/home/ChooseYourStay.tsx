@@ -20,7 +20,11 @@ export function ChooseYourStay() {
   const mergeLive = (villa: VillaDetail): VillaDetail => {
     const live = liveVillas[villa.slug];
     if (!live) return villa;
-    return { ...villa, name: live.name || villa.name, maxGuests: live.max_guests };
+    return {
+      ...villa,
+      name: live.name || villa.name,
+      maxGuests: live.max_guests,
+    };
   };
 
   const villa1 = mergeLive(staticVilla1);
@@ -41,7 +45,7 @@ export function ChooseYourStay() {
             CHOOSE YOUR VILLA
           </p>
           <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-6">
-            Two villas. One unforgettable experience.
+            Two Villas. One unforgettable experience.
           </h2>
           <p className="font-body text-body-lg text-on-surface-variant">
             Whether you are planning an intimate family getaway or a grand
