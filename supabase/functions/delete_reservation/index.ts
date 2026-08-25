@@ -7,6 +7,7 @@ import { isUuid, writeAudit } from '../_shared/reservations.ts'
 
 interface DeleteInput {
   reservation_id: string
+  [key: string]: unknown
 }
 
 Deno.serve(async (req: Request) => {
