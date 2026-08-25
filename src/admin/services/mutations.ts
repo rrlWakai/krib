@@ -95,3 +95,14 @@ export async function sendReservationSms(
   invalidateReservationData(reservationId)
   return { data: result.data?.sms ?? null, error: null }
 }
+
+export async function deleteReservation(
+  reservationId: string,
+): Promise<{ data: { success: boolean; reference_code: string } | null; error: AdminFunctionError | null }> {
+  const result = await invokeAdminFunction<{ success: boolean; reference_code: string }>('delete_reservation', {
+    reservation_id: reservationId,
+  })
+  if (result.error) return { data: null, error: result.error }
+  invalidateAdminCache('reservations', 'sms-logs', 'guests', `reservation:${reservationId}`)
+  return { data: result.data ?? null, error: null }
+}

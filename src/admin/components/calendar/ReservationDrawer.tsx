@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
@@ -8,11 +9,13 @@ import {
   Ban,
   XCircle,
   Send,
+  Trash2,
 } from 'lucide-react'
 import type { Reservation, ReservationStatus } from '../../types'
 import { StatusBadge } from '../StatusBadge'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { formatCurrency } from '../../data/constants'
-import { useAdminMutation } from '../../hooks/useAdminQuery'
+import { useAdminMutation, invalidateAdminCache } from '../../hooks/useAdminQuery'
 import { estimateReservationValue, reservationNights } from '../../services/api'
 import { formatManilaDate, formatManilaTime } from '../../services/calendarTime'
 
@@ -49,7 +52,11 @@ function useDrawerMutations() {
     const { sendReservationSms } = await import('../../services/mutations')
     return sendReservationSms(id, { type: 'confirmation' })
   })
-  return { approve, decline, cancel, sms }
+  const deleteRes = useAdminMutation(async (id: string) => {
+    const { deleteReservation } = await import('../../services/mutations')
+    return deleteReservation(id)
+  })
+  return { approve, decline, cancel, sms, deleteRes }
 }
 
 export default function ReservationDrawer({
@@ -57,9 +64,10 @@ export default function ReservationDrawer({
   onClose,
   onStatusChange,
 }: ReservationDrawerProps) {
-  const { approve, decline, cancel, sms } = useDrawerMutations()
-  const updating = approve.loading || decline.loading || cancel.loading || sms.loading
-  const actionError = approve.error ?? decline.error ?? cancel.error ?? sms.error
+  const { approve, decline, cancel, sms, deleteRes } = useDrawerMutations()
+  const updating = approve.loading || decline.loading || cancel.loading || sms.loading || deleteRes.loading
+  const actionError = approve.error ?? decline.error ?? cancel.error ?? sms.error ?? deleteRes.error
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   if (!reservation) return null
 
@@ -119,6 +127,14 @@ export default function ReservationDrawer({
     } else {
       onStatusChange()
     }
+  }
+
+  async function handleDeleteConfirm() {
+    const result = await deleteRes.mutate(res.id)
+    if (result.error) return
+    setShowDeleteConfirm(false)
+    invalidateAdminCache('reservations', 'audit-logs')
+    onStatusChange()
   }
 
   const nights = reservationNights(res)
@@ -289,8 +305,29 @@ export default function ReservationDrawer({
               </div>
             )}
           </div>
+
+          <div className="mt-6 border-t border-red-100 pt-6">
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={updating}
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 font-body text-[14px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+            >
+              <Trash2 size={16} />
+              Delete Reservation
+            </button>
+          </div>
         </div>
       </motion.div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete reservation?"
+        message="This will permanently delete this reservation and its associated guest record if it is no longer referenced. This action cannot be undone."
+        confirmLabel="Delete Reservation"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+        loading={deleteRes.loading}
+      />
     </AnimatePresence>
   )
 }

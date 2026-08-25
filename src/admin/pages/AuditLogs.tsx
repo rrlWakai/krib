@@ -24,6 +24,7 @@ const ACTION_STYLES: Record<string, string> = {
   decline: 'bg-red-50 text-red-700',
   cancel: 'bg-[#FAFAFA] text-[#757575]',
   complete: 'bg-[#C9A227]/10 text-[#8a6d00]',
+  delete: 'bg-red-50 text-red-700',
   send_sms: 'bg-blue-50 text-blue-700',
 }
 

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -11,11 +12,13 @@ import {
   XCircle,
   Send,
   AlertTriangle,
+  Trash2,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { StatusBadge } from '../components/StatusBadge'
 import { LoadingBlock, ErrorBlock } from '../components/AdminState'
-import { useAdminQuery, useAdminMutation } from '../hooks/useAdminQuery'
+import { ConfirmDialog } from '../components/ConfirmDialog'
+import { useAdminQuery, useAdminMutation, invalidateAdminCache } from '../hooks/useAdminQuery'
 import { formatCurrency } from '../data/constants'
 import { estimateReservationValue, reservationNights } from '../services/api'
 import type { ReservationStatus } from '../types'
@@ -47,6 +50,7 @@ function getStatusIndex(status: ReservationStatus): number {
 export default function ReservationDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const reservationQuery = useAdminQuery(
     id ? `reservation:${id}` : null,
@@ -80,6 +84,11 @@ export default function ReservationDetail() {
   const smsMutation = useAdminMutation(async (reservationId: string) => {
     const { sendReservationSms } = await import('../services/mutations')
     return sendReservationSms(reservationId, { type: 'confirmation' })
+  })
+
+  const deleteMutation = useAdminMutation(async (reservationId: string) => {
+    const { deleteReservation } = await import('../services/mutations')
+    return deleteReservation(reservationId)
   })
 
   if (reservationQuery.loading) {
@@ -122,10 +131,18 @@ export default function ReservationDetail() {
   const nights = reservationNights(res)
   const statusIdx = getStatusIndex(res.status)
   const isTerminal = TERMINAL_STATUSES.includes(res.status)
-  const actionError = approveMutation.error ?? declineMutation.error ?? cancelMutation.error ?? completeMutation.error ?? smsMutation.error
+  const actionError = approveMutation.error ?? declineMutation.error ?? cancelMutation.error ?? completeMutation.error ?? smsMutation.error ?? deleteMutation.error
 
   function afterMutation() {
     reservationQuery.refetch()
+  }
+
+  async function handleDeleteConfirm() {
+    const result = await deleteMutation.mutate(res.id)
+    if (result.error) return
+    setShowDeleteConfirm(false)
+    invalidateAdminCache('reservations', 'audit-logs')
+    navigate('/admin/reservations')
   }
 
   return (
@@ -153,6 +170,16 @@ export default function ReservationDetail() {
       <div className="mb-5">
         <StatusBadge status={res.status} />
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete reservation?"
+        message="This will permanently delete this reservation and its associated guest record if it is no longer referenced. This action cannot be undone."
+        confirmLabel="Delete Reservation"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+        loading={deleteMutation.loading}
+      />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
         <div className="flex flex-col gap-5 lg:col-span-3">
@@ -428,6 +455,18 @@ export default function ReservationDetail() {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="border border-red-200 rounded-lg bg-white p-5">
+            <h3 className="mb-4 font-display text-[17px] font-medium text-red-600">Danger Zone</h3>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={deleteMutation.loading}
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 font-body text-[13px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+            >
+              <Trash2 size={16} />
+              {deleteMutation.loading ? 'Deleting…' : 'Delete Reservation'}
+            </button>
           </div>
         </div>
       </div>
