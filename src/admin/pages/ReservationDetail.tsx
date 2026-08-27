@@ -396,13 +396,14 @@ export default function ReservationDetail() {
               </div>
             </div>
 
-            {!isTerminal && res.status !== 'completed' && (
-              <div className="border border-[#ECECEC] rounded-lg bg-white p-5">
-                <h3 className="mb-4 font-display text-[17px] font-medium text-[#0A1F44]">Actions</h3>
-                {actionError && (
-                  <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 font-body text-[12px] text-red-600">{actionError}</p>
-                )}
-                <div className="flex flex-col gap-2">
+            <div className="border border-[#ECECEC] rounded-lg bg-white p-5">
+              <h3 className="mb-4 font-display text-[17px] font-medium text-[#0A1F44]">Actions</h3>
+              {!isTerminal && res.status !== 'completed' && (
+                <>
+                  {actionError && (
+                    <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 font-body text-[12px] text-red-600">{actionError}</p>
+                  )}
+                  <div className="flex flex-col gap-2">
                   {res.status === 'pending' && (
                     <>
                       <button
@@ -452,21 +453,21 @@ export default function ReservationDetail() {
                       {smsMutation.loading ? 'Sending…' : 'Send Confirmation SMS'}
                     </button>
                   )}
-                </div>
+                  </div>
+                </>
+              )}
+              <div className="mt-5 border-t border-red-100 pt-5">
+                <h4 className="mb-3 font-body text-[11px] font-medium uppercase tracking-[0.08em] text-red-600">Danger Zone</h4>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={deleteMutation.loading}
+                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 font-body text-[13px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                >
+                  <Trash2 size={16} />
+                  {deleteMutation.loading ? 'Deleting…' : 'Delete Reservation'}
+                </button>
               </div>
-            )}
-          </div>
-
-          <div className="border border-red-200 rounded-lg bg-white p-5">
-            <h3 className="mb-4 font-display text-[17px] font-medium text-red-600">Danger Zone</h3>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={deleteMutation.loading}
-              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 font-body text-[13px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-            >
-              <Trash2 size={16} />
-              {deleteMutation.loading ? 'Deleting…' : 'Delete Reservation'}
-            </button>
+            </div>
           </div>
         </div>
       </div>
