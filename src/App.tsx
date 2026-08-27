@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Lenis from "lenis";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -43,9 +43,6 @@ const AdminCalendar = lazy(() =>
 const AdminGuests = lazy(() =>
   import("./admin/pages/Guests").then((m) => ({ default: m.default })),
 );
-const AdminVillas = lazy(() =>
-  import("./admin/pages/Villas").then((m) => ({ default: m.default })),
-);
 const AdminReports = lazy(() =>
   import("./admin/pages/Reports").then((m) => ({ default: m.default })),
 );
@@ -54,6 +51,9 @@ const AdminSmsActivity = lazy(() =>
 );
 const AdminSettings = lazy(() =>
   import("./admin/pages/Settings").then((m) => ({ default: m.default })),
+);
+const AdminProfile = lazy(() =>
+  import("./admin/pages/Profile").then((m) => ({ default: m.default })),
 );
 const AdminAuditLogs = lazy(() =>
   import("./admin/pages/AuditLogs").then((m) => ({ default: m.default })),
@@ -164,11 +164,12 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                   <Route path="reservations/:id" element={<AdminReservationDetail />} />
                   <Route path="calendar" element={<AdminCalendar />} />
                   <Route path="guests" element={<AdminGuests />} />
-                  <Route path="villas" element={<AdminVillas />} />
+                  <Route path="villas" element={<Navigate to="/admin" replace />} />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="sms-activity" element={<AdminSmsActivity />} />
                   <Route path="audit-logs" element={<AdminAuditLogs />} />
                   <Route path="settings" element={<AdminSettings />} />
+                  <Route path="profile" element={<AdminProfile />} />
                 </Route>
 
                 <Route path="*" element={<NotFoundPage />} />

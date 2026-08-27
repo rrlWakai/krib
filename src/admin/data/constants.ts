@@ -16,7 +16,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Reservations', icon: 'CalendarCheck', path: '/admin/reservations' },
   { label: 'Calendar', icon: 'Calendar', path: '/admin/calendar' },
   { label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
-  { label: 'Villas', icon: 'Building2', path: '/admin/villas' },
   { label: 'Guests', icon: 'Users', path: '/admin/guests' },
   { label: 'SMS Activity', icon: 'MessageSquare', path: '/admin/sms-activity' },
   { label: 'Audit Logs', icon: 'ScrollText', path: '/admin/audit-logs' },

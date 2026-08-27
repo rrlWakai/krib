@@ -1,5 +1,5 @@
 import { useLocation, Link } from 'react-router-dom'
-import { Bell, Menu, Search } from 'lucide-react'
+import { Menu, Search } from 'lucide-react'
 import { NAV_ITEMS } from '../data/constants'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../hooks/auth/useAuth'
@@ -28,7 +28,9 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
     day: 'numeric',
   })
 
-  const displayName = admin?.full_name ?? user?.email ?? 'Admin'
+  const profileName = typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : ''
+  const avatarUrl = typeof user?.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : ''
+  const displayName = profileName || admin?.full_name || user?.email || 'Admin'
 
   const initials = displayName
     .split(/\s+/)
@@ -86,15 +88,18 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
         <span className="hidden font-body text-[12px] text-[#757575] sm:block">
           {dateStr}
         </span>
-        <button className="flex h-8 w-8 items-center justify-center rounded-full text-[#757575] transition-colors hover:bg-[#f0f2f7] hover:text-[#0A1F44]">
-          <Bell size={16} />
-        </button>
-        <div
+        <Link
+          to="/admin/profile"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0A1F44] font-body text-[12px] font-medium leading-none text-white"
           title={displayName}
+          aria-label="Open profile"
         >
-          {initials}
-        </div>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+          ) : (
+            initials
+          )}
+        </Link>
       </div>
     </header>
   )

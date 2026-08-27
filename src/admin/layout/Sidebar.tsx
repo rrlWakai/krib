@@ -133,7 +133,7 @@ function SidebarContent({
         {!collapsed && (admin || user) && (
           <div className="mb-2 truncate px-3">
             <div className="truncate font-body text-[13px] font-medium text-[#0A1F44]">
-              {admin?.full_name ?? user?.email}
+              {(typeof user?.user_metadata?.full_name === 'string' && user.user_metadata.full_name) || admin?.full_name || user?.email}
             </div>
             {admin && (
               <div className="truncate font-body text-[11px] uppercase tracking-wide text-[#C9A227]">
