@@ -128,7 +128,7 @@ export default function Reservations() {
               setSearchQuery(e.target.value)
               setPage(1)
             }}
-            className="w-full rounded-lg border border-[#ECECEC] bg-white py-2.5 pl-9 pr-4 font-body text-[13px] text-[#0A1F44] placeholder:text-[#757575] transition-colors focus:border-[#0A1F44] outline-none"
+            className="w-full rounded-lg border border-#ECECEC bg-white py-2.5 pl-9 pr-4 font-body text-[13px] text-[#0A1F44] placeholder:text-[#757575] transition-colors focus:border-[#0A1F44] outline-none"
           />
         </div>
         <select
