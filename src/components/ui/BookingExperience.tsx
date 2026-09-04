@@ -518,7 +518,7 @@ export function BookingExperience({
                   onPartyFeeToggle(next);
                 }}
                 className={cn(
-                  "relative inline-flex h-22px w-10 items-center rounded-full transition-colors duration-300 cursor-pointer shrink-0",
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-out cursor-pointer shrink-0",
                   isParty ? "bg-primary" : "bg-outline/40",
                 )}
                 role="switch"
@@ -526,12 +526,9 @@ export function BookingExperience({
                 aria-label="Toggle party fee"
               >
                 <motion.span
-                  layout
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className={cn(
-                    "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
-                    isParty ? "ml-22px" : "ml-3px",
-                  )}
+                  animate={{ x: isParty ? 20 : 0 }}
+                  transition={{ type: "spring", stiffness: 520, damping: 32, mass: 0.7 }}
+                  className="absolute left-1 inline-block h-4 w-4 rounded-full bg-white shadow-sm"
                 />
               </button>
               <span className="font-body text-sm text-on-surface-variant">
@@ -540,8 +537,9 @@ export function BookingExperience({
             </div>
             <motion.span
               key={isParty ? "on" : "off"}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, x: 4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="font-body text-sm text-on-surface font-medium tabular-nums"
             >
               {isParty ? formatPrice(partyFeeRate) : "—"}
@@ -570,12 +568,9 @@ export function BookingExperience({
                 aria-label="Toggle party fee"
               >
                 <motion.span
-                  layout
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className={cn(
-                    "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
-                    partyFeeActive ? "ml-22px" : "ml-3px",
-                  )}
+                  animate={{ x: partyFeeActive ? 20 : 0 }}
+                  transition={{ type: "spring", stiffness: 520, damping: 32, mass: 0.7 }}
+                  className="absolute left-1 inline-block h-4 w-4 rounded-full bg-white shadow-sm"
                 />
               </button>
               <span className="font-body text-sm text-on-surface-variant">
@@ -584,8 +579,9 @@ export function BookingExperience({
             </div>
             <motion.span
               key={partyFeeActive ? "on" : "off"}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, x: 4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="font-body text-sm text-on-surface font-medium tabular-nums"
             >
               {partyFeeActive ? formatPrice(partyFeeRate) : "—"}
