@@ -29,6 +29,7 @@ export async function updateSiteSettings(
   if (error) {
     return { data: null, error: { code: error.code ?? 'DB', message: error.message } }
   }
+  invalidateAdminCache('site-settings')
   return { data: (data ?? null) as SiteSettings | null, error: null }
 }
 
