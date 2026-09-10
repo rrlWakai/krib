@@ -1,34 +1,41 @@
-import { createContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
-import type { User, Session } from '@supabase/supabase-js'
-import { getSupabaseClient } from '../lib/supabase/client'
-import { handleAuthError } from '../lib/errors'
+import {
+  createContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from "react";
+import type { User, Session } from "@supabase/supabase-js";
+import { getSupabaseClient } from "../lib/supabase/client";
+import { handleAuthError } from "../lib/errors";
 
 export interface AdminProfile {
-  id: string
-  auth_user_id: string
-  full_name: string
-  role: 'owner' | 'staff'
-  is_active: boolean
-  email: string
+  id: string;
+  auth_user_id: string;
+  full_name: string;
+  role: "owner" | "staff";
+  is_active: boolean;
+  email: string;
 }
 
 interface AuthState {
-  user: User | null
-  session: Session | null
-  admin: AdminProfile | null
-  role: string | null
-  loading: boolean
-  initialized: boolean
-  adminLoading: boolean
+  user: User | null;
+  session: Session | null;
+  admin: AdminProfile | null;
+  role: string | null;
+  loading: boolean;
+  initialized: boolean;
+  adminLoading: boolean;
 }
 
 interface AuthContextValue extends AuthState {
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signOut: () => Promise<void>
-  refreshAdmin: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<void>;
+  refreshAdmin: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextValue | null>(null)
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const INITIAL_STATE: AuthState = {
   user: null,
@@ -38,23 +45,23 @@ const INITIAL_STATE: AuthState = {
   loading: true,
   initialized: false,
   adminLoading: false,
-}
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(INITIAL_STATE)
-  const lastResolvedUserId = useRef<string | null>(null)
+  const [state, setState] = useState<AuthState>(INITIAL_STATE);
+  const lastResolvedUserId = useRef<string | null>(null);
 
-  const supabase = getSupabaseClient()
+  const supabase = getSupabaseClient();
 
   const loadAdmin = useCallback(
     async (userId: string, email: string): Promise<AdminProfile | null> => {
       const { data, error } = await supabase
-        .from('admin_users')
-        .select('id, auth_user_id, full_name, role, is_active')
-        .eq('auth_user_id', userId)
-        .maybeSingle()
+        .from("admin_users")
+        .select("id, auth_user_id, full_name, role, is_active")
+        .eq("auth_user_id", userId)
+        .maybeSingle();
 
-      if (error || !data || !data.is_active) return null
+      if (error || !data || !data.is_active) return null;
 
       return {
         id: data.id,
@@ -63,15 +70,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: data.role,
         is_active: data.is_active,
         email,
-      }
+      };
     },
     [supabase],
-  )
+  );
 
   const resolveAdmin = useCallback(
     async (user: User | null) => {
       if (!user) {
-        lastResolvedUserId.current = null
+        lastResolvedUserId.current = null;
         setState({
           user: null,
           session: null,
@@ -80,15 +87,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           loading: false,
           initialized: true,
           adminLoading: false,
-        })
-        return
+        });
+        return;
       }
 
-      if (lastResolvedUserId.current === user.id && state.user?.id === user.id) {
-        return
+      if (
+        lastResolvedUserId.current === user.id &&
+        state.user?.id === user.id
+      ) {
+        return;
       }
 
-      lastResolvedUserId.current = user.id
+      lastResolvedUserId.current = user.id;
 
       setState((prev) => ({
         ...prev,
@@ -96,9 +106,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading: false,
         initialized: true,
         adminLoading: true,
-      }))
+      }));
 
-      const profile = await loadAdmin(user.id, user.email ?? '')
+      const profile = await loadAdmin(user.id, user.email ?? "");
 
       setState((prev) => ({
         ...prev,
@@ -106,45 +116,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         admin: profile,
         role: profile?.role ?? null,
         adminLoading: false,
-      }))
+      }));
     },
     [loadAdmin, state.user?.id],
-  )
+  );
 
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return
-      void resolveAdmin(session?.user ?? null)
-    })
+      if (!mounted) return;
+      void resolveAdmin(session?.user ?? null);
+    });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return
-      void resolveAdmin(session?.user ?? null)
-    })
+      if (!mounted) return;
+      void resolveAdmin(session?.user ?? null);
+    });
 
     return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [supabase, resolveAdmin])
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase, resolveAdmin]);
 
   const signIn = useCallback(
     async (email: string, password: string) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (error) {
-        return { error: handleAuthError(error) }
+        return { error: handleAuthError(error) };
       }
-      return { error: null }
+      return { error: null };
     },
     [supabase],
-  )
+  );
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut();
     setState({
       user: null,
       session: null,
@@ -153,18 +166,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading: false,
       initialized: true,
       adminLoading: false,
-    })
-  }, [supabase])
+    });
+  }, [supabase]);
 
   const refreshAdmin = useCallback(async () => {
-    if (!state.user) return
-    const profile = await loadAdmin(state.user.id, state.user.email ?? '')
-    setState((prev) => ({ ...prev, admin: profile, role: profile?.role ?? null, adminLoading: false }))
-  }, [state.user, loadAdmin])
+    if (!state.user) return;
+    const profile = await loadAdmin(state.user.id, state.user.email ?? "");
+    setState((prev) => ({
+      ...prev,
+      admin: profile,
+      role: profile?.role ?? null,
+      adminLoading: false,
+    }));
+  }, [state.user, loadAdmin]);
 
   return (
     <AuthContext.Provider value={{ ...state, signIn, signOut, refreshAdmin }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }

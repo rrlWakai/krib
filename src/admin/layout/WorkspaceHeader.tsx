@@ -1,55 +1,66 @@
-import { useLocation, Link } from 'react-router-dom'
-import { Menu, Search } from 'lucide-react'
-import { NAV_ITEMS } from '../data/constants'
-import { cn } from '../../lib/cn'
-import { useAuth } from '../../hooks/auth/useAuth'
-import { isSupportedAvatarUrl } from '../../lib/supabase/helpers'
+import { useState } from "react";
+import { useLocation, Link } from "react-router-dom";
+import { Menu, Search } from "lucide-react";
+import { NAV_ITEMS } from "../data/constants";
+import { cn } from "../../lib/cn";
+import { useAuth } from "../../hooks/auth/useAuth";
+import { isSupportedAvatarUrl } from "../../lib/supabase/helpers";
 
 interface WorkspaceHeaderProps {
-  onToggleSidebar: () => void
-  isMobile: boolean
+  onToggleSidebar: () => void;
+  isMobile: boolean;
 }
 
-export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderProps) {
-  const location = useLocation()
-  const { user, admin } = useAuth()
+export function WorkspaceHeader({
+  onToggleSidebar,
+  isMobile,
+}: WorkspaceHeaderProps) {
+  const location = useLocation();
+  const { user, admin } = useAuth();
+  const [avatarBroken, setAvatarBroken] = useState(false);
 
   const currentPage = NAV_ITEMS.find(
     (item) =>
       item.path === location.pathname ||
-      (item.path !== '/admin' && location.pathname.startsWith(item.path)),
-  )
+      (item.path !== "/admin" && location.pathname.startsWith(item.path)),
+  );
 
-  const pageTitle = currentPage?.label ?? 'Control Center'
+  const pageTitle = currentPage?.label ?? "Control Center";
 
-  const today = new Date()
-  const dateStr = today.toLocaleDateString('en-PH', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-PH", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 
-  const profileName = typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : ''
-  const avatarUrl = typeof user?.user_metadata?.avatar_url === 'string' && isSupportedAvatarUrl(user.user_metadata.avatar_url)
-    ? user.user_metadata.avatar_url
-    : ''
-  const displayName = profileName || admin?.full_name || user?.email || 'Admin'
+  const profileName =
+    typeof user?.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : "";
+  const avatarUrl =
+    typeof user?.user_metadata?.avatar_url === "string" &&
+    isSupportedAvatarUrl(user.user_metadata.avatar_url)
+      ? user.user_metadata.avatar_url
+      : "";
+  const displayName = profileName || admin?.full_name || user?.email || "Admin";
+  const shouldShowAvatar = Boolean(avatarUrl) && !avatarBroken;
 
   const initials = displayName
     .split(/\s+/)
     .map((part) => part[0])
     .filter(Boolean)
-    .join('')
+    .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 
   return (
     <header
       className={cn(
-        'flex h-14 items-center justify-between border-b border-[#ECECEC]',
+        "flex h-14 items-center justify-between border-b border-[#ECECEC]",
         isMobile
-          ? 'fixed left-0 right-0 top-0 z-30 bg-white/95 px-4 backdrop-blur-sm'
-          : 'sticky top-0 z-10 bg-white/80 px-6 backdrop-blur-sm',
+          ? "fixed left-0 right-0 top-0 z-30 bg-white/95 px-4 backdrop-blur-sm"
+          : "sticky top-0 z-10 bg-white/80 px-6 backdrop-blur-sm",
       )}
     >
       <div className="flex items-center gap-3">
@@ -97,13 +108,13 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
           title={displayName}
           aria-label="Open profile"
         >
-          {avatarUrl ? (
+          {shouldShowAvatar ? (
             <img
               src={avatarUrl}
               alt=""
               className="h-full w-full rounded-full object-cover"
-              onError={(event) => {
-                event.currentTarget.style.display = 'none'
+              onError={() => {
+                setAvatarBroken(true);
               }}
             />
           ) : (
@@ -112,5 +123,5 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
         </Link>
       </div>
     </header>
-  )
+  );
 }
