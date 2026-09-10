@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { getSupabaseClient } from '../lib/supabase/client'
 import { handleAuthError } from '../lib/errors'
@@ -42,6 +42,7 @@ const INITIAL_STATE: AuthState = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(INITIAL_STATE)
+  const lastResolvedUserId = useRef<string | null>(null)
 
   const supabase = getSupabaseClient()
 
@@ -70,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const resolveAdmin = useCallback(
     async (user: User | null) => {
       if (!user) {
+        lastResolvedUserId.current = null
         setState({
           user: null,
           session: null,
@@ -81,6 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         return
       }
+
+      if (lastResolvedUserId.current === user.id && state.user?.id === user.id) {
+        return
+      }
+
+      lastResolvedUserId.current = user.id
 
       setState((prev) => ({
         ...prev,
@@ -100,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         adminLoading: false,
       }))
     },
-    [loadAdmin],
+    [loadAdmin, state.user?.id],
   )
 
   useEffect(() => {

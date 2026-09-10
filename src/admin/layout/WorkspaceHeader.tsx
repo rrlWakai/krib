@@ -3,6 +3,7 @@ import { Menu, Search } from 'lucide-react'
 import { NAV_ITEMS } from '../data/constants'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../hooks/auth/useAuth'
+import { isSupportedAvatarUrl } from '../../lib/supabase/helpers'
 
 interface WorkspaceHeaderProps {
   onToggleSidebar: () => void
@@ -29,7 +30,9 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
   })
 
   const profileName = typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : ''
-  const avatarUrl = typeof user?.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : ''
+  const avatarUrl = typeof user?.user_metadata?.avatar_url === 'string' && isSupportedAvatarUrl(user.user_metadata.avatar_url)
+    ? user.user_metadata.avatar_url
+    : ''
   const displayName = profileName || admin?.full_name || user?.email || 'Admin'
 
   const initials = displayName
@@ -95,7 +98,14 @@ export function WorkspaceHeader({ onToggleSidebar, isMobile }: WorkspaceHeaderPr
           aria-label="Open profile"
         >
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt=""
+              className="h-full w-full rounded-full object-cover"
+              onError={(event) => {
+                event.currentTarget.style.display = 'none'
+              }}
+            />
           ) : (
             initials
           )}

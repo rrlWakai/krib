@@ -4,11 +4,16 @@ import { Camera, Check, KeyRound, Mail, Save, UserRound } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../../hooks/auth/useAuth'
 import { getSupabaseClient } from '../../lib/supabase/client'
+import {
+  getStorageObjectPathFromUrl,
+  isSupportedAvatarFile,
+  isSupportedAvatarUrl,
+  normalizeAvatarExtension,
+} from '../../lib/supabase/helpers'
 
 type Notice = { section: 'profile' | 'email' | 'password'; type: 'success' | 'error'; message: string } | null
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024
 
 function profileNameFrom(userName: unknown, adminName: string | undefined) {
@@ -38,11 +43,12 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
+  const [avatarError, setAvatarError] = useState(false)
   const [saving, setSaving] = useState<'profile' | 'email' | 'password' | null>(null)
   const [notice, setNotice] = useState<Notice>(null)
 
   const savedAvatar = typeof user?.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : ''
-  const activeAvatar = avatarPreview || savedAvatar
+  const activeAvatar = avatarPreview || (isSupportedAvatarUrl(savedAvatar) ? savedAvatar : '')
 
   useEffect(() => {
     setDisplayName(profileNameFrom(user?.user_metadata?.full_name, admin?.full_name))
@@ -79,11 +85,14 @@ export default function ProfilePage() {
 
   async function chooseAvatar(file: File | null) {
     if (!file) return
-    if (!AVATAR_TYPES.includes(file.type) || file.size > MAX_AVATAR_SIZE) {
+
+    if (!isSupportedAvatarFile(file) || file.size > MAX_AVATAR_SIZE) {
       setFeedback({ section: 'profile', type: 'error', message: 'Choose a JPG, PNG, WebP, or AVIF image smaller than 5 MB.' })
       return
     }
+
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
+    setAvatarError(false)
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
   }
@@ -92,11 +101,21 @@ export default function ProfilePage() {
     if (!user || !avatarFile) return
     setSaving('profile')
     setFeedback(null)
-    const extension = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg'
+
+    const originalPath = getStorageObjectPathFromUrl(savedAvatar)
+    if (originalPath && originalPath.startsWith(`admin-avatars/${user.id}/`)) {
+      await supabase.storage.from('villa-gallery').remove([originalPath])
+    }
+
+    const extension = normalizeAvatarExtension(avatarFile.type || avatarFile.name, 'jpg')
     const path = `admin-avatars/${user.id}/avatar-${Date.now()}.${extension}`
+
     const { error: uploadError } = await supabase.storage
       .from('villa-gallery')
-      .upload(path, avatarFile, { contentType: avatarFile.type })
+      .upload(path, avatarFile, {
+        contentType: avatarFile.type || 'image/jpeg',
+        upsert: false,
+      })
 
     if (uploadError) {
       setSaving(null)
@@ -112,7 +131,11 @@ export default function ProfilePage() {
     setFeedback(updateError
       ? { section: 'profile', type: 'error', message: updateError.message }
       : { section: 'profile', type: 'success', message: 'Profile photo updated.' })
-    if (!updateError) setAvatarFile(null)
+
+    if (!updateError) {
+      setAvatarFile(null)
+      setAvatarError(false)
+    }
   }
 
   async function saveEmail(event: React.FormEvent<HTMLFormElement>) {
@@ -180,6 +203,8 @@ export default function ProfilePage() {
     .slice(0, 2)
     .toUpperCase()
 
+  const renderAvatar = activeAvatar && !avatarError
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <PageHeader title="Profile" subtitle="Manage your personal account details" />
@@ -200,7 +225,22 @@ export default function ProfilePage() {
 
           <div className="mb-5 flex items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0A1F44] font-body text-lg font-medium text-white">
-              {activeAvatar ? <img src={activeAvatar} alt="Profile" className="h-full w-full object-cover" /> : initials}
+              {renderAvatar ? (
+                <img
+                  src={activeAvatar}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                  onError={() => {
+                    setAvatarError(true)
+                    if (avatarPreview) {
+                      URL.revokeObjectURL(avatarPreview)
+                      setAvatarPreview('')
+                    }
+                  }}
+                />
+              ) : (
+                initials
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <label className="flex min-h-[40px] cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] font-medium text-[#0A1F44] transition-colors hover:bg-[#f0f2f7]">
