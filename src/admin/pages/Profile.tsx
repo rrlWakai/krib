@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, Check, KeyRound, Mail, Save, UserRound } from "lucide-react";
+import { Camera, Check, KeyRound, Mail, Save, Trash2, UserRound } from "lucide-react";
 import { PageHeader } from "../components/PageHeader";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { getSupabaseClient } from "../../lib/supabase/client";
@@ -60,11 +60,18 @@ export default function ProfilePage() {
     null,
   );
   const [notice, setNotice] = useState<Notice>(null);
+  const [removing, setRemoving] = useState(false);
+  // Mirrors the latest known avatar URL so the UI reflects upload/removal
+  // immediately (AuthContext does not re-sync user metadata on
+  // USER_UPDATED, so user.user_metadata can be stale within a session).
+  const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(null);
 
   const savedAvatar =
-    typeof user?.user_metadata?.avatar_url === "string"
+    localAvatarUrl ??
+    (typeof user?.user_metadata?.avatar_url === "string"
       ? user.user_metadata.avatar_url
-      : "";
+      : "");
+  const hasSavedAvatar = savedAvatar !== "";
   const activeAvatar =
     avatarPreview || (isSupportedAvatarUrl(savedAvatar) ? savedAvatar : "");
 
@@ -183,9 +190,78 @@ export default function ProfilePage() {
     );
 
     if (!updateError) {
+      setLocalAvatarUrl(data.publicUrl);
       setAvatarFile(null);
       setAvatarError(false);
     }
+  }
+
+  async function removeAvatar() {
+    if (!user || !savedAvatar || removing) return;
+    const confirmed = window.confirm(
+      "Remove your profile photo? This cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    setRemoving(true);
+    setFeedback(null);
+
+    // 1. Delete the stored file first so the metadata reference is only
+    // cleared once the object is actually gone (avoids user metadata
+    // pointing at a missing file). Storage delete errors abort before
+    // touching metadata, leaving the current avatar fully intact.
+    const storagePath = getStorageObjectPathFromUrl(savedAvatar);
+    if (storagePath && storagePath.startsWith(`admin-avatars/${user.id}/`)) {
+      const { error: removeError } = await supabase.storage
+        .from("villa-gallery")
+        .remove([storagePath]);
+      if (removeError) {
+        setRemoving(false);
+        setFeedback({
+          section: "profile",
+          type: "error",
+          message:
+            "Could not delete the photo file. Your profile photo is unchanged.",
+        });
+        return;
+      }
+    }
+    // If no storage path can be derived from the saved URL, skip the file
+    // delete and just clear the reference below.
+
+    // 2. Clear the avatar reference from user metadata.
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: { ...user.user_metadata, avatar_url: null },
+    });
+
+    if (updateError) {
+      // The file is already gone but the reference is still set; the UI
+      // degrades to the initials placeholder via the image onError handler
+      // and the user can safely retry (remove() on a missing file is a
+      // no-op success).
+      setRemoving(false);
+      setFeedback({
+        section: "profile",
+        type: "error",
+        message:
+          "The photo file was deleted, but the profile reference could not be cleared. Please try removing again.",
+      });
+      return;
+    }
+
+    // 3. Reflect the removal immediately: drop any pending preview and
+    // fall back to the initials placeholder.
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setLocalAvatarUrl("");
+    setAvatarPreview("");
+    setAvatarFile(null);
+    setAvatarError(false);
+    setRemoving(false);
+    setFeedback({
+      section: "profile",
+      type: "success",
+      message: "Profile photo removed.",
+    });
   }
 
   async function saveEmail(event: React.FormEvent<HTMLFormElement>) {
@@ -365,11 +441,22 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => void uploadAvatar()}
-                  disabled={saving === "profile"}
+                  disabled={saving === "profile" || removing}
                   className="flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-[#0A1F44] px-4 py-1.5 font-body text-[12px] font-medium text-[#0A1F44] transition-colors hover:bg-[#f0f2f7] disabled:opacity-50"
                 >
                   <Camera size={13} />{" "}
                   {saving === "profile" ? "Uploading…" : "Upload photo"}
+                </button>
+              )}
+              {hasSavedAvatar && (
+                <button
+                  type="button"
+                  onClick={() => void removeAvatar()}
+                  disabled={removing || saving === "profile"}
+                  className="flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-[#ECECEC] px-4 py-1.5 font-body text-[12px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                >
+                  <Trash2 size={13} />
+                  {removing ? "Removing…" : "Remove photo"}
                 </button>
               )}
             </div>
