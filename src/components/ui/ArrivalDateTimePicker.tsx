@@ -40,13 +40,14 @@ export function ArrivalDateTimePicker({
 }: ArrivalDateTimePickerProps) {
   const todayStr = useMemo(() => toLocalDateString(new Date()), [])
   const [todayY, todayM] = todayStr.split('-').map(Number)
+  const todayMonthIndex = todayM - 1
 
   const initial = arrivalDate
     ? (() => {
         const [y, m] = arrivalDate.split('-').map(Number)
         return { year: y, month: m - 1 }
       })()
-    : { year: todayY, month: todayM }
+    : { year: todayY, month: todayMonthIndex }
 
   const [view, setView] = useState(initial)
 
@@ -57,8 +58,8 @@ export function ArrivalDateTimePicker({
     year: 'numeric',
   })
 
-  const canGoPrev = view.year > todayY || (view.year === todayY && view.month > todayM)
-  const canGoNext = view.year < todayY + 2 || (view.year === todayY + 2 && view.month < todayM)
+  const canGoPrev = view.year > todayY || (view.year === todayY && view.month > todayMonthIndex)
+  const canGoNext = view.year < todayY + 2 || (view.year === todayY + 2 && view.month < todayMonthIndex)
 
   const isBeforeToday = (dateStr: string): boolean => dateStr < todayStr
   const isSelected = (dateStr: string): boolean => dateStr === arrivalDate
