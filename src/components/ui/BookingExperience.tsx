@@ -157,7 +157,12 @@ function isBlockedArrival(
   const checkout = computeCheckout(arrival);
   if (new Date(arrival).getTime() <= Date.now()) return true;
   return reservations.some((reservation) =>
-    overlaps(arrival, checkout, reservation.arrival_datetime, reservation.checkout_datetime),
+    overlaps(
+      arrival,
+      checkout,
+      reservation.arrival_datetime,
+      reservation.checkout_datetime,
+    ),
   );
 }
 
@@ -245,7 +250,9 @@ export function BookingExperience({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
-  const [availabilityReservations, setAvailabilityReservations] = useState<AvailabilityReservation[]>([]);
+  const [availabilityReservations, setAvailabilityReservations] = useState<
+    AvailabilityReservation[]
+  >([]);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
   const submitErrorRef = useRef<HTMLDivElement>(null);
@@ -289,7 +296,9 @@ export function BookingExperience({
       setAvailabilityReservations(reservations);
     } catch {
       setAvailabilityReservations([]);
-      setAvailabilityError("Availability could not be checked. Please try again.");
+      setAvailabilityError(
+        "Availability could not be checked. Please try again.",
+      );
     } finally {
       setAvailabilityLoading(false);
     }
@@ -327,8 +336,7 @@ export function BookingExperience({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && submitState === "idle" && !termsOpen)
-        onClose();
+      if (e.key === "Escape" && submitState === "idle" && !termsOpen) onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
@@ -340,17 +348,26 @@ export function BookingExperience({
   const maxCap = property.maxAbsoluteCapacity ?? property.maxGuests;
   const isOverCapacity = isKrib1Villa && totalGuests > KRIB1_STANDARD_CAPACITY;
   const isPartyValid = isParty && isKrib1Villa;
-  const { additionalGuestFee } =
-    computeTotalAdditionalCharges(property.id, totalGuests, isPartyValid);
+  const { additionalGuestFee } = computeTotalAdditionalCharges(
+    property.id,
+    totalGuests,
+    isPartyValid,
+  );
   const partyFeeRate = partyFeeAmount ?? 5000;
   const partyFee = isPartyValid ? partyFeeRate : 0;
   const total = basePrice + additionalGuestFee + partyFee;
 
   // For KRiB 1: auto-set fixed arrival time when a date is selected
-  const effectiveArrivalTime = isKrib1Villa ? KRIB1_FIXED_CHECKIN_TIME : arrivalTime;
-  const unavailableDates = getUnavailableDates(availabilityReservations, isKrib1Villa);
+  const effectiveArrivalTime = isKrib1Villa
+    ? KRIB1_FIXED_CHECKIN_TIME
+    : arrivalTime;
+  const unavailableDates = getUnavailableDates(
+    availabilityReservations,
+    isKrib1Villa,
+  );
   const isTimeUnavailable = (time: string) =>
-    !!arrivalDate && isBlockedArrival(arrivalDate, time, availabilityReservations);
+    !!arrivalDate &&
+    isBlockedArrival(arrivalDate, time, availabilityReservations);
 
   const goNext = useCallback(() => {
     if (step < STEP_COUNT) {
@@ -413,20 +430,31 @@ export function BookingExperience({
     setSubmitError("");
     setSubmitState("submitting");
 
-    const arrivalDatetime = combineArrivalDatetime(arrivalDate!, effectiveArrivalTime!);
+    const arrivalDatetime = combineArrivalDatetime(
+      arrivalDate!,
+      effectiveArrivalTime!,
+    );
     const checkoutDatetime = computeCheckout(arrivalDatetime);
 
     try {
-      const available = await checkAvailability(property.id, arrivalDatetime, checkoutDatetime);
+      const available = await checkAvailability(
+        property.id,
+        arrivalDatetime,
+        checkoutDatetime,
+      );
       if (!available) {
         setSubmitState("idle");
-        setSubmitError("This date is no longer available. Another reservation has already been made for this schedule. Please select another date.");
+        setSubmitError(
+          "This date is no longer available. Another reservation has already been made for this schedule. Please select another date.",
+        );
         await refreshAvailability();
         return;
       }
     } catch {
       setSubmitState("idle");
-      setSubmitError("Unable to verify availability. Please check your connection and try again.");
+      setSubmitError(
+        "Unable to verify availability. Please check your connection and try again.",
+      );
       return;
     }
 
@@ -449,10 +477,15 @@ export function BookingExperience({
     if (error || !data) {
       setSubmitState("idle");
       if (error?.code === "DATE_UNAVAILABLE") {
-        setSubmitError("This date is no longer available. Another reservation has already been made for this schedule. Please select another date.");
+        setSubmitError(
+          "This date is no longer available. Another reservation has already been made for this schedule. Please select another date.",
+        );
         await refreshAvailability();
       } else {
-        setSubmitError(error?.message ?? "Unable to submit your reservation. Please try again.");
+        setSubmitError(
+          error?.message ??
+            "Unable to submit your reservation. Please try again.",
+        );
       }
       setTimeout(() => {
         submitErrorRef.current?.scrollIntoView({
@@ -622,7 +655,12 @@ export function BookingExperience({
               >
                 <motion.span
                   animate={{ x: isParty ? 20 : 0 }}
-                  transition={{ type: "spring", stiffness: 520, damping: 32, mass: 0.7 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 520,
+                    damping: 32,
+                    mass: 0.7,
+                  }}
                   className="absolute left-1 inline-block h-4 w-4 rounded-full bg-white shadow-sm"
                 />
               </button>
@@ -664,7 +702,12 @@ export function BookingExperience({
               >
                 <motion.span
                   animate={{ x: partyFeeActive ? 20 : 0 }}
-                  transition={{ type: "spring", stiffness: 520, damping: 32, mass: 0.7 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 520,
+                    damping: 32,
+                    mass: 0.7,
+                  }}
                   className="absolute left-1 inline-block h-4 w-4 rounded-full bg-white shadow-sm"
                 />
               </button>
@@ -693,7 +736,8 @@ export function BookingExperience({
         {isOverCapacity && (
           <div className="p-3 rounded-lg bg-amber-50 border border-amber-200/60 mt-3">
             <p className="font-body text-[11px] text-amber-800 font-medium">
-              More than {KRIB1_STANDARD_CAPACITY} guests requires admin approval.
+              More than {KRIB1_STANDARD_CAPACITY} guests requires admin
+              approval.
             </p>
           </div>
         )}
@@ -848,326 +892,326 @@ export function BookingExperience({
     <>
       <AnimatePresence>
         {isOpen && (
-        <motion.div
-          variants={overlayVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="fixed inset-0 z-100"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && submitState === "idle")
-              onClose();
-          }}
-        >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
-
-          {/* ─── DESKTOP / TABLET PANEL ─── */}
           <motion.div
-            ref={panelRef}
-            variants={panelDesktopVariants}
+            variants={overlayVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            className={cn(
-              "hidden md:flex flex-col bg-white overflow-hidden",
-              "absolute inset-4 lg:inset-6 xl:inset-8",
-              "max-w-1280px mx-auto my-auto max-h-[92vh]",
-              "shadow-[0_24px_80px_rgba(0,0,0,0.18)]",
-            )}
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-100"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && submitState === "idle")
+                onClose();
+            }}
           >
-            {submitState === "success" ? (
-              <SuccessState
-                propertyName={property.name}
-                reservationId={reservationId}
-                onClose={onClose}
-              />
-            ) : submitState === "submitting" ? (
-              <SubmittingState />
-            ) : (
-              <div className="flex flex-1 min-h-0 overflow-hidden">
-                {/* LEFT — Booking Flow */}
-                <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                  {/* Step Header */}
-                  <div className="shrink-0 px-8 lg:px-10 pt-7 pb-0">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-1">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
+
+            {/* ─── DESKTOP / TABLET PANEL ─── */}
+            <motion.div
+              ref={panelRef}
+              variants={panelDesktopVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={cn(
+                "hidden md:flex flex-col bg-white overflow-hidden",
+                "absolute inset-4 lg:inset-6 xl:inset-8",
+                "max-w-1280px mx-auto my-auto max-h-[92vh]",
+                "shadow-[0_24px_80px_rgba(0,0,0,0.18)]",
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {submitState === "success" ? (
+                <SuccessState
+                  propertyName={property.name}
+                  reservationId={reservationId}
+                  onClose={onClose}
+                />
+              ) : submitState === "submitting" ? (
+                <SubmittingState />
+              ) : (
+                <div className="flex flex-1 min-h-0 overflow-hidden">
+                  {/* LEFT — Booking Flow */}
+                  <div className="flex-1 flex flex-col min-w-0 min-h-0">
+                    {/* Step Header */}
+                    <div className="shrink-0 px-8 lg:px-10 pt-7 pb-0">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-1">
+                          {STEP_META.map((m, i) => {
+                            const Icon = m.icon;
+                            const isCurrent = i + 1 === step;
+                            const isDone = i + 1 < step;
+                            return (
+                              <button
+                                key={m.label}
+                                onClick={() =>
+                                  isDone && goToStep((i + 1) as Step)
+                                }
+                                className={cn(
+                                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
+                                  isCurrent
+                                    ? "text-primary"
+                                    : isDone
+                                      ? "text-on-surface-variant/60 hover:text-primary cursor-pointer"
+                                      : "text-on-surface-variant/25 pointer-events-none",
+                                )}
+                              >
+                                <div
+                                  className={cn(
+                                    "w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-300",
+                                    isCurrent
+                                      ? "border-primary bg-primary text-white"
+                                      : isDone
+                                        ? "border-primary/40 bg-primary/5 text-primary"
+                                        : "border-outline-variant/40 text-on-surface-variant/30",
+                                  )}
+                                >
+                                  {isDone ? (
+                                    <Check size={12} strokeWidth={3} />
+                                  ) : (
+                                    <Icon size={13} />
+                                  )}
+                                </div>
+                                <span className="font-body text-[11px] font-semibold uppercase tracking-[0.08em] hidden lg:block">
+                                  {m.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <button
+                          onClick={onClose}
+                          className="w-10 h-10 flex items-center justify-center text-on-surface-variant/50 hover:text-on-surface hover:bg-surface-container-high rounded-full transition-all duration-200 cursor-pointer"
+                          aria-label="Close"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+
+                      <div className="relative h-2px bg-surface-container-high">
+                        <motion.div
+                          className="absolute inset-y-0 left-0 bg-primary"
+                          animate={{ width: `${(step / STEP_COUNT) * 100}%` }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 200,
+                            damping: 28,
+                          }}
+                        />
+                      </div>
+
+                      <div className="mt-6 mb-1">
+                        <h2 className="font-display text-headline-md max-md:text-headline-md-mobile text-on-surface">
+                          {meta.heading}
+                        </h2>
+                        <p className="font-body text-sm text-on-surface-variant/60 mt-1">
+                          {meta.subheading}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Scrollable Content */}
+                    <div
+                      ref={scrollContainerRef}
+                      data-lenis-prevent
+                      className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-8 lg:px-10 pb-8"
+                    >
+                      <div className="pt-6">{stepContent}</div>
+
+                      {/* Inline Navigation */}
+                      <div className="flex items-center gap-3 mt-8 pt-6 border-t border-outline-variant/30">
+                        {step > 1 && (
+                          <motion.button
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={goBack}
+                            className="flex items-center gap-1.5 px-5 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 cursor-pointer"
+                          >
+                            <ChevronLeft size={14} />
+                            Back
+                          </motion.button>
+                        )}
+                        <div className="flex-1" />
+                        {step < STEP_COUNT && (
+                          <motion.button
+                            whileHover={{ y: -1 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleNext}
+                            className={cn(
+                              "px-8 py-3.5 rounded-full",
+                              "bg-primary text-on-primary",
+                              "font-body text-[11px] font-semibold uppercase tracking-0.1em",
+                              "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
+                              "hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]",
+                              "transition-all duration-300 cursor-pointer",
+                            )}
+                          >
+                            Continue
+                          </motion.button>
+                        )}
+                        {step === STEP_COUNT && (
+                          <motion.button
+                            whileHover={{ y: -1 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleSubmit}
+                            className={cn(
+                              "inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full",
+                              "bg-primary text-on-primary",
+                              "font-body text-[11px] font-semibold uppercase tracking-0.1em",
+                              "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
+                              "hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]",
+                              "transition-all duration-300 cursor-pointer",
+                            )}
+                          >
+                            <Send size={13} />
+                            Request Reservation
+                          </motion.button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT — Sticky Summary */}
+                  <div
+                    data-lenis-prevent
+                    className="w-340px lg:w-380px shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain"
+                  >
+                    {summaryContent}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* ─── MOBILE BOTTOM SHEET ─── */}
+            <motion.div
+              variants={panelMobileVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={cn(
+                "md:hidden fixed bottom-0 left-0 right-0 bg-white flex flex-col",
+                "max-h-[95vh]",
+              )}
+              onClick={(e) => e.stopPropagation()}
+              style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+            >
+              {submitState === "success" ? (
+                <SuccessState
+                  propertyName={property.name}
+                  reservationId={reservationId}
+                  onClose={onClose}
+                />
+              ) : submitState === "submitting" ? (
+                <SubmittingState />
+              ) : (
+                <>
+                  {/* Mobile Header */}
+                  <div className="shrink-0 px-5 pt-4 pb-0">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-1.5">
                         {STEP_META.map((m, i) => {
-                          const Icon = m.icon;
                           const isCurrent = i + 1 === step;
                           const isDone = i + 1 < step;
                           return (
-                            <button
+                            <div
                               key={m.label}
-                              onClick={() =>
-                                isDone && goToStep((i + 1) as Step)
-                              }
                               className={cn(
-                                "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
+                                "h-1 rounded-full transition-all duration-500",
                                 isCurrent
-                                  ? "text-primary"
+                                  ? "w-6 bg-primary"
                                   : isDone
-                                    ? "text-on-surface-variant/60 hover:text-primary cursor-pointer"
-                                    : "text-on-surface-variant/25 pointer-events-none",
+                                    ? "w-3 bg-primary/40"
+                                    : "w-3 bg-outline-variant/40",
                               )}
-                            >
-                              <div
-                                className={cn(
-                                  "w-7 h-7 flex items-center justify-center rounded-full border transition-all duration-300",
-                                  isCurrent
-                                    ? "border-primary bg-primary text-white"
-                                    : isDone
-                                      ? "border-primary/40 bg-primary/5 text-primary"
-                                      : "border-outline-variant/40 text-on-surface-variant/30",
-                                )}
-                              >
-                                {isDone ? (
-                                  <Check size={12} strokeWidth={3} />
-                                ) : (
-                                  <Icon size={13} />
-                                )}
-                              </div>
-                              <span className="font-body text-[11px] font-semibold uppercase tracking-[0.08em] hidden lg:block">
-                                {m.label}
-                              </span>
-                            </button>
+                            />
                           );
                         })}
                       </div>
                       <button
                         onClick={onClose}
-                        className="w-10 h-10 flex items-center justify-center text-on-surface-variant/50 hover:text-on-surface hover:bg-surface-container-high rounded-full transition-all duration-200 cursor-pointer"
+                        className="w-11 h-11 flex items-center justify-center text-on-surface-variant/50 hover:text-on-surface rounded-full transition-colors duration-200 cursor-pointer"
                         aria-label="Close"
                       >
-                        <X size={18} />
+                        <X size={20} />
                       </button>
                     </div>
-
-                    <div className="relative h-2px bg-surface-container-high">
-                      <motion.div
-                        className="absolute inset-y-0 left-0 bg-primary"
-                        animate={{ width: `${(step / STEP_COUNT) * 100}%` }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 200,
-                          damping: 28,
-                        }}
-                      />
-                    </div>
-
-                    <div className="mt-6 mb-1">
-                      <h2 className="font-display text-headline-md max-md:text-headline-md-mobile text-on-surface">
-                        {meta.heading}
-                      </h2>
-                      <p className="font-body text-sm text-on-surface-variant/60 mt-1">
-                        {meta.subheading}
-                      </p>
-                    </div>
+                    <h2 className="font-display text-headline-sm text-on-surface">
+                      {meta.heading}
+                    </h2>
+                    <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
+                      {meta.subheading}
+                    </p>
                   </div>
 
-                  {/* Scrollable Content */}
+                  {/* Mobile Scrollable Content */}
                   <div
-                    ref={scrollContainerRef}
                     data-lenis-prevent
-                    className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-8 lg:px-10 pb-8"
+                    className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-5"
                   >
-                    <div className="pt-6">{stepContent}</div>
+                    {stepContent}
+                  </div>
 
-                    {/* Inline Navigation */}
-                    <div className="flex items-center gap-3 mt-8 pt-6 border-t border-outline-variant/30">
+                  {/* Mobile Bottom Bar */}
+                  <div className="shrink-0 px-5 py-3.5 border-t border-outline-variant/30 bg-white pb-[calc(14px+env(safe-area-inset-bottom,0px))]">
+                    <div className="flex items-center gap-3">
                       {step > 1 && (
-                        <motion.button
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          whileTap={{ scale: 0.98 }}
+                        <button
                           onClick={goBack}
-                          className="flex items-center gap-1.5 px-5 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 cursor-pointer"
+                          className="flex items-center gap-1 px-4 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant cursor-pointer"
                         >
                           <ChevronLeft size={14} />
                           Back
-                        </motion.button>
+                        </button>
                       )}
                       <div className="flex-1" />
-                      {step < STEP_COUNT && (
-                        <motion.button
-                          whileHover={{ y: -1 }}
-                          whileTap={{ scale: 0.98 }}
+                      {step < STEP_COUNT ? (
+                        <button
                           onClick={handleNext}
                           className={cn(
-                            "px-8 py-3.5 rounded-full",
+                            "px-6 py-3.5 rounded-full",
                             "bg-primary text-on-primary",
                             "font-body text-[11px] font-semibold uppercase tracking-0.1em",
                             "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
-                            "hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]",
                             "transition-all duration-300 cursor-pointer",
                           )}
                         >
                           Continue
-                        </motion.button>
-                      )}
-                      {step === STEP_COUNT && (
-                        <motion.button
-                          whileHover={{ y: -1 }}
-                          whileTap={{ scale: 0.98 }}
+                        </button>
+                      ) : (
+                        <button
                           onClick={handleSubmit}
                           className={cn(
-                            "inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full",
+                            "inline-flex items-center gap-2 px-6 py-3.5 rounded-full",
                             "bg-primary text-on-primary",
                             "font-body text-[11px] font-semibold uppercase tracking-0.1em",
                             "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
-                            "hover:bg-primary-hover hover:shadow-[0_4px_16px_rgba(0,71,171,0.3)]",
                             "transition-all duration-300 cursor-pointer",
                           )}
                         >
                           <Send size={13} />
-                          Request Reservation
-                        </motion.button>
+                          Request
+                        </button>
                       )}
                     </div>
-                  </div>
-                </div>
-
-                {/* RIGHT — Sticky Summary */}
-                <div
-                  data-lenis-prevent
-                  className="w-340px lg:w-380px shrink-0 border-l border-outline-variant/30 bg-surface-container-low/50 overflow-y-auto overscroll-contain"
-                >
-                  {summaryContent}
-                </div>
-              </div>
-            )}
-          </motion.div>
-
-          {/* ─── MOBILE BOTTOM SHEET ─── */}
-          <motion.div
-            variants={panelMobileVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className={cn(
-              "md:hidden fixed bottom-0 left-0 right-0 bg-white flex flex-col",
-              "max-h-[95vh]",
-            )}
-            onClick={(e) => e.stopPropagation()}
-            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-          >
-            {submitState === "success" ? (
-              <SuccessState
-                propertyName={property.name}
-                reservationId={reservationId}
-                onClose={onClose}
-              />
-            ) : submitState === "submitting" ? (
-              <SubmittingState />
-            ) : (
-              <>
-                {/* Mobile Header */}
-                <div className="shrink-0 px-5 pt-4 pb-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-1.5">
-                      {STEP_META.map((m, i) => {
-                        const isCurrent = i + 1 === step;
-                        const isDone = i + 1 < step;
-                        return (
-                          <div
-                            key={m.label}
-                            className={cn(
-                              "h-1 rounded-full transition-all duration-500",
-                              isCurrent
-                                ? "w-6 bg-primary"
-                                : isDone
-                                  ? "w-3 bg-primary/40"
-                                  : "w-3 bg-outline-variant/40",
-                            )}
-                          />
-                        );
-                      })}
+                    <div className="flex items-center justify-between mt-2.5 px-1">
+                      <span className="font-body text-[11px] text-on-surface-variant/50">
+                        Step {step} of {STEP_COUNT}
+                      </span>
+                      <motion.span
+                        key={total}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="font-body text-sm font-semibold text-primary"
+                      >
+                        {formatPrice(total)}
+                      </motion.span>
                     </div>
-                    <button
-                      onClick={onClose}
-                      className="w-11 h-11 flex items-center justify-center text-on-surface-variant/50 hover:text-on-surface rounded-full transition-colors duration-200 cursor-pointer"
-                      aria-label="Close"
-                    >
-                      <X size={20} />
-                    </button>
                   </div>
-                  <h2 className="font-display text-headline-sm text-on-surface">
-                    {meta.heading}
-                  </h2>
-                  <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
-                    {meta.subheading}
-                  </p>
-                </div>
-
-                {/* Mobile Scrollable Content */}
-                <div
-                  data-lenis-prevent
-                  className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-5"
-                >
-                  {stepContent}
-                </div>
-
-                {/* Mobile Bottom Bar */}
-                <div className="shrink-0 px-5 py-3.5 border-t border-outline-variant/30 bg-white pb-[calc(14px+env(safe-area-inset-bottom,0px))]">
-                  <div className="flex items-center gap-3">
-                    {step > 1 && (
-                      <button
-                        onClick={goBack}
-                        className="flex items-center gap-1 px-4 py-3 rounded-full border border-outline-variant/60 font-body text-[11px] font-semibold uppercase tracking-0.1em text-on-surface-variant cursor-pointer"
-                      >
-                        <ChevronLeft size={14} />
-                        Back
-                      </button>
-                    )}
-                    <div className="flex-1" />
-                    {step < STEP_COUNT ? (
-                      <button
-                        onClick={handleNext}
-                        className={cn(
-                          "px-6 py-3.5 rounded-full",
-                          "bg-primary text-on-primary",
-                          "font-body text-[11px] font-semibold uppercase tracking-0.1em",
-                          "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
-                          "transition-all duration-300 cursor-pointer",
-                        )}
-                      >
-                        Continue
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleSubmit}
-                        className={cn(
-                          "inline-flex items-center gap-2 px-6 py-3.5 rounded-full",
-                          "bg-primary text-on-primary",
-                          "font-body text-[11px] font-semibold uppercase tracking-0.1em",
-                          "shadow-[0_2px_8px_rgba(0,71,171,0.25)]",
-                          "transition-all duration-300 cursor-pointer",
-                        )}
-                      >
-                        <Send size={13} />
-                        Request
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between mt-2.5 px-1">
-                    <span className="font-body text-[11px] text-on-surface-variant/50">
-                      Step {step} of {STEP_COUNT}
-                    </span>
-                    <motion.span
-                      key={total}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="font-body text-sm font-semibold text-primary"
-                    >
-                      {formatPrice(total)}
-                    </motion.span>
-                  </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
       </AnimatePresence>
       <TermsModal
         isOpen={termsOpen}
@@ -1360,7 +1404,9 @@ function StepGuests({
                   Standard capacity: {maxGuests} guests
                 </p>
                 <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
-                  Up to {maxAbsoluteCapacity} guests possible for parties (₱200/person above {maxGuests}). Requests above {maxGuests} guests require admin approval.
+                  Up to {maxAbsoluteCapacity} guests possible for parties
+                  (₱200/person above {maxGuests}). Requests above {maxGuests}{" "}
+                  guests require admin approval.
                 </p>
               </>
             ) : (
@@ -1369,8 +1415,8 @@ function StepGuests({
                   Maximum {maxGuests} guests allowed
                 </p>
                 <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
-                  Adults and children count toward the guest limit. Infants and pets
-                  do not.
+                  Adults and children count toward the guest limit. Infants and
+                  pets do not.
                 </p>
               </>
             )}
@@ -1387,7 +1433,8 @@ function StepGuests({
                 More than {maxGuests} guests requires approval
               </p>
               <p className="font-body text-xs text-amber-700/80 mt-0.5">
-                Additional guests are ₱200 per person. Our team will review your request before confirmation.
+                Additional guests are ₱200 per person. Our team will review your
+                request before confirmation.
               </p>
             </div>
           </div>
@@ -1707,10 +1754,12 @@ function StepReview({
       {isOver && (
         <div className="mb-5 p-4 rounded-xl bg-amber-50 border border-amber-200/60">
           <p className="font-body text-[13px] text-amber-800 font-medium">
-            This reservation requires admin approval due to {totalGuests} guests (standard capacity is {KRIB1_STANDARD_CAPACITY}).
+            This reservation requires admin approval due to {totalGuests} guests
+            (standard capacity is {KRIB1_STANDARD_CAPACITY}).
           </p>
           <p className="font-body text-xs text-amber-700/80 mt-1">
-            Additional guests: {totalGuests - KRIB1_STANDARD_CAPACITY} × ₱200 = ₱{additionalGuestFee?.toLocaleString("en-PH")}
+            Additional guests: {totalGuests - KRIB1_STANDARD_CAPACITY} × ₱200 =
+            ₱{additionalGuestFee?.toLocaleString("en-PH")}
             {isParty ? ` + ₱5,000 party fee` : ""}
           </p>
         </div>
@@ -1777,7 +1826,10 @@ function StepReview({
         )}
 
         {isParty && isKrib1 && (
-          <ReviewRow label="Party / Event Fee" value={formatPrice(partyFeeAmount ?? 5000)} />
+          <ReviewRow
+            label="Party / Event Fee"
+            value={formatPrice(partyFeeAmount ?? 5000)}
+          />
         )}
 
         <div className="flex justify-between items-baseline pt-4 border-t border-on-surface/10">

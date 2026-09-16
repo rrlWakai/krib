@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Clock, CalendarDays } from 'lucide-react'
-import { cn } from '../../lib/cn'
+import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Clock, CalendarDays } from "lucide-react";
+import { cn } from "../../lib/cn";
 import {
   ARRIVAL_TIME_SLOTS,
   toLocalDateString,
@@ -9,27 +9,27 @@ import {
   formatArrivalLabel,
   formatCheckoutLabel,
   formatTimeLabel,
-} from '../../lib/bookingTime'
+} from "../../lib/bookingTime";
 
 interface ArrivalDateTimePickerProps {
-  arrivalDate: string | null
-  arrivalTime: string | null
-  onArrivalDateChange: (date: string) => void
-  onArrivalTimeChange: (time: string) => void
-  dateError?: string
-  timeError?: string
-  fixedTime?: string
-  fixedTimeLabel?: string
-  unavailableDates?: Set<string>
-  isTimeUnavailable?: (time: string) => boolean
-  availabilityLoading?: boolean
-  availabilityError?: string
+  arrivalDate: string | null;
+  arrivalTime: string | null;
+  onArrivalDateChange: (date: string) => void;
+  onArrivalTimeChange: (time: string) => void;
+  dateError?: string;
+  timeError?: string;
+  fixedTime?: string;
+  fixedTimeLabel?: string;
+  unavailableDates?: Set<string>;
+  isTimeUnavailable?: (time: string) => boolean;
+  availabilityLoading?: boolean;
+  availabilityError?: string;
 }
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate()
+  return new Date(year, month + 1, 0).getDate();
 }
 
 export function ArrivalDateTimePicker({
@@ -46,35 +46,46 @@ export function ArrivalDateTimePicker({
   availabilityLoading = false,
   availabilityError,
 }: ArrivalDateTimePickerProps) {
-  const todayStr = useMemo(() => toLocalDateString(new Date()), [])
-  const [todayY, todayM] = todayStr.split('-').map(Number)
-  const todayMonthIndex = todayM - 1
+  const todayStr = useMemo(() => toLocalDateString(new Date()), []);
+  const [todayY, todayM] = todayStr.split("-").map(Number);
+  const todayMonthIndex = todayM - 1;
 
   const initial = arrivalDate
     ? (() => {
-        const [y, m] = arrivalDate.split('-').map(Number)
-        return { year: y, month: m - 1 }
+        const [y, m] = arrivalDate.split("-").map(Number);
+        return { year: y, month: m - 1 };
       })()
-    : { year: todayY, month: todayMonthIndex }
+    : { year: todayY, month: todayMonthIndex };
 
-  const [view, setView] = useState(initial)
+  const [view, setView] = useState(initial);
 
-  const firstDay = new Date(view.year, view.month, 1).getDay()
-  const daysInMonth = getDaysInMonth(view.year, view.month)
-  const viewLabel = new Date(view.year, view.month, 1).toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  })
+  const firstDay = new Date(view.year, view.month, 1).getDay();
+  const daysInMonth = getDaysInMonth(view.year, view.month);
+  const viewLabel = new Date(view.year, view.month, 1).toLocaleDateString(
+    "en-US",
+    {
+      month: "long",
+      year: "numeric",
+    },
+  );
 
-  const canGoPrev = view.year > todayY || (view.year === todayY && view.month > todayMonthIndex)
-  const canGoNext = view.year < todayY + 2 || (view.year === todayY + 2 && view.month < todayMonthIndex)
+  const canGoPrev =
+    view.year > todayY ||
+    (view.year === todayY && view.month > todayMonthIndex);
+  const canGoNext =
+    view.year < todayY + 2 ||
+    (view.year === todayY + 2 && view.month < todayMonthIndex);
 
-  const isBeforeToday = (dateStr: string): boolean => dateStr < todayStr
-  const isSelected = (dateStr: string): boolean => dateStr === arrivalDate
+  const isBeforeToday = (dateStr: string): boolean => dateStr < todayStr;
+  const isSelected = (dateStr: string): boolean => dateStr === arrivalDate;
 
   const arrivalDatetime =
-    arrivalDate && arrivalTime ? combineArrivalDatetime(arrivalDate, arrivalTime) : null
-  const checkoutDatetime = arrivalDatetime ? computeCheckout(arrivalDatetime) : null
+    arrivalDate && arrivalTime
+      ? combineArrivalDatetime(arrivalDate, arrivalTime)
+      : null;
+  const checkoutDatetime = arrivalDatetime
+    ? computeCheckout(arrivalDatetime)
+    : null;
 
   return (
     <div className="bg-white border border-outline-variant rounded-default shadow-card overflow-hidden">
@@ -89,28 +100,40 @@ export function ArrivalDateTimePicker({
         <div className="flex items-center justify-between mb-3">
           <button
             type="button"
-            onClick={() => setView((v) => ({ year: v.month === 0 ? v.year - 1 : v.year, month: v.month === 0 ? 11 : v.month - 1 }))}
+            onClick={() =>
+              setView((v) => ({
+                year: v.month === 0 ? v.year - 1 : v.year,
+                month: v.month === 0 ? 11 : v.month - 1,
+              }))
+            }
             disabled={!canGoPrev}
             className={cn(
-              'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
+              "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
               canGoPrev
-                ? 'text-on-surface-variant hover:bg-surface-container-low cursor-pointer'
-                : 'text-on-surface-variant/25',
+                ? "text-on-surface-variant hover:bg-surface-container-low cursor-pointer"
+                : "text-on-surface-variant/25",
             )}
             aria-label="Previous month"
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="font-display text-base text-on-surface">{viewLabel}</span>
+          <span className="font-display text-base text-on-surface">
+            {viewLabel}
+          </span>
           <button
             type="button"
-            onClick={() => setView((v) => ({ year: v.month === 11 ? v.year + 1 : v.year, month: v.month === 11 ? 0 : v.month + 1 }))}
+            onClick={() =>
+              setView((v) => ({
+                year: v.month === 11 ? v.year + 1 : v.year,
+                month: v.month === 11 ? 0 : v.month + 1,
+              }))
+            }
             disabled={!canGoNext}
             className={cn(
-              'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
+              "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
               canGoNext
-                ? 'text-on-surface-variant hover:bg-surface-container-low cursor-pointer'
-                : 'text-on-surface-variant/25',
+                ? "text-on-surface-variant hover:bg-surface-container-low cursor-pointer"
+                : "text-on-surface-variant/25",
             )}
             aria-label="Next month"
           >
@@ -131,12 +154,16 @@ export function ArrivalDateTimePicker({
             <div key={`blank-${i}`} />
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1
-            const dateStr = `${view.year}-${String(view.month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-            const unavailable = unavailableDates.has(dateStr)
-            const disabled = isBeforeToday(dateStr) || unavailable || availabilityLoading || !!availabilityError
-            const selected = isSelected(dateStr)
-            const isToday = dateStr === todayStr
+            const day = i + 1;
+            const dateStr = `${view.year}-${String(view.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const unavailable = unavailableDates.has(dateStr);
+            const disabled =
+              isBeforeToday(dateStr) ||
+              unavailable ||
+              availabilityLoading ||
+              !!availabilityError;
+            const selected = isSelected(dateStr);
+            const isToday = dateStr === todayStr;
             return (
               <button
                 key={dateStr}
@@ -146,21 +173,21 @@ export function ArrivalDateTimePicker({
                 aria-pressed={selected}
                 aria-disabled={disabled}
                 className={cn(
-                  'flex items-center justify-center h-9 rounded-lg font-body text-sm transition-all duration-150',
+                  "flex items-center justify-center h-9 rounded-lg font-body text-sm transition-all duration-150",
                   disabled
                     ? unavailable
-                      ? 'text-on-surface-variant/45 line-through decoration-1'
-                      : 'text-on-surface-variant/25'
+                      ? "text-on-surface-variant/45 line-through decoration-1"
+                      : "text-on-surface-variant/25"
                     : selected
-                      ? 'bg-primary text-on-primary font-semibold shadow-sm'
+                      ? "bg-primary text-on-primary font-semibold shadow-sm"
                       : isToday
-                        ? 'text-primary border border-primary/40 font-medium hover:bg-primary/5 cursor-pointer'
-                        : 'text-on-surface hover:bg-primary/5 hover:text-primary cursor-pointer',
+                        ? "text-primary border border-primary/40 font-medium hover:bg-primary/5 cursor-pointer"
+                        : "text-on-surface hover:bg-primary/5 hover:text-primary cursor-pointer",
                 )}
               >
                 {day}
               </button>
-            )
+            );
           })}
         </div>
 
@@ -168,10 +195,14 @@ export function ArrivalDateTimePicker({
           <p className="font-body text-[12px] text-error mt-3">{dateError}</p>
         )}
         {availabilityLoading && (
-          <p className="font-body text-[12px] text-on-surface-variant mt-3">Checking availability...</p>
+          <p className="font-body text-[12px] text-on-surface-variant mt-3">
+            Checking availability...
+          </p>
         )}
         {availabilityError && (
-          <p className="font-body text-[12px] text-error mt-3">{availabilityError}</p>
+          <p className="font-body text-[12px] text-error mt-3">
+            {availabilityError}
+          </p>
         )}
 
         <div className="h-px bg-outline-variant/40 my-6" />
@@ -210,27 +241,29 @@ export function ArrivalDateTimePicker({
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {ARRIVAL_TIME_SLOTS.map((slot) => {
-                const active = slot === arrivalTime
-                const unavailable = isTimeUnavailable(slot)
+                const active = slot === arrivalTime;
+                const unavailable = isTimeUnavailable(slot);
                 return (
                   <button
                     key={slot}
                     type="button"
                     onClick={() => onArrivalTimeChange(slot)}
-                    disabled={unavailable || availabilityLoading || !!availabilityError}
+                    disabled={
+                      unavailable || availabilityLoading || !!availabilityError
+                    }
                     aria-pressed={active}
                     className={cn(
-                      'px-2 py-2.5 rounded-lg border font-body text-sm transition-all duration-150',
+                      "px-2 py-2.5 rounded-lg border font-body text-sm transition-all duration-150",
                       unavailable
-                        ? 'border-outline-variant/40 bg-surface-container-low text-on-surface-variant/40 line-through'
+                        ? "border-outline-variant/40 bg-surface-container-low text-on-surface-variant/40 line-through"
                         : active
-                        ? 'bg-primary border-primary text-on-primary font-semibold shadow-sm'
-                        : 'border-outline-variant/60 text-on-surface hover:border-primary/40 hover:text-primary cursor-pointer',
+                          ? "bg-primary border-primary text-on-primary font-semibold shadow-sm"
+                          : "border-outline-variant/60 text-on-surface hover:border-primary/40 hover:text-primary cursor-pointer",
                     )}
                   >
                     {formatTimeLabel(slot)}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
@@ -255,7 +288,9 @@ export function ArrivalDateTimePicker({
               </span>
             </div>
             <div className="flex justify-between text-sm mt-1.5">
-              <span className="font-body text-on-surface-variant">Checkout</span>
+              <span className="font-body text-on-surface-variant">
+                Checkout
+              </span>
               <span className="font-body text-primary font-medium">
                 {formatCheckoutLabel(checkoutDatetime)}
               </span>
@@ -267,17 +302,23 @@ export function ArrivalDateTimePicker({
       <div className="border-t border-outline-variant px-6 py-4 flex items-center gap-6 flex-wrap">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-          <span className="font-body text-body-md text-on-surface-variant text-sm">Selected</span>
+          <span className="font-body text-body-md text-on-surface-variant text-sm">
+            Selected
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-primary/20 border border-primary/50" />
-          <span className="font-body text-body-md text-on-surface-variant text-sm">Today</span>
+          <span className="font-body text-body-md text-on-surface-variant text-sm">
+            Today
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-outline/40" />
-          <span className="font-body text-body-md text-on-surface-variant text-sm">Unavailable</span>
+          <span className="font-body text-body-md text-on-surface-variant text-sm">
+            Unavailable
+          </span>
         </div>
       </div>
     </div>
-  )
+  );
 }
