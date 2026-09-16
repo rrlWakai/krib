@@ -21,6 +21,15 @@ import type { SiteSettings } from '../../services/api/settings'
 const RESERVATION_SELECT =
   'id, reference_code, villa_id, guest_id, guest_count, status, special_requests, terms_accepted, privacy_accepted, arrival_datetime, checkout_datetime, created_at, updated_at, approved_at, approved_by, declined_at, declined_by, cancelled_at, cancelled_by, completed_at, is_party, additional_guest_fee, party_fee, total_amount, guest:guests(id, full_name, email, phone, created_at), villa:villas(id, name, slug, description, base_price, max_guests, is_active, created_at, updated_at)'
 
+export interface AdminUserRecord {
+  id: string
+  auth_user_id: string
+  full_name: string
+  role: 'owner' | 'staff'
+  is_active: boolean
+  created_at: string
+}
+
 export async function fetchSiteSettingsAdmin(): Promise<SiteSettings | null> {
   const supabase = getSupabaseClient()
   const { data, error } = await supabase
@@ -31,6 +40,17 @@ export async function fetchSiteSettingsAdmin(): Promise<SiteSettings | null> {
 
   if (error) throw new Error(error.message)
   return (data ?? null) as SiteSettings | null
+}
+
+export async function fetchAdminUsers(): Promise<AdminUserRecord[]> {
+  const supabase = getSupabaseClient()
+  const { data, error } = await supabase
+    .from('admin_users')
+    .select('id, auth_user_id, full_name, role, is_active, created_at')
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return (data ?? []) as AdminUserRecord[]
 }
 
 export async function fetchAllReservations(): Promise<Reservation[]> {

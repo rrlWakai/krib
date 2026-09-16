@@ -404,7 +404,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_admin_user: {
+        Args: { target_admin_id: string }
+        Returns: Database["public"]["Tables"]["admin_users"]["Row"]
+      }
       is_admin: { Args: never; Returns: boolean }
+      is_owner: { Args: never; Returns: boolean }
     }
     Enums: {
       admin_role: "owner" | "staff"

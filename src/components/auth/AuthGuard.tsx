@@ -19,7 +19,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }
 
   if (!admin) {
-    return <Navigate to="/admin/login?denied=1" replace />
+    return <Navigate to="/admin/login?pending=1" replace />
   }
 
   return <>{children}</>

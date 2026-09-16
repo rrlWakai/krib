@@ -33,6 +33,14 @@ export async function updateSiteSettings(
   return { data: (data ?? null) as SiteSettings | null, error: null }
 }
 
+export async function approveAdminUser(id: string) {
+  const { data, error } = await getSupabaseClient().rpc('approve_admin_user', { target_admin_id: id })
+  if (error) {
+    return { data: null, error: { code: error.code ?? 'APPROVAL_FAILED', message: error.message } }
+  }
+  return { data, error: null }
+}
+
 function invalidateReservationData(id: string) {
   invalidateAdminCache('reservations', 'sms-logs', `reservation:${id}`)
 }

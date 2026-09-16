@@ -7,12 +7,14 @@ import {
   BellOff,
   Save,
   Smartphone,
+  UserCheck,
 } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { LoadingBlock, ErrorBlock } from '../components/AdminState'
-import { useAdminQuery, useAdminMutation } from '../hooks/useAdminQuery'
-import { fetchSiteSettingsAdmin } from '../services/api'
-import { updateSiteSettings } from '../services/mutations'
+import { useAdminQuery, useAdminMutation, invalidateAdminCache } from '../hooks/useAdminQuery'
+import { fetchAdminUsers, fetchSiteSettingsAdmin } from '../services/api'
+import { approveAdminUser, updateSiteSettings } from '../services/mutations'
+import { useAuth } from '../../hooks/auth/useAuth'
 import { clearSiteSettingsCache } from '../../services/api/settings'
 import type { SiteSettings, BusinessSettings, SmsSettings, LegalSettings } from '../../services/api/settings'
 import { cn } from '../../lib/cn'
@@ -87,7 +89,9 @@ function validateSection(section: SettingsSection, value: Partial<BusinessSettin
 }
 
 export default function SettingsPage() {
+  const { admin } = useAuth()
   const settingsQuery = useAdminQuery('site-settings', fetchSiteSettingsAdmin, { ttlMs: 5_000 })
+  const adminUsersQuery = useAdminQuery('admin-users', fetchAdminUsers, { enabled: admin?.role === 'owner' })
 
   const [business, setBusiness] = useState<Partial<BusinessSettings>>({})
   const [sms, setSms] = useState<Partial<SmsSettings>>({})
@@ -123,6 +127,7 @@ export default function SettingsPage() {
   const legalMutation = useAdminMutation<Partial<LegalSettings>, SiteSettings>(async (payload) =>
     updateSiteSettings({ legal: payload }),
   )
+  const approvalMutation = useAdminMutation<string, { id: string }>(approveAdminUser)
 
   function sectionValue(section: SettingsSection) {
     if (section === 'business') return business
@@ -198,6 +203,8 @@ export default function SettingsPage() {
   const sectionError =
     businessMutation.error ?? smsMutation.error ?? legalMutation.error
 
+  const pendingAdmins = adminUsersQuery.data?.filter((candidate) => !candidate.is_active) ?? []
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <PageHeader title="Settings" subtitle="Business configuration" />
@@ -212,6 +219,45 @@ export default function SettingsPage() {
         <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="font-body text-[13px] text-amber-800">{validationError}</p>
         </div>
+      )}
+
+      {admin?.role === 'owner' && (
+        <section className="mb-5 rounded-lg border border-[#ECECEC] bg-white p-5">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]"><UserCheck size={16} className="text-[#0A1F44]" /></div>
+            <div>
+              <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">Admin Account Approval</h2>
+              <p className="font-body text-[12px] text-[#757575]">Activate new administrator accounts after verifying the request.</p>
+            </div>
+          </div>
+          {adminUsersQuery.error && <p className="mb-3 font-body text-[13px] text-red-700">{adminUsersQuery.error}</p>}
+          {approvalMutation.error && <p className="mb-3 font-body text-[13px] text-red-700">{approvalMutation.error}</p>}
+          {pendingAdmins.length === 0 ? (
+            <p className="font-body text-[13px] text-[#757575]">No accounts are waiting for approval.</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingAdmins.map((candidate) => (
+                <div key={candidate.id} className="flex flex-col gap-3 rounded-lg border border-[#ECECEC] p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-body text-[13px] font-medium text-[#0A1F44]">{candidate.full_name}</p>
+                    <p className="font-body text-[12px] text-[#757575]">Pending administrator account</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={approvalMutation.loading}
+                    onClick={() => approvalMutation.mutate(candidate.id).then((result) => {
+                      if (result.data) invalidateAdminCache('admin-users')
+                      adminUsersQuery.refetch()
+                    })}
+                    className="min-h-[36px] rounded-lg bg-[#0A1F44] px-3 font-body text-[12px] font-medium text-white disabled:opacity-50"
+                  >
+                    {approvalMutation.loading ? 'Activating...' : 'Activate Account'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       )}
 
       <div className="flex flex-col gap-5">

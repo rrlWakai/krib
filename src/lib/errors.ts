@@ -72,6 +72,12 @@ export function handleAuthError(error: unknown): AuthError {
   if (message.includes('rate limit')) {
     return new AuthError('Too many attempts. Please try again later.', 'AUTH_RATE_LIMITED')
   }
+  if (message.toLowerCase().includes('already registered')) {
+    return new AuthError('An account with this email already exists. Please sign in instead.', 'AUTH_EMAIL_EXISTS')
+  }
+  if (message.toLowerCase().includes('password')) {
+    return new AuthError('Password does not meet the required security rules.', 'AUTH_WEAK_PASSWORD')
+  }
 
   return new AuthError(message, 'AUTH_UNKNOWN')
 }
