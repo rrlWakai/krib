@@ -185,6 +185,23 @@ Deno.serve(async (req: Request) => {
       totalAmount = Number(villa.base_price) + partyFee
     }
 
+    const { data: conflictReservation, error: conflictError } = await admin
+      .from('reservations')
+      .select('id')
+      .eq('villa_id', villa.id)
+      .in('status', ['pending', 'approved'])
+      .lt('arrival_datetime', checkout.toISOString())
+      .gt('checkout_datetime', arrival.toISOString())
+      .limit(1)
+      .maybeSingle()
+
+    if (conflictError) throw conflictError
+    if (conflictReservation) {
+      return conflict(
+        'That villa is already reserved for your requested dates. Please choose another arrival date.',
+      )
+    }
+
     const { data: reservation, error: reservationError } = await admin
       .from('reservations')
       .insert({

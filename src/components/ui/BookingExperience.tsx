@@ -20,6 +20,11 @@ import { TermsModal } from "./TermsModal";
 import { cn } from "../../lib/cn";
 import { images } from "../../lib/images";
 import { createReservation } from "../../services/api/reservations";
+import {
+  checkAvailability,
+  fetchUpcomingAvailability,
+  type AvailabilityReservation,
+} from "../../services/api/availability";
 import type { Reservation, ReservationStatus } from "../../lib/reservationData";
 import {
   combineArrivalDatetime,
@@ -31,6 +36,8 @@ import {
   KRIB1_STANDARD_CAPACITY,
   KRIB1_PARTY_MAX_CAPACITY,
   computeTotalAdditionalCharges,
+  ARRIVAL_TIME_SLOTS,
+  toLocalDateString,
 } from "../../lib/bookingTime";
 
 interface PropertyInfo {
@@ -126,6 +133,52 @@ function getVillaImage(villaId: string): string {
   return images.krib1;
 }
 
+function dateWithOffset(date: string, offset: number): string {
+  const value = new Date(`${date}T00:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + offset);
+  return value.toISOString().slice(0, 10);
+}
+
+function overlaps(
+  firstArrival: string,
+  firstCheckout: string,
+  secondArrival: string,
+  secondCheckout: string,
+): boolean {
+  return firstArrival < secondCheckout && firstCheckout > secondArrival;
+}
+
+function isBlockedArrival(
+  arrivalDate: string,
+  arrivalTime: string,
+  reservations: AvailabilityReservation[],
+): boolean {
+  const arrival = combineArrivalDatetime(arrivalDate, arrivalTime);
+  const checkout = computeCheckout(arrival);
+  if (new Date(arrival).getTime() <= Date.now()) return true;
+  return reservations.some((reservation) =>
+    overlaps(arrival, checkout, reservation.arrival_datetime, reservation.checkout_datetime),
+  );
+}
+
+function getUnavailableDates(
+  reservations: AvailabilityReservation[],
+  isKrib1Villa: boolean,
+): Set<string> {
+  const today = toLocalDateString(new Date());
+  const times = isKrib1Villa ? [KRIB1_FIXED_CHECKIN_TIME] : ARRIVAL_TIME_SLOTS;
+  const unavailable = new Set<string>();
+
+  for (let offset = 0; offset <= 730; offset += 1) {
+    const date = dateWithOffset(today, offset);
+    if (times.every((time) => isBlockedArrival(date, time, reservations))) {
+      unavailable.add(date);
+    }
+  }
+
+  return unavailable;
+}
+
 const STEP_META: {
   label: string;
   icon: typeof CalendarDays;
@@ -192,6 +245,9 @@ export function BookingExperience({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
+  const [availabilityReservations, setAvailabilityReservations] = useState<AvailabilityReservation[]>([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState("");
   const submitErrorRef = useRef<HTMLDivElement>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
@@ -224,6 +280,24 @@ export function BookingExperience({
       previousFocusRef.current?.focus();
     }
   }, [isOpen]);
+
+  const refreshAvailability = useCallback(async () => {
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+    try {
+      const reservations = await fetchUpcomingAvailability(property.id);
+      setAvailabilityReservations(reservations);
+    } catch {
+      setAvailabilityReservations([]);
+      setAvailabilityError("Availability could not be checked. Please try again.");
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  }, [property.id]);
+
+  useEffect(() => {
+    if (isOpen) void refreshAvailability();
+  }, [isOpen, refreshAvailability]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -274,6 +348,9 @@ export function BookingExperience({
 
   // For KRiB 1: auto-set fixed arrival time when a date is selected
   const effectiveArrivalTime = isKrib1Villa ? KRIB1_FIXED_CHECKIN_TIME : arrivalTime;
+  const unavailableDates = getUnavailableDates(availabilityReservations, isKrib1Villa);
+  const isTimeUnavailable = (time: string) =>
+    !!arrivalDate && isBlockedArrival(arrivalDate, time, availabilityReservations);
 
   const goNext = useCallback(() => {
     if (step < STEP_COUNT) {
@@ -337,6 +414,21 @@ export function BookingExperience({
     setSubmitState("submitting");
 
     const arrivalDatetime = combineArrivalDatetime(arrivalDate!, effectiveArrivalTime!);
+    const checkoutDatetime = computeCheckout(arrivalDatetime);
+
+    try {
+      const available = await checkAvailability(property.id, arrivalDatetime, checkoutDatetime);
+      if (!available) {
+        setSubmitState("idle");
+        setSubmitError("This date is no longer available. Another reservation has already been made for this schedule. Please select another date.");
+        await refreshAvailability();
+        return;
+      }
+    } catch {
+      setSubmitState("idle");
+      setSubmitError("Unable to verify availability. Please check your connection and try again.");
+      return;
+    }
 
     const { data, error } = await createReservation({
       villa_id: property.id,
@@ -356,9 +448,12 @@ export function BookingExperience({
 
     if (error || !data) {
       setSubmitState("idle");
-      setSubmitError(
-        error?.message ?? "Unable to submit your reservation. Please try again.",
-      );
+      if (error?.code === "DATE_UNAVAILABLE") {
+        setSubmitError("This date is no longer available. Another reservation has already been made for this schedule. Please select another date.");
+        await refreshAvailability();
+      } else {
+        setSubmitError(error?.message ?? "Unable to submit your reservation. Please try again.");
+      }
       setTimeout(() => {
         submitErrorRef.current?.scrollIntoView({
           behavior: "smooth",
@@ -686,6 +781,10 @@ export function BookingExperience({
               dateError={errors.date}
               timeError={errors.time}
               isKrib1={isKrib1Villa}
+              unavailableDates={unavailableDates}
+              isTimeUnavailable={isTimeUnavailable}
+              availabilityLoading={availabilityLoading}
+              availabilityError={availabilityError}
             />
           )}
           {step === 2 && (
@@ -1156,6 +1255,10 @@ function StepDate({
   dateError,
   timeError,
   isKrib1,
+  unavailableDates,
+  isTimeUnavailable,
+  availabilityLoading,
+  availabilityError,
 }: {
   arrivalDate: string | null;
   arrivalTime: string | null;
@@ -1164,6 +1267,10 @@ function StepDate({
   dateError?: string;
   timeError?: string;
   isKrib1?: boolean;
+  unavailableDates: Set<string>;
+  isTimeUnavailable: (time: string) => boolean;
+  availabilityLoading: boolean;
+  availabilityError: string;
 }) {
   return (
     <div>
@@ -1176,6 +1283,10 @@ function StepDate({
         timeError={timeError}
         fixedTime={isKrib1 ? "14:00" : undefined}
         fixedTimeLabel={isKrib1 ? "2:00 PM (Fixed)" : undefined}
+        unavailableDates={unavailableDates}
+        isTimeUnavailable={isTimeUnavailable}
+        availabilityLoading={availabilityLoading}
+        availabilityError={availabilityError}
       />
 
       <div className="mt-6 p-4 rounded-xl bg-tertiary-container/20 border border-tertiary/10">

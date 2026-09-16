@@ -20,6 +20,10 @@ interface ArrivalDateTimePickerProps {
   timeError?: string
   fixedTime?: string
   fixedTimeLabel?: string
+  unavailableDates?: Set<string>
+  isTimeUnavailable?: (time: string) => boolean
+  availabilityLoading?: boolean
+  availabilityError?: string
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -37,6 +41,10 @@ export function ArrivalDateTimePicker({
   timeError,
   fixedTime,
   fixedTimeLabel,
+  unavailableDates = new Set<string>(),
+  isTimeUnavailable = () => false,
+  availabilityLoading = false,
+  availabilityError,
 }: ArrivalDateTimePickerProps) {
   const todayStr = useMemo(() => toLocalDateString(new Date()), [])
   const [todayY, todayM] = todayStr.split('-').map(Number)
@@ -125,7 +133,8 @@ export function ArrivalDateTimePicker({
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1
             const dateStr = `${view.year}-${String(view.month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-            const disabled = isBeforeToday(dateStr)
+            const unavailable = unavailableDates.has(dateStr)
+            const disabled = isBeforeToday(dateStr) || unavailable || availabilityLoading || !!availabilityError
             const selected = isSelected(dateStr)
             const isToday = dateStr === todayStr
             return (
@@ -139,7 +148,9 @@ export function ArrivalDateTimePicker({
                 className={cn(
                   'flex items-center justify-center h-9 rounded-lg font-body text-sm transition-all duration-150',
                   disabled
-                    ? 'text-on-surface-variant/25'
+                    ? unavailable
+                      ? 'text-on-surface-variant/45 line-through decoration-1'
+                      : 'text-on-surface-variant/25'
                     : selected
                       ? 'bg-primary text-on-primary font-semibold shadow-sm'
                       : isToday
@@ -155,6 +166,12 @@ export function ArrivalDateTimePicker({
 
         {dateError && (
           <p className="font-body text-[12px] text-error mt-3">{dateError}</p>
+        )}
+        {availabilityLoading && (
+          <p className="font-body text-[12px] text-on-surface-variant mt-3">Checking availability...</p>
+        )}
+        {availabilityError && (
+          <p className="font-body text-[12px] text-error mt-3">{availabilityError}</p>
         )}
 
         <div className="h-px bg-outline-variant/40 my-6" />
@@ -194,15 +211,19 @@ export function ArrivalDateTimePicker({
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {ARRIVAL_TIME_SLOTS.map((slot) => {
                 const active = slot === arrivalTime
+                const unavailable = isTimeUnavailable(slot)
                 return (
                   <button
                     key={slot}
                     type="button"
                     onClick={() => onArrivalTimeChange(slot)}
+                    disabled={unavailable || availabilityLoading || !!availabilityError}
                     aria-pressed={active}
                     className={cn(
                       'px-2 py-2.5 rounded-lg border font-body text-sm transition-all duration-150',
-                      active
+                      unavailable
+                        ? 'border-outline-variant/40 bg-surface-container-low text-on-surface-variant/40 line-through'
+                        : active
                         ? 'bg-primary border-primary text-on-primary font-semibold shadow-sm'
                         : 'border-outline-variant/60 text-on-surface hover:border-primary/40 hover:text-primary cursor-pointer',
                     )}
