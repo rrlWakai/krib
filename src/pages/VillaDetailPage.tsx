@@ -27,6 +27,7 @@ import { VillaPolicies } from "../components/ui/VillaPolicies";
 import { VillaHeader } from "../components/ui/VillaHeader";
 import { VillaAmenities } from "../components/sections/villa/VillaAmenities";
 import { BookingExperience } from "../components/ui/BookingExperience";
+import { VillaAvailabilityCalendar } from "../components/ui/VillaAvailabilityCalendar";
 import { getIcon } from "../lib/iconMap";
 import { cn } from "../lib/cn";
 import { isKrib1, KRIB1_PARTY_MAX_CAPACITY } from "../lib/bookingTime";
@@ -112,7 +113,26 @@ export function VillaDetailPage() {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [reservationOpen, setReservationOpen] = useState(false);
   const [partyFeeActive, setPartyFeeActive] = useState(false);
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(
+    null,
+  );
+  const [availabilityRefreshKey, setAvailabilityRefreshKey] = useState(0);
   const heroTouchStartRef = useRef({ x: 0, swiped: false });
+
+  const openReservation = useCallback(() => {
+    setCalendarSelectedDate(null);
+    setReservationOpen(true);
+  }, []);
+
+  const handleReserveDate = useCallback((date: string) => {
+    setCalendarSelectedDate(date);
+    setReservationOpen(true);
+  }, []);
+
+  const closeReservation = useCallback(() => {
+    setReservationOpen(false);
+    setAvailabilityRefreshKey((k) => k + 1);
+  }, []);
 
   const allImages = useMemo(() => {
     if (!villa) return [];
@@ -396,6 +416,28 @@ export function VillaDetailPage() {
                 </Reveal>
               </section>
 
+              {/* ----- 2.5 AVAILABILITY CALENDAR ----- */}
+              <section id="availability" className="scroll-mt-24">
+                <Reveal>
+                  <SectionLabel>AVAILABILITY</SectionLabel>
+                  <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-4 leading-tight">
+                    Find your date
+                  </h2>
+                  <p className="font-body text-body-lg text-on-surface-variant leading-relaxed mb-10">
+                    {isKrib1(villa.id)
+                      ? "KRiB 1 welcomes arrivals at 2:00 PM for a fixed 21-hour stay. Choose the date you would like to arrive; crossed-out dates are already reserved."
+                      : "KRiB 2 offers flexible arrival windows between 11:00 AM and 8:00 PM. A date stays open as long as at least one arrival time is available."}
+                  </p>
+                </Reveal>
+                <Reveal delay={100}>
+                  <VillaAvailabilityCalendar
+                    villaId={villa.id}
+                    refreshKey={availabilityRefreshKey}
+                    onReserveDate={handleReserveDate}
+                  />
+                </Reveal>
+              </section>
+
               {/* ----- 3. VILLA STORY ----- */}
               <section id="story">
                 <Reveal>
@@ -486,7 +528,7 @@ export function VillaDetailPage() {
                   partyFeeActive={partyFeeActive}
                   partyFeeAmount={partyFeeAmount}
                   onPartyFeeToggle={setPartyFeeActive}
-                  onReserve={() => setReservationOpen(true)}
+                  onReserve={openReservation}
                 />
               </motion.div>
             </div>
@@ -764,7 +806,7 @@ export function VillaDetailPage() {
       {villa && (
         <BookingExperience
           isOpen={reservationOpen}
-          onClose={() => setReservationOpen(false)}
+          onClose={closeReservation}
           property={{
             id: villa.id,
             name: villa.name,
@@ -776,6 +818,7 @@ export function VillaDetailPage() {
           partyFeeActive={partyFeeActive}
           partyFeeAmount={partyFeeAmount}
           onPartyFeeToggle={setPartyFeeActive}
+          initialArrivalDate={calendarSelectedDate}
         />
       )}
       {villa && (
@@ -787,7 +830,7 @@ export function VillaDetailPage() {
           partyFeeActive={partyFeeActive}
           partyFeeAmount={partyFeeAmount}
           onPartyFeeToggle={setPartyFeeActive}
-          onReserve={() => setReservationOpen(true)}
+          onReserve={openReservation}
         />
       )}
     </>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Clock, CalendarDays } from "lucide-react";
 import { cn } from "../../lib/cn";
 import {
@@ -58,6 +58,16 @@ export function ArrivalDateTimePicker({
     : { year: todayY, month: todayMonthIndex };
 
   const [view, setView] = useState(initial);
+
+  useEffect(() => {
+    if (!arrivalDate) return;
+    const [y, m] = arrivalDate.split("-").map(Number);
+    setView((prev) =>
+      prev.year === y && prev.month === m - 1
+        ? prev
+        : { year: y, month: m - 1 },
+    );
+  }, [arrivalDate]);
 
   const firstDay = new Date(view.year, view.month, 1).getDay();
   const daysInMonth = getDaysInMonth(view.year, view.month);

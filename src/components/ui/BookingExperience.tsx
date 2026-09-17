@@ -36,9 +36,8 @@ import {
   KRIB1_STANDARD_CAPACITY,
   KRIB1_PARTY_MAX_CAPACITY,
   computeTotalAdditionalCharges,
-  ARRIVAL_TIME_SLOTS,
-  toLocalDateString,
 } from "../../lib/bookingTime";
+import { getUnavailableDates, isBlockedArrival } from "../../lib/availability";
 
 interface PropertyInfo {
   id: string;
@@ -56,6 +55,7 @@ interface BookingExperienceProps {
   partyFeeActive?: boolean;
   partyFeeAmount?: number;
   onPartyFeeToggle?: (active: boolean) => void;
+  initialArrivalDate?: string | null;
 }
 
 type Step = 1 | 2 | 3 | 4;
@@ -133,57 +133,6 @@ function getVillaImage(villaId: string): string {
   return images.krib1;
 }
 
-function dateWithOffset(date: string, offset: number): string {
-  const value = new Date(`${date}T00:00:00Z`);
-  value.setUTCDate(value.getUTCDate() + offset);
-  return value.toISOString().slice(0, 10);
-}
-
-function overlaps(
-  firstArrival: string,
-  firstCheckout: string,
-  secondArrival: string,
-  secondCheckout: string,
-): boolean {
-  return firstArrival < secondCheckout && firstCheckout > secondArrival;
-}
-
-function isBlockedArrival(
-  arrivalDate: string,
-  arrivalTime: string,
-  reservations: AvailabilityReservation[],
-): boolean {
-  const arrival = combineArrivalDatetime(arrivalDate, arrivalTime);
-  const checkout = computeCheckout(arrival);
-  if (new Date(arrival).getTime() <= Date.now()) return true;
-  return reservations.some((reservation) =>
-    overlaps(
-      arrival,
-      checkout,
-      reservation.arrival_datetime,
-      reservation.checkout_datetime,
-    ),
-  );
-}
-
-function getUnavailableDates(
-  reservations: AvailabilityReservation[],
-  isKrib1Villa: boolean,
-): Set<string> {
-  const today = toLocalDateString(new Date());
-  const times = isKrib1Villa ? [KRIB1_FIXED_CHECKIN_TIME] : ARRIVAL_TIME_SLOTS;
-  const unavailable = new Set<string>();
-
-  for (let offset = 0; offset <= 730; offset += 1) {
-    const date = dateWithOffset(today, offset);
-    if (times.every((time) => isBlockedArrival(date, time, reservations))) {
-      unavailable.add(date);
-    }
-  }
-
-  return unavailable;
-}
-
 const STEP_META: {
   label: string;
   icon: typeof CalendarDays;
@@ -224,6 +173,7 @@ export function BookingExperience({
   partyFeeActive,
   partyFeeAmount,
   onPartyFeeToggle,
+  initialArrivalDate,
 }: BookingExperienceProps) {
   const [step, setStep] = useState<Step>(1);
   const [direction, setDirection] = useState(1);
@@ -271,7 +221,7 @@ export function BookingExperience({
       setDirection(1);
       setSubmitState("idle");
       setReservationId("");
-      setArrivalDate(null);
+      setArrivalDate(initialArrivalDate ?? null);
       setArrivalTime(null);
       setGuests({ adults: 2, children: 0, infants: 0, pets: 0 });
       setIsParty(false);
