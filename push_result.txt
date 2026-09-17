@@ -1,0 +1,17 @@
+Initialising login role...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ ΓÇó 20260917000004_manual_reservation_guest_count_fix.sql
+
+ [Y/n] Applying migration 20260917000004_manual_reservation_guest_count_fix.sql...
+NOTICE (00000): function public.create_manual_reservation(uuid,uuid,timestamptz,text,pg_catalog.bool,uuid) does not exist, skipping
+ERROR: duplicate key value violates unique constraint "schema_migrations_pkey" (SQLSTATE 23505)
+Key (version)=(20260917000004) already exists.                                                 
+At statement: 7                                                                                
+-- ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ                                              
+-- Reversible:                                                                                 
+-- DROP FUNCTION IF EXISTS public.create_manual_reservation(                                   
+--   UUID, UUID, TIMESTAMPTZ, TEXT, BOOLEAN, UUID, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER 
+-- );                                                                                          
+-- ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ                                              
+Try rerunning the command with --debug to troubleshoot the error.

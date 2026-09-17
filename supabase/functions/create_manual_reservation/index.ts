@@ -109,6 +109,9 @@ Deno.serve(async (req: Request) => {
     if (!Number.isInteger(infants) || infants < 0) return badRequest('infants must be a non-negative integer')
     if (!Number.isInteger(pets) || pets < 0) return badRequest('pets must be a non-negative integer')
 
+    // guest_count is derived server-side and re-validated inside the RPC
+    // (create_manual_reservation): guest_count = adults + children.
+    // Infants and pets are never counted toward the guest limit.
     const guestCount = adults + children
     const isParty = input.is_party === true
     const admin = getAdminClient()
@@ -142,6 +145,11 @@ Deno.serve(async (req: Request) => {
       p_special_requests: input.special_requests?.trim() ?? '',
       p_is_party: isParty,
       p_admin_user_id: auth.admin.id,
+      p_guest_count: guestCount,
+      p_adults: adults,
+      p_children: children,
+      p_infants: infants,
+      p_pets: pets,
     })
     const created = createdData as { id: string } | null
 
