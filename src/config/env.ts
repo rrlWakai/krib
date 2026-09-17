@@ -4,6 +4,7 @@ const envSchema = z.object({
   VITE_SUPABASE_URL: z.string().url(),
   VITE_SUPABASE_ANON_KEY: z.string().min(1),
   VITE_APP_TITLE: z.string().min(1).default('KRiB Beverly Place'),
+  VITE_VAPID_PUBLIC_KEY: z.string().min(1).optional(),
 })
 
 const parsed = envSchema.safeParse(import.meta.env)

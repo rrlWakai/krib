@@ -225,6 +225,55 @@ Deno.serve(async (req: Request) => {
       return mapReservationError(reservationError)
     }
 
+    // Notify active admins (best-effort: notification failure must never
+    // roll back a successful reservation).
+    try {
+      const { data: admins } = await admin
+        .from('admin_users')
+        .select('id')
+        .eq('is_active', true)
+
+      if (admins && admins.length > 0) {
+        await admin.from('admin_notifications').insert(
+          admins.map((a: { id: string }) => ({
+            admin_user_id: a.id,
+            type: 'new_reservation',
+            title: 'New Reservation',
+            message: `A new reservation has been submitted for ${villa.name}.`,
+            reservation_id: reservation.id,
+          })),
+        )
+      }
+    } catch (err) {
+      console.error('Admin notification creation failed:', err)
+    }
+
+    // Fire-and-forget browser push delivery (async, isolated from success).
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      if (supabaseUrl && serviceRoleKey) {
+        const pushReq = fetch(
+          `${supabaseUrl}/functions/v1/send_push_notifications`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${serviceRoleKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'new_reservation',
+              reservation_id: reservation.id,
+              villa_name: villa.name,
+            }),
+          },
+        )
+        pushReq.catch(() => {})
+      }
+    } catch (err) {
+      console.error('Browser push trigger failed:', err)
+    }
+
     // B1: notify the owner on every new reservation request (best-effort).
     try {
       const r = reservation as unknown as {

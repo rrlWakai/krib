@@ -5,6 +5,7 @@ import { NAV_ITEMS } from "../data/constants";
 import { cn } from "../../lib/cn";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { isSupportedAvatarUrl } from "../../lib/supabase/helpers";
+import { NotificationBell } from "../components/NotificationBell";
 
 interface WorkspaceHeaderProps {
   onToggleSidebar: () => void;
@@ -85,7 +86,7 @@ export function WorkspaceHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {!isMobile && (
           <div className="relative">
             <Search
@@ -102,6 +103,7 @@ export function WorkspaceHeader({
         <span className="hidden font-body text-[12px] text-[#757575] sm:block">
           {dateStr}
         </span>
+        <NotificationBell />
         <Link
           to="/admin/profile"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0A1F44] font-body text-[12px] font-medium leading-none text-white"

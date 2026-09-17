@@ -5,6 +5,7 @@ import {
   Globe,
   Bell,
   BellOff,
+  BellRing,
   Save,
   Smartphone,
   UserCheck,
@@ -20,6 +21,7 @@ import { fetchAdminUsers, fetchSiteSettingsAdmin } from "../services/api";
 import { approveAdminUser, updateSiteSettings } from "../services/mutations";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { clearSiteSettingsCache } from "../../services/api/settings";
+import { useBrowserPush } from "../hooks/useBrowserPush";
 import type {
   SiteSettings,
   BusinessSettings,
@@ -534,6 +536,8 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        <BrowserNotificationsSection />
+
         {/* Legal */}
         <section className="border border-[#ECECEC] rounded-lg bg-white p-5">
           <div className="mb-4 flex items-center gap-3">
@@ -579,6 +583,108 @@ export default function SettingsPage() {
         </section>
       </div>
     </motion.div>
+  );
+}
+
+function BrowserNotificationsSection() {
+  const {
+    supported,
+    status,
+    subscribing,
+    unsubscribing,
+    error,
+    enable,
+    disable,
+  } = useBrowserPush();
+
+  const statusMeta: Record<string, { label: string; color: string }> = {
+    unsupported: {
+      label: "Not supported on this browser",
+      color: "text-red-600",
+    },
+    idle: { label: "Not enabled", color: "text-[#757575]" },
+    granted: { label: "Permission granted — not enabled", color: "text-[#757575]" },
+    denied: { label: "Permission denied", color: "text-red-600" },
+    enabled: { label: "Enabled", color: "text-[#2F6B3B]" },
+  };
+
+  const meta = statusMeta[status] ?? statusMeta.idle;
+
+  return (
+    <section className="border border-[#ECECEC] rounded-lg bg-white p-5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]">
+          <BellRing size={16} className="text-[#0A1F44]" />
+        </div>
+        <div className="flex-1">
+          <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">
+            Browser Notifications
+          </h2>
+          <p className="font-body text-[12px] text-[#757575]">
+            Get push alerts in this browser when a new reservation is submitted.
+          </p>
+        </div>
+      </div>
+
+      {!supported ? (
+        <div className="flex items-center gap-3 rounded-lg bg-[#FAFAFA] p-4">
+          <BellOff size={14} className="shrink-0 text-[#757575]" />
+          <p className="font-body text-[12px] text-[#757575]">
+            Your browser does not support push notifications. Use a recent
+            version of Chrome, Edge, Firefox, or Safari.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FAFAFA] p-4">
+            <div className="flex items-center gap-3">
+              {status === "enabled" ? (
+                <Bell size={14} className="shrink-0 text-[#2F6B3B]" />
+              ) : status === "denied" ? (
+                <BellOff size={14} className="shrink-0 text-red-600" />
+              ) : (
+                <Bell size={14} className="shrink-0 text-[#C9A227]" />
+              )}
+              <p className={cn("font-body text-[12px] font-medium", meta.color)}>
+                {meta.label}
+              </p>
+            </div>
+            {status === "enabled" ? (
+              <button
+                onClick={() => void disable()}
+                disabled={unsubscribing}
+                className="min-h-[36px] rounded-lg border border-[#ECECEC] px-4 font-body text-[12px] font-medium text-[#757575] transition-colors hover:bg-[#FAFAFA] disabled:opacity-50"
+              >
+                {unsubscribing ? "Disabling…" : "Disable"}
+              </button>
+            ) : (
+              <button
+                onClick={() => void enable()}
+                disabled={subscribing || status === "denied"}
+                className="min-h-[36px] rounded-lg bg-[#0A1F44] px-4 font-body text-[12px] font-medium text-white transition-opacity disabled:opacity-50"
+              >
+                {subscribing ? "Enabling…" : "Enable Notifications"}
+              </button>
+            )}
+          </div>
+
+          {status === "denied" && (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 font-body text-[12px] text-amber-800">
+              Notifications are blocked in your browser. Enable them in your
+              browser's site settings to receive browser push alerts. You can
+              still use the dashboard — new reservations will appear in the
+              notification bell.
+            </p>
+          )}
+
+          {error && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 font-body text-[12px] text-red-700">
+              {error}
+            </p>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 

@@ -66,6 +66,54 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notifications: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          reservation_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          reservation_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          reservation_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -154,6 +202,50 @@ export type Database = {
           phone?: string
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          admin_user_id: string
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          is_active: boolean
+          p256dh: string
+          updated_at: string
+          user_agent: string
+        }
+        Insert: {
+          admin_user_id: string
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          is_active?: boolean
+          p256dh: string
+          updated_at?: string
+          user_agent?: string
+        }
+        Update: {
+          admin_user_id?: string
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          is_active?: boolean
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reservations: {
         Row: {
@@ -404,6 +496,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_user_id: { Args: never; Returns: string }
       approve_admin_user: {
         Args: { target_admin_id: string }
         Returns: Database["public"]["Tables"]["admin_users"]["Row"]
