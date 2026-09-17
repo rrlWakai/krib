@@ -3,7 +3,6 @@ import {
   KRIB1_FIXED_CHECKIN_TIME,
   combineArrivalDatetime,
   computeCheckout,
-  isKrib1,
   toLocalDateString,
 } from './bookingTime'
 import type { AvailabilityReservation } from '../services/api/availability'
