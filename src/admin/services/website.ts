@@ -94,6 +94,22 @@ export async function fetchGalleryAdmin(): Promise<AdminGalleryImage[]> {
   return (data ?? []) as unknown as AdminGalleryImage[]
 }
 
+export interface AdminVillaOption {
+  id: string
+  slug: string
+  name: string
+}
+
+export async function fetchAdminVillas(): Promise<AdminVillaOption[]> {
+  const supabase = getSupabaseClient()
+  const { data, error } = await supabase
+    .from('villas')
+    .select('id, slug, name')
+    .order('name', { ascending: true })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as unknown as AdminVillaOption[]
+}
+
 // ──────────────────────────────────────────────
 // Audit trail
 // ──────────────────────────────────────────────
