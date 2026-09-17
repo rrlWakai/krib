@@ -32,9 +32,9 @@ import {
   formatArrivalLabel,
   formatCheckoutLabel,
   isKrib1,
-  KRIB1_FIXED_CHECKIN_TIME,
+  hasFixedCheckin,
+  getFixedCheckinTime,
   KRIB1_STANDARD_CAPACITY,
-  KRIB1_PARTY_MAX_CAPACITY,
   computeTotalAdditionalCharges,
 } from "../../lib/bookingTime";
 import { getUnavailableDates, isBlockedArrival } from "../../lib/availability";
@@ -44,7 +44,6 @@ interface PropertyInfo {
   name: string;
   priceDetails: { perNight: string; rateType: string };
   maxGuests: number;
-  maxAbsoluteCapacity?: number;
   partyFeeLabel?: string;
 }
 
@@ -295,9 +294,12 @@ export function BookingExperience({
   const basePrice = parsePrice(property.priceDetails.perNight);
   const totalGuests = guests.adults + guests.children;
   const isKrib1Villa = isKrib1(property.id);
-  const maxCap = property.maxAbsoluteCapacity ?? property.maxGuests;
+  const hasFixedCheckinVilla = hasFixedCheckin(property.id);
   const isOverCapacity = isKrib1Villa && totalGuests > KRIB1_STANDARD_CAPACITY;
   const isPartyValid = isParty && isKrib1Villa;
+  const fixedCheckinTime = hasFixedCheckinVilla
+    ? (getFixedCheckinTime(property.id) ?? undefined)
+    : undefined;
   const { additionalGuestFee } = computeTotalAdditionalCharges(
     property.id,
     totalGuests,
@@ -307,13 +309,13 @@ export function BookingExperience({
   const partyFee = isPartyValid ? partyFeeRate : 0;
   const total = basePrice + additionalGuestFee + partyFee;
 
-  // For KRiB 1: auto-set fixed arrival time when a date is selected
-  const effectiveArrivalTime = isKrib1Villa
-    ? KRIB1_FIXED_CHECKIN_TIME
+  // For KRiB 1 and KRiB 2: auto-set fixed arrival time when a date is selected
+  const effectiveArrivalTime = hasFixedCheckinVilla
+    ? getFixedCheckinTime(property.id)!
     : arrivalTime;
   const unavailableDates = getUnavailableDates(
     availabilityReservations,
-    isKrib1Villa,
+    property.id,
   );
   const isTimeUnavailable = (time: string) =>
     !!arrivalDate &&
@@ -350,10 +352,8 @@ export function BookingExperience({
     const errs: Record<string, string> = {};
     if (s === 1) {
       if (!arrivalDate) errs.date = "Please select a date";
-      if (!isKrib1Villa && !arrivalTime) errs.time = "Please select a time";
-      if (isKrib1Villa && totalGuests > KRIB1_PARTY_MAX_CAPACITY) {
-        errs.guests = `KRiB 1 has a maximum capacity of ${KRIB1_PARTY_MAX_CAPACITY} guests`;
-      }
+      if (!hasFixedCheckinVilla && !arrivalTime)
+        errs.time = "Please select a time";
     }
     if (s === 3) {
       if (!fullName.trim()) errs.fullName = "Name is required";
@@ -585,23 +585,29 @@ export function BookingExperience({
           </div>
         )}
 
-        {onPartyFeeToggle && isKrib1Villa && (
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => {
-                  const next = !isParty;
-                  setIsParty(next);
-                  onPartyFeeToggle(next);
-                }}
+        {onPartyFeeToggle && hasFixedCheckinVilla && (
+          <button
+            type="button"
+            onClick={() => {
+              const next = !isParty;
+              setIsParty(next);
+              onPartyFeeToggle(next);
+            }}
+            className={cn(
+              "flex w-full items-center justify-between gap-4 py-3 transition-colors duration-200 cursor-pointer",
+              "hover:text-primary",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+            )}
+            role="switch"
+            aria-checked={isParty}
+            aria-label="Toggle party fee"
+          >
+            <div className="flex items-center gap-3 shrink-0">
+              <div
                 className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-out cursor-pointer shrink-0",
-                  isParty ? "bg-primary" : "bg-outline/40",
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-out shrink-0",
+                  isParty ? "bg-primary" : "bg-outline/30",
                 )}
-                role="switch"
-                aria-checked={isParty}
-                aria-label="Toggle party fee"
               >
                 <motion.span
                   animate={{ x: isParty ? 20 : 0 }}
@@ -613,8 +619,13 @@ export function BookingExperience({
                   }}
                   className="absolute left-1 inline-block h-4 w-4 rounded-full bg-white shadow-sm"
                 />
-              </button>
-              <span className="font-body text-sm text-on-surface-variant">
+              </div>
+              <span
+                className={cn(
+                  "font-body text-sm font-medium",
+                  isParty ? "text-on-surface" : "text-on-surface-variant",
+                )}
+              >
                 Party fee
               </span>
             </div>
@@ -623,32 +634,41 @@ export function BookingExperience({
               initial={{ opacity: 0, x: 4 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="font-body text-sm text-on-surface font-medium tabular-nums"
+              className={cn(
+                "font-body text-sm font-medium tabular-nums shrink-0",
+                isParty ? "text-primary" : "text-on-surface-variant/60",
+              )}
             >
-              {isParty ? formatPrice(partyFeeRate) : "—"}
+              {isParty ? (
+                formatPrice(partyFeeRate)
+              ) : (
+                <span className="text-on-surface-variant/40">₱5,000</span>
+              )}
             </motion.span>
-          </div>
+          </button>
         )}
 
-        {isParty && isKrib1Villa && (
-          <p className="font-body text-xs text-secondary/80 pl-52px -mt-1">
-            Includes venue setup for celebrations
-          </p>
-        )}
-
-        {!isKrib1Villa && onPartyFeeToggle && (
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => onPartyFeeToggle(!partyFeeActive!)}
+        {!hasFixedCheckinVilla && onPartyFeeToggle && (
+          <button
+            type="button"
+            onClick={() => onPartyFeeToggle(!partyFeeActive!)}
+            className={cn(
+              "flex w-full items-center justify-between gap-4 py-3 rounded-lg border transition-colors duration-200 cursor-pointer",
+              partyFeeActive
+                ? "bg-primary/5 border-primary/20"
+                : "bg-surface-container-low border-outline-variant/30 hover:bg-surface-container hover:border-primary/20",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+            )}
+            role="switch"
+            aria-checked={!!partyFeeActive}
+            aria-label="Toggle party fee"
+          >
+            <div className="flex items-center gap-3 shrink-0">
+              <div
                 className={cn(
-                  "relative inline-flex h-22px w-10 items-center rounded-full transition-colors duration-300 cursor-pointer shrink-0",
-                  partyFeeActive ? "bg-primary" : "bg-outline/40",
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-out shrink-0",
+                  partyFeeActive ? "bg-primary" : "bg-outline/30",
                 )}
-                role="switch"
-                aria-checked={!!partyFeeActive}
-                aria-label="Toggle party fee"
               >
                 <motion.span
                   animate={{ x: partyFeeActive ? 20 : 0 }}
@@ -660,8 +680,15 @@ export function BookingExperience({
                   }}
                   className="absolute left-1 inline-block h-4 w-4 rounded-full bg-white shadow-sm"
                 />
-              </button>
-              <span className="font-body text-sm text-on-surface-variant">
+              </div>
+              <span
+                className={cn(
+                  "font-body text-sm font-medium",
+                  partyFeeActive
+                    ? "text-on-surface"
+                    : "text-on-surface-variant",
+                )}
+              >
                 Party fee
               </span>
             </div>
@@ -670,17 +697,18 @@ export function BookingExperience({
               initial={{ opacity: 0, x: 4 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="font-body text-sm text-on-surface font-medium tabular-nums"
+              className={cn(
+                "font-body text-sm font-medium tabular-nums shrink-0",
+                partyFeeActive ? "text-primary" : "text-on-surface-variant/60",
+              )}
             >
-              {partyFeeActive ? formatPrice(partyFeeRate) : "—"}
+              {partyFeeActive ? (
+                formatPrice(partyFeeRate)
+              ) : (
+                <span className="text-on-surface-variant/40">₱5,000</span>
+              )}
             </motion.span>
-          </div>
-        )}
-
-        {!isKrib1Villa && partyFeeActive && (
-          <p className="font-body text-xs text-secondary/80 pl-52px -mt-1">
-            Includes venue setup for celebrations
-          </p>
+          </button>
         )}
 
         {isOverCapacity && (
@@ -774,7 +802,8 @@ export function BookingExperience({
               onArrivalTimeChange={setArrivalTime}
               dateError={errors.date}
               timeError={errors.time}
-              isKrib1={isKrib1Villa}
+              fixedTime={fixedCheckinTime}
+              fixedTimeLabel={fixedCheckinTime ? "2:00 PM (Fixed)" : undefined}
               unavailableDates={unavailableDates}
               isTimeUnavailable={isTimeUnavailable}
               availabilityLoading={availabilityLoading}
@@ -784,7 +813,6 @@ export function BookingExperience({
           {step === 2 && (
             <StepGuests
               maxGuests={property.maxGuests}
-              maxAbsoluteCapacity={maxCap}
               villaName={property.name}
               guests={guests}
               onChange={setGuests}
@@ -1248,7 +1276,8 @@ function StepDate({
   onArrivalTimeChange,
   dateError,
   timeError,
-  isKrib1,
+  fixedTime,
+  fixedTimeLabel,
   unavailableDates,
   isTimeUnavailable,
   availabilityLoading,
@@ -1260,7 +1289,8 @@ function StepDate({
   onArrivalTimeChange: (time: string) => void;
   dateError?: string;
   timeError?: string;
-  isKrib1?: boolean;
+  fixedTime?: string;
+  fixedTimeLabel?: string;
   unavailableDates: Set<string>;
   isTimeUnavailable: (time: string) => boolean;
   availabilityLoading: boolean;
@@ -1275,8 +1305,8 @@ function StepDate({
         onArrivalTimeChange={onArrivalTimeChange}
         dateError={dateError}
         timeError={timeError}
-        fixedTime={isKrib1 ? "14:00" : undefined}
-        fixedTimeLabel={isKrib1 ? "2:00 PM (Fixed)" : undefined}
+        fixedTime={fixedTime}
+        fixedTimeLabel={fixedTimeLabel}
         unavailableDates={unavailableDates}
         isTimeUnavailable={isTimeUnavailable}
         availabilityLoading={availabilityLoading}
@@ -1305,14 +1335,12 @@ function StepDate({
    ====================================================================== */
 function StepGuests({
   maxGuests,
-  maxAbsoluteCapacity,
   villaName,
   guests,
   onChange,
   isKrib1,
 }: {
   maxGuests: number;
-  maxAbsoluteCapacity: number;
   villaName: string;
   guests: GuestCount;
   onChange: (g: GuestCount) => void;
@@ -1325,7 +1353,6 @@ function StepGuests({
     <div>
       <GuestSelector
         maxGuests={maxGuests}
-        maxAbsoluteCapacity={maxAbsoluteCapacity}
         villaName={villaName}
         value={guests}
         onChange={onChange}
@@ -1354,9 +1381,9 @@ function StepGuests({
                   Standard capacity: {maxGuests} guests
                 </p>
                 <p className="font-body text-xs text-on-surface-variant/60 mt-0.5">
-                  Up to {maxAbsoluteCapacity} guests possible for parties
-                  (₱200/person above {maxGuests}). Requests above {maxGuests}{" "}
-                  guests require admin approval.
+                  Additional guests can be requested at ₱200/person above{" "}
+                  {maxGuests}. Requests above {maxGuests} guests require admin
+                  approval.
                 </p>
               </>
             ) : (

@@ -275,7 +275,6 @@ export default function ReservationDetail() {
                 ...(res.villa.slug === 'krib-1'
                   ? [
                       { label: 'Standard Capacity', count: KRIB1_STANDARD_CAPACITY },
-                      { label: 'Max Capacity', count: 60 },
                     ]
                   : [{ label: 'Max Capacity', count: res.villa.max_guests }]),
               ].map((g) => (

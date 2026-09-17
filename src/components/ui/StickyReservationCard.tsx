@@ -12,7 +12,6 @@ interface StickyReservationCardProps {
   villaName: string;
   villaId?: string;
   maxGuests: number;
-  maxAbsoluteCapacity?: number;
   partyFeeActive?: boolean;
   partyFeeAmount?: number;
   onPartyFeeToggle?: (active: boolean) => void;
@@ -33,7 +32,6 @@ export function StickyReservationCard({
   villaName,
   villaId,
   maxGuests,
-  maxAbsoluteCapacity,
   partyFeeActive,
   partyFeeAmount,
   onPartyFeeToggle,
@@ -52,7 +50,7 @@ export function StickyReservationCard({
   const krib1 = !!villaId && isKrib1(villaId);
   const totalGuests = guests.adults + guests.children;
   const additionalGuests = krib1 ? Math.max(0, totalGuests - KRIB1_STANDARD_CAPACITY) : 0;
-  const additionalGuestFee = additionalGuests * KRIB1_ADDITIONAL_GUEST_FEE;
+  const additionalGuestFee = (krib1 && !partyFeeActive) ? additionalGuests * KRIB1_ADDITIONAL_GUEST_FEE : 0;
   const displayTotal = total + additionalGuestFee;
 
   return (
@@ -103,7 +101,6 @@ export function StickyReservationCard({
               </label>
               <GuestSelector
                 maxGuests={maxGuests}
-                maxAbsoluteCapacity={maxAbsoluteCapacity}
                 villaName={villaName}
                 value={guests}
                 onChange={setGuests}
@@ -144,53 +141,53 @@ export function StickyReservationCard({
 
         {/* Party Fee Toggle */}
         {onPartyFeeToggle && (
-          <div className="pt-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => onPartyFeeToggle(!partyFeeActive)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 cursor-pointer",
-                    partyFeeActive ? "bg-primary" : "bg-outline/50",
-                  )}
-                  role="switch"
-                  aria-checked={partyFeeActive}
-                  aria-label="Toggle party fee"
-                >
-                  <motion.span
-                    layout
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className={cn(
-                      "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
-                      partyFeeActive ? "translate-x-5.5" : "translate-x-1",
-                    )}
-                  />
-                </button>
-                <span className="font-body text-body-md text-on-surface-variant">
-                  Party fee
-                </span>
-              </div>
-              <motion.span
-                key={partyFeeActive ? "active" : "inactive"}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="font-body text-body-md text-on-surface"
-              >
-                {partyFeeActive ? formatPrice(partyFee) : "—"}
-              </motion.span>
-            </div>
-            {partyFeeActive && (
-              <motion.p
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="font-body text-[12px] text-secondary mt-2 ml-12"
-              >
-                Includes venue setup for parties and celebrations
-              </motion.p>
+          <button
+            type="button"
+            onClick={() => onPartyFeeToggle(!partyFeeActive)}
+            className={cn(
+              "flex w-full items-center justify-between gap-4 py-2 rounded-lg border transition-colors duration-200 cursor-pointer",
+              partyFeeActive
+                ? "bg-primary/5 border-primary/20"
+                : "bg-surface-container-low border-outline-variant/30 hover:bg-surface-container hover:border-primary/20",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
             )}
-          </div>
+            role="switch"
+            aria-checked={partyFeeActive}
+            aria-label="Toggle party fee"
+          >
+            <div className="flex items-center gap-3 shrink-0">
+              <div className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-out shrink-0",
+                partyFeeActive ? "bg-primary" : "bg-outline/30",
+              )}>
+                <motion.span
+                  layout
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className={cn(
+                    "inline-block h-4 w-4 rounded-full bg-white shadow-sm",
+                    partyFeeActive ? "translate-x-5.5" : "translate-x-1",
+                  )}
+                />
+              </div>
+              <span className={cn(
+                "font-body text-body-md font-medium",
+                partyFeeActive ? "text-on-surface" : "text-on-surface-variant",
+              )}>
+                Party fee
+              </span>
+            </div>
+            <motion.span
+              key={partyFeeActive ? "active" : "inactive"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={cn(
+                "font-body text-body-md font-medium shrink-0",
+                partyFeeActive ? "text-primary" : "text-on-surface-variant/60",
+              )}
+            >
+              {partyFeeActive ? formatPrice(partyFee) : <span className="text-on-surface-variant/40">₱5,000</span>}
+            </motion.span>
+          </button>
         )}
       </div>
     </motion.div>

@@ -2,9 +2,7 @@ export const STAY_HOURS = 21
 export const ASIA_MANILA_UTC_OFFSET_MINUTES = 480
 
 export const ARRIVAL_TIME_SLOTS = [
-
   '14:00',
-
 ] as const
 
 export const DEFAULT_ARRIVAL_TIME = '14:00'
@@ -12,12 +10,28 @@ export const DEFAULT_ARRIVAL_TIME = '14:00'
 // KRiB 1: Fixed 2:00 PM check-in
 export const KRIB1_FIXED_CHECKIN_TIME = '14:00'
 export const KRIB1_STANDARD_CAPACITY = 20
-export const KRIB1_PARTY_MAX_CAPACITY = 60
 export const KRIB1_ADDITIONAL_GUEST_FEE = 200
 export const KRIB1_PARTY_FEE = 5000
 
+// KRiB 2: Fixed 2:00 PM check-in
+export const KRIB2_FIXED_CHECKIN_TIME = '14:00'
+
 export function isKrib1(villaId: string): boolean {
   return villaId === 'krib-1'
+}
+
+export function isKrib2(villaId: string): boolean {
+  return villaId === 'krib-2'
+}
+
+export function hasFixedCheckin(villaId: string): boolean {
+  return isKrib1(villaId) || isKrib2(villaId)
+}
+
+export function getFixedCheckinTime(villaId: string): string | null {
+  if (isKrib1(villaId)) return KRIB1_FIXED_CHECKIN_TIME
+  if (isKrib2(villaId)) return KRIB2_FIXED_CHECKIN_TIME
+  return null
 }
 
 export function computeAdditionalGuestFee(
@@ -42,8 +56,8 @@ export function computeTotalAdditionalCharges(
   guestCount: number,
   isParty: boolean,
 ): { additionalGuestFee: number; partyFee: number; total: number } {
-  const additionalGuestFee = computeAdditionalGuestFee(villaId, guestCount)
   const partyFee = computePartyFee(villaId, isParty)
+  const additionalGuestFee = isParty ? 0 : computeAdditionalGuestFee(villaId, guestCount)
   return { additionalGuestFee, partyFee, total: additionalGuestFee + partyFee }
 }
 

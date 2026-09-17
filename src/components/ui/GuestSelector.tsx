@@ -11,7 +11,6 @@ export interface GuestCount {
 
 interface GuestSelectorProps {
   maxGuests: number
-  maxAbsoluteCapacity?: number
   villaName: string
   value?: GuestCount
   onChange?: (guests: GuestCount) => void
@@ -44,7 +43,7 @@ const sheetVariants = {
   exit: { y: '100%', transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const } },
 }
 
-export function GuestSelector({ maxGuests, maxAbsoluteCapacity, villaName, value, onChange }: GuestSelectorProps) {
+export function GuestSelector({ maxGuests, villaName, value, onChange }: GuestSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [guests, setGuests] = useState<GuestCount>(value ?? defaultGuests)
   const [isMobile, setIsMobile] = useState(false)
@@ -110,34 +109,28 @@ export function GuestSelector({ maxGuests, maxAbsoluteCapacity, villaName, value
     return () => document.removeEventListener('keydown', handleTab)
   }, [isOpen])
 
-  const totalOccupancy = guests.adults + guests.children
-  const effectiveMax = maxAbsoluteCapacity ?? maxGuests
-  const atCapacity = totalOccupancy >= effectiveMax
+const totalOccupancy = guests.adults + guests.children
   const overStandard = totalOccupancy > maxGuests
 
   const updateCount = useCallback((key: keyof GuestCount, delta: number) => {
     setGuests((prev) => {
       const next = { ...prev, [key]: Math.max(prev[key] + delta, 0) }
-      if (key === 'adults' || key === 'children') {
-        const newOcc = next.adults + next.children
-        if (newOcc > effectiveMax) return prev
-      }
       if (key === 'adults' && next.adults < 1) return prev
       const cat = CATEGORIES.find((c) => c.key === key)
       if (cat && next[key] > cat.max) return prev
       onChange?.(next)
       return next
     })
-  }, [effectiveMax, onChange])
+  }, [onChange])
 
   const canIncrement = useCallback((key: keyof GuestCount) => {
     if (key === 'adults' || key === 'children') {
-      return !atCapacity
+      return true // No hard maximum - standard capacity is a pricing threshold, not a limit
     }
     const cat = CATEGORIES.find((c) => c.key === key)
     if (cat && guests[key] >= cat.max) return false
     return true
-  }, [atCapacity, guests])
+  }, [guests])
 
   const totalGuests = guests.adults + guests.children
   const summaryLabel = `${totalGuests} ${totalGuests === 1 ? 'Guest' : 'Guests'}`
@@ -287,20 +280,12 @@ export function GuestSelector({ maxGuests, maxAbsoluteCapacity, villaName, value
             )}
           </motion.div>
         )}
-      </AnimatePresence>
+</AnimatePresence>
 
-      {atCapacity && (
-        <div className="mt-2 p-3 rounded-lg bg-surface-container-low border border-outline-variant/20">
-          <p className="font-body text-[13px] text-primary font-medium">
-            Maximum occupancy of {effectiveMax} guests reached for {villaName}.
-          </p>
-        </div>
-      )}
-
-      {overStandard && !atCapacity && (
+      {overStandard && (
         <div className="mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200/60">
           <p className="font-body text-[13px] text-amber-800 font-medium">
-            More than {maxGuests} guests requires admin approval. Additional guests are ₱200 per person.
+            More than {maxGuests} guests requires admin approval for {villaName}. Additional guests are ₱200 per person.
           </p>
         </div>
       )}
@@ -375,7 +360,7 @@ function PanelContent({
 
       <div className="py-4 flex items-center justify-between border-t border-outline-variant/60">
         <p className="font-body text-[13px] font-semibold text-on-surface-variant">
-          Max occupancy: {maxGuests} guests
+          Standard capacity: {maxGuests} guests
         </p>
       </div>
     </div>

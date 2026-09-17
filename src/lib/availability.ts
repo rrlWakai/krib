@@ -1,6 +1,8 @@
 import {
   ARRIVAL_TIME_SLOTS,
   KRIB1_FIXED_CHECKIN_TIME,
+  KRIB2_FIXED_CHECKIN_TIME,
+  hasFixedCheckin,
   combineArrivalDatetime,
   computeCheckout,
   toLocalDateString,
@@ -51,10 +53,13 @@ export function isBlockedArrival(
 
 export function getUnavailableDates(
   reservations: AvailabilityReservation[],
-  isKrib1Villa: boolean,
+  villaId: string,
 ): Set<string> {
   const today = toLocalDateString(new Date())
-  const times = isKrib1Villa ? [KRIB1_FIXED_CHECKIN_TIME] : ARRIVAL_TIME_SLOTS
+  const fixedTime = hasFixedCheckin(villaId)
+    ? (villaId === 'krib-1' ? KRIB1_FIXED_CHECKIN_TIME : KRIB2_FIXED_CHECKIN_TIME)
+    : null
+  const times = fixedTime ? [fixedTime] : ARRIVAL_TIME_SLOTS
   const unavailable = new Set<string>()
 
   for (let offset = 0; offset <= 730; offset += 1) {

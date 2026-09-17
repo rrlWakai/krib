@@ -9,7 +9,6 @@ const STAY_HOURS = 21
 
 // KRiB 1 constants (server-authoritative)
 const KRIB1_STANDARD_CAPACITY = 20
-const KRIB1_PARTY_MAX_CAPACITY = 60
 const KRIB1_ADDITIONAL_GUEST_FEE = 200
 const KRIB1_PARTY_FEE = 5000
 
@@ -145,15 +144,6 @@ Deno.serve(async (req: Request) => {
     if (villaError) throw villaError
     if (!villa) return badRequest(`Villa not found: ${input.villa_id}`)
 
-    // ── KRiB 1 server-side validation ──────────
-    if (villa.slug === 'krib-1') {
-      if (guestCount > KRIB1_PARTY_MAX_CAPACITY) {
-        return badRequest(
-          `KRiB 1 maximum capacity is ${KRIB1_PARTY_MAX_CAPACITY} guests. You requested ${guestCount}.`,
-        )
-      }
-    }
-
     const { data: guest, error: guestError } = await admin
       .from('guests')
       .upsert(
@@ -177,7 +167,7 @@ Deno.serve(async (req: Request) => {
 
     if (villa.slug === 'krib-1') {
       const additionalGuests = Math.max(0, guestCount - KRIB1_STANDARD_CAPACITY)
-      additionalGuestFee = additionalGuests * KRIB1_ADDITIONAL_GUEST_FEE
+      additionalGuestFee = isParty ? 0 : additionalGuests * KRIB1_ADDITIONAL_GUEST_FEE
       partyFee = isParty ? KRIB1_PARTY_FEE : 0
       totalAmount = Number(villa.base_price) + additionalGuestFee + partyFee
     } else {

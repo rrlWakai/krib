@@ -65,36 +65,59 @@ export function StickyBookingBar({
               </span>
             </div>
             <p className="font-body text-[11px] text-on-surface-variant/50 mt-1">
-              21 Hours &bull; Up to {maxGuests} Guests{krib1 ? ` (+${KRIB1_ADDITIONAL_GUEST_FEE}/pax above ${KRIB1_STANDARD_CAPACITY})` : ""}
+              21 Hours &bull; Standard capacity {maxGuests} Guests{krib1 ? ` (+${KRIB1_ADDITIONAL_GUEST_FEE}/pax above ${KRIB1_STANDARD_CAPACITY})` : ""}
             </p>
 
             {/* Party Fee Toggle */}
             {onPartyFeeToggle && (
-              <div className="flex items-center gap-2 mt-1.5">
-                <button
-                  type="button"
-                  onClick={() => onPartyFeeToggle(!partyFeeActive)}
+              <button
+                type="button"
+                onClick={() => onPartyFeeToggle(!partyFeeActive)}
+                className={cn(
+                  "flex w-full items-center justify-between gap-3 py-2 rounded-lg border transition-colors duration-200 cursor-pointer",
+                  partyFeeActive
+                    ? "bg-primary/5 border-primary/20"
+                    : "bg-surface-container-low border-outline-variant/30 hover:bg-surface-container hover:border-primary/20",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+                )}
+                role="switch"
+                aria-checked={partyFeeActive}
+                aria-label="Toggle party fee"
+              >
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className={cn(
+                    "relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 shrink-0",
+                    partyFeeActive ? "bg-primary" : "bg-outline/30",
+                  )}>
+                    <motion.span
+                      layout
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      className={cn(
+                        "inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm",
+                        partyFeeActive ? "translate-x-4" : "translate-x-0.5",
+                      )}
+                    />
+                  </div>
+                  <span className={cn(
+                    "font-body text-[10px] font-medium",
+                    partyFeeActive ? "text-on-surface" : "text-on-surface-variant",
+                  )}>
+                    Party fee
+                  </span>
+                </div>
+                <motion.span
+                  key={partyFeeActive ? "on" : "off"}
+                  initial={{ opacity: 0, x: 4 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                   className={cn(
-                    "relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 cursor-pointer",
-                    partyFeeActive ? "bg-primary" : "bg-outline/50",
+                    "font-body text-[10px] font-medium tabular-nums shrink-0",
+                    partyFeeActive ? "text-primary" : "text-on-surface-variant/60",
                   )}
-                  role="switch"
-                  aria-checked={partyFeeActive}
-                  aria-label="Toggle party fee"
                 >
-                  <motion.span
-                    layout
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className={cn(
-                      "inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm",
-                      partyFeeActive ? "translate-x-4" : "translate-x-0.5",
-                    )}
-                  />
-                </button>
-                <span className="font-body text-[10px] text-on-surface-variant/70">
-                  +{formatPrice(partyFee)} Party Fee
-                </span>
-              </div>
+                  {partyFeeActive ? formatPrice(partyFee) : <span className="text-on-surface-variant/40">₱5,000</span>}
+                </motion.span>
+              </button>
             )}
 
             {discountApplied && (

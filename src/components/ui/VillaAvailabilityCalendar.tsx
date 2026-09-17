@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/cn";
 import { fetchUpcomingAvailability, type AvailabilityReservation } from "../../services/api/availability";
 import { getUnavailableDates } from "../../lib/availability";
-import { isKrib1, toLocalDateString } from "../../lib/bookingTime";
+import { hasFixedCheckin, toLocalDateString } from "../../lib/bookingTime";
 
 interface VillaAvailabilityCalendarProps {
   villaId: string;
@@ -45,7 +45,7 @@ export function VillaAvailabilityCalendar({
     promise: Promise<AvailabilityReservation[]>;
   } | null>(null);
 
-  const isKrib1Villa = isKrib1(villaId);
+  const hasFixedCheckinVilla = hasFixedCheckin(villaId);
 
   useEffect(() => {
     const key = `${villaId}:${refreshKey}:${retryEpoch}`;
@@ -94,8 +94,8 @@ export function VillaAvailabilityCalendar({
   }, [villaId, refreshKey, retryEpoch]);
 
   const unavailableDates = useMemo(
-    () => getUnavailableDates(reservations, isKrib1Villa),
-    [reservations, isKrib1Villa],
+    () => getUnavailableDates(reservations, villaId),
+    [reservations, villaId],
   );
 
   const firstDay = new Date(view.year, view.month, 1).getDay();
@@ -281,7 +281,7 @@ export function VillaAvailabilityCalendar({
                 {formatLongDate(selectedDate)}
               </p>
               <p className="font-body text-sm text-on-surface-variant mt-0.5">
-                {isKrib1Villa
+                {hasFixedCheckinVilla
                   ? "Check-in fixed at 2:00 PM · 21-hour stay"
                   : "You will choose an arrival time in the booking steps."}
               </p>

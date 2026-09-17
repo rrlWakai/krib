@@ -32,7 +32,7 @@ import { BookingExperience } from "../components/ui/BookingExperience";
 import { VillaAvailabilityCalendar } from "../components/ui/VillaAvailabilityCalendar";
 import { getIcon } from "../lib/iconMap";
 import { cn } from "../lib/cn";
-import { isKrib1, KRIB1_PARTY_MAX_CAPACITY } from "../lib/bookingTime";
+import { isKrib1, isKrib2 } from "../lib/bookingTime";
 
 function ParallaxImg({
   src,
@@ -447,9 +447,9 @@ export function VillaDetailPage() {
                     Find your date
                   </h2>
                   <p className="font-body text-body-lg text-on-surface-variant leading-relaxed mb-10">
-                    {isKrib1(villa.id)
-                      ? "KRiB 1 welcomes arrivals at 2:00 PM for a fixed 21-hour stay. Choose the date you would like to arrive; crossed-out dates are already reserved."
-                      : "KRiB 2 offers flexible arrival windows between 11:00 AM and 8:00 PM. A date stays open as long as at least one arrival time is available."}
+                    {isKrib1(villa.id) || isKrib2(villa.id)
+                      ? "KRiB 1 and KRiB 2 welcome arrivals at 2:00 PM for a fixed 21-hour stay. Choose the date you would like to arrive; crossed-out dates are already reserved."
+                      : "Choose the date you would like to arrive; crossed-out dates are already reserved."}
                   </p>
                 </Reveal>
                 <Reveal delay={100}>
@@ -547,7 +547,6 @@ export function VillaDetailPage() {
                   villaName={villa.name}
                   villaId={villa.id}
                   maxGuests={villa.maxGuests}
-                  maxAbsoluteCapacity={isKrib1(villa.id) ? KRIB1_PARTY_MAX_CAPACITY : undefined}
                   partyFeeActive={partyFeeActive}
                   partyFeeAmount={partyFeeAmount}
                   onPartyFeeToggle={setPartyFeeActive}
@@ -835,7 +834,6 @@ export function VillaDetailPage() {
             name: villa.name,
             priceDetails: villa.priceDetails,
             maxGuests: villa.maxGuests,
-            maxAbsoluteCapacity: isKrib1(villa.id) ? KRIB1_PARTY_MAX_CAPACITY : undefined,
             partyFeeLabel: formatPeso(partyFeeAmount),
           }}
           partyFeeActive={partyFeeActive}
