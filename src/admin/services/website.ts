@@ -261,6 +261,13 @@ export async function getNextGallerySortOrder(villaId: string): Promise<number> 
   return (data?.sort_order ?? -1) + 1
 }
 
+function randomSegment(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID().slice(0, 8)
+  }
+  return Math.random().toString(36).slice(2, 10)
+}
+
 export async function uploadGalleryImage(
   villaId: string,
   file: File,
@@ -274,7 +281,7 @@ export async function uploadGalleryImage(
   }
 
   const ext = normalizeAvatarExtension(file.type || file.name, 'jpg')
-  const path = `villas/${villaId}/${Date.now()}.${ext}`
+  const path = `villas/${villaId}/${Date.now()}-${randomSegment()}.${ext}`
 
   const { error: uploadError } = await supabase.storage
     .from('villa-gallery')
@@ -354,7 +361,7 @@ export async function replaceGalleryImage(
   if (!existing) return fail({ code: 'NOT_FOUND', message: 'Image not found.' })
 
   const ext = normalizeAvatarExtension(file.type || file.name, 'jpg')
-  const path = `villas/${existing.villa_id}/replace-${Date.now()}.${ext}`
+  const path = `villas/${existing.villa_id}/replace-${Date.now()}-${randomSegment()}.${ext}`
 
   const { error: uploadError } = await supabase.storage
     .from('villa-gallery')
