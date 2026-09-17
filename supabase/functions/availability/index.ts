@@ -82,7 +82,7 @@ Deno.serve(async (req: Request) => {
     const { data: reservations, error: reservationsError } = await query
     if (reservationsError) throw reservationsError
 
-    const candidates = reservations ?? []
+    const candidates: any[] = reservations ?? []
     const booked = arrival && checkout
       ? candidates.filter((reservation) =>
           overlapIntervals(

@@ -1,15 +1,14 @@
 import { handleCors, corsHeaders } from '../_shared/cors.ts'
-import { badRequest, methodNotAllowed, internalError } from '../_shared/errors.ts'
+import { badRequest, methodNotAllowed, internalError, unauthorized } from '../_shared/errors.ts'
 import { requireBody } from '../_shared/validate.ts'
 import { getAdminClient } from '../_shared/adminClient.ts'
 import { getAdminUser } from '../_shared/auth.ts'
 import { writeAudit } from '../_shared/reservations.ts'
 
-const STAY_HOURS = 21
 const MANILA_OFFSET_MINUTES = 480
 const FIXED_ARRIVAL_HOUR = 14
 
-interface ManualReservationInput {
+interface ManualReservationInput extends Record<string, unknown> {
   villa_id: string
   arrival_date: string
   full_name: string
@@ -60,6 +59,7 @@ function mapInsertError(error: { code: string; message: string }): Response {
   }
   if (error.code === '23503') return badRequest('Invalid villa or guest reference.')
   if (error.code === '23514') return badRequest(error.message)
+  if (error.code === 'P0001') return badRequest(error.message)
   return internalError(error)
 }
 
@@ -110,20 +110,20 @@ Deno.serve(async (req: Request) => {
     if (!Number.isInteger(pets) || pets < 0) return badRequest('pets must be a non-negative integer')
 
     const guestCount = adults + children
-    const checkout = new Date(arrival.getTime() + STAY_HOURS * 60 * 60 * 1000)
     const isParty = input.is_party === true
     const admin = getAdminClient()
 
-    const { data: villa, error: villaError } = await admin
+    const { data: villaData, error: villaError } = await admin
       .from('villas')
       .select('id, slug, name, max_guests, base_price, is_active')
       .eq('slug', villaSlug)
       .eq('is_active', true)
       .maybeSingle()
     if (villaError) throw villaError
+    const villa = villaData as { id: string; slug: string; name: string } | null
     if (!villa) return badRequest(`Villa not found: ${villaSlug}`)
 
-    const { data: guest, error: guestError } = await admin
+    const { data: guestData, error: guestError } = await admin
       .from('guests')
       .upsert({ email, full_name: fullName, phone }, { onConflict: 'email' })
       .select('id')
@@ -132,27 +132,37 @@ Deno.serve(async (req: Request) => {
       if (guestError.code === '23514' || guestError.code === '23502') return badRequest(guestError.message)
       throw guestError
     }
+    const guest = guestData as { id: string } | null
+    if (!guest) return internalError('Guest could not be created')
 
-    const { data: reservation, error: reservationError } = await admin
-      .from('reservations')
-      .insert({
-        villa_id: villa.id,
-        guest_id: guest.id,
-        guest_count: guestCount,
-        arrival_datetime: arrival.toISOString(),
-        checkout_datetime: checkout.toISOString(),
-        special_requests: input.special_requests?.trim() ?? '',
-        terms_accepted: true,
-        privacy_accepted: true,
-        is_party: isParty,
-        status: 'approved',
-        approved_at: new Date().toISOString(),
-        approved_by: auth.admin.id,
+    const { data: createdData, error: createError } = await admin.rpc('create_manual_reservation', {
+      p_villa_id: villa.id,
+      p_guest_id: guest.id,
+      p_arrival_datetime: arrival.toISOString(),
+      p_special_requests: input.special_requests?.trim() ?? '',
+      p_is_party: isParty,
+      p_admin_user_id: auth.admin.id,
+    })
+    const created = createdData as { id: string } | null
+
+    if (createError || !created) {
+      return mapInsertError({
+        code: createError?.code ?? 'P0001',
+        message: createError?.message ?? 'Manual reservation was not created',
       })
+    }
+
+    const { data: reservationData, error: reservationError } = await admin
+      .from('reservations')
       .select(SELECT)
+      .eq('id', created.id)
       .single()
 
-    if (reservationError) return mapInsertError(reservationError)
+    const reservation = reservationData as {
+      id: string
+      reference_code: string
+    } | null
+    if (reservationError || !reservation) throw reservationError ?? new Error('Created reservation could not be loaded')
 
     await writeAudit(admin, auth.admin.id, 'create_manual', 'reservation', reservation.id, {
       status: 'approved',
@@ -167,6 +177,9 @@ Deno.serve(async (req: Request) => {
       { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {
+    if (err instanceof Error && err.message === 'Authentication required') {
+      return unauthorized(err.message)
+    }
     return internalError(err)
   }
 })

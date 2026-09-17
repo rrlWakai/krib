@@ -1,6 +1,6 @@
 import { badRequest } from './errors.ts'
 
-export function requireBody<T extends Record<string, unknown>>(
+export function requireBody<T extends object>(
   body: unknown,
   requiredFields: (keyof T)[],
 ): { ok: true; data: T } | { ok: false; response: Response } {

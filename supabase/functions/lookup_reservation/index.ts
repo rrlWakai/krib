@@ -50,7 +50,7 @@ Deno.serve(async (req: Request) => {
     if (referenceCode) {
       query = query.eq('reference_code', referenceCode)
     } else {
-      if (!isUuid(id)) {
+      if (!id || !isUuid(id)) {
         return badRequest('id must be a valid UUID')
       }
       query = query.eq('id', id)
