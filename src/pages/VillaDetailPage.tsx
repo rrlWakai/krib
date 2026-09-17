@@ -15,6 +15,8 @@ import {
 import { useScrollToHash } from "../hooks/useScrollToHash";
 import { useLiveVillas } from "../hooks/useLiveVillas";
 import { useSiteSettings } from "../hooks/useSiteSettings";
+import { usePublishedWebsite } from "../hooks/usePublishedWebsite";
+import { resolveVillaMarketing, resolveVillaGalleryImages } from "../lib/websiteContent";
 import { formatPeso, parsePesoAmount } from "../services/api/villas";
 import { villas, nearbyAttractions } from "../lib/data";
 import { fadeUp, pageTransition } from "../lib/animations";
@@ -68,6 +70,7 @@ export function VillaDetailPage() {
 
   const { liveVillas } = useLiveVillas();
   const { settings: siteSettings } = useSiteSettings();
+  const { content: websiteContent } = usePublishedWebsite();
   const partyFeeAmount = siteSettings?.business?.party_fee ?? 5000;
 
   const villa = useMemo(() => {
@@ -109,6 +112,22 @@ export function VillaDetailPage() {
     }
   }, [staticVilla, liveVillas]);
 
+  const liveVilla = liveVillas[slug];
+  const liveId = liveVilla?.id;
+
+  const resolvedMarketing = resolveVillaMarketing(
+    liveId ? websiteContent?.villaMarketing[liveId] : undefined,
+    staticVilla
+      ? {
+          tagline: staticVilla.tagline,
+          description: staticVilla.description,
+          story: staticVilla.story,
+          quickHighlights: staticVilla.quickHighlights,
+        }
+      : { tagline: "", description: "", story: "", quickHighlights: [] },
+    liveVilla?.description?.trim() ?? null,
+  );
+
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [reservationOpen, setReservationOpen] = useState(false);
@@ -136,8 +155,12 @@ export function VillaDetailPage() {
 
   const allImages = useMemo(() => {
     if (!villa) return [];
-    return villa.images;
-  }, [villa]);
+    return resolveVillaGalleryImages(
+      websiteContent?.gallery,
+      liveId ?? "",
+      villa.images,
+    );
+  }, [villa, websiteContent, liveId]);
 
   const openGallery = useCallback((index: number) => {
     setGalleryIndex(index);
@@ -359,7 +382,7 @@ export function VillaDetailPage() {
                   <div className="mb-2">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="font-body text-label-caps text-on-surface-variant/60 tracking-[0.2em] text-sm">
-                        {villa.number} &mdash; {villa.tagline}
+                        {villa.number} &mdash; {resolvedMarketing.tagline}
                       </span>
                     </div>
                     <h1 className="font-display text-display-md max-md:text-display-md-mobile text-on-surface mb-3 leading-tight">
@@ -367,7 +390,7 @@ export function VillaDetailPage() {
                     </h1>
                   </div>
                   <p className="font-body text-body-lg text-on-surface-variant leading-relaxed mb-10">
-                    {villa.description}
+                    {resolvedMarketing.description}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-6 mb-10">
@@ -404,7 +427,7 @@ export function VillaDetailPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    {villa.quickHighlights.map((h) => (
+                    {resolvedMarketing.quickHighlights.map((h) => (
                       <span
                         key={h}
                         className="font-body text-label-caps bg-primary-container text-on-primary-container px-5 py-2.5 rounded-full text-[11px] uppercase tracking-widest"
@@ -443,11 +466,11 @@ export function VillaDetailPage() {
                 <Reveal>
                   <SectionLabel>ABOUT THIS VILLA</SectionLabel>
                   <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-6 leading-tight">
-                    {villa.tagline}
+                    {resolvedMarketing.tagline}
                   </h2>
                   <div className="space-y-5">
                     <p className="font-body text-body-lg text-on-surface-variant leading-relaxed">
-                      {villa.story}
+                      {resolvedMarketing.story}
                     </p>
                     <p className="font-body text-body-lg text-on-surface-variant leading-relaxed">
                       Whether you are planning a quiet weekend escape or a

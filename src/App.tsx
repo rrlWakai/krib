@@ -58,6 +58,9 @@ const AdminProfile = lazy(() =>
 const AdminAuditLogs = lazy(() =>
   import("./admin/pages/AuditLogs").then((m) => ({ default: m.default })),
 );
+const AdminWebsiteManager = lazy(() =>
+  import("./admin/pages/website/WebsiteManager").then((m) => ({ default: m.default })),
+);
 
 function PageLoader() {
   return (
@@ -167,6 +170,7 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                   <Route path="villas" element={<Navigate to="/admin" replace />} />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="sms-activity" element={<AdminSmsActivity />} />
+                  <Route path="website" element={<AdminWebsiteManager />} />
                   <Route path="audit-logs" element={<AdminAuditLogs />} />
                   <Route path="settings" element={<AdminSettings />} />
                   <Route path="profile" element={<AdminProfile />} />

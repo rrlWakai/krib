@@ -8,6 +8,7 @@ import {
   Users,
   Building2,
   MessageSquare,
+  Globe,
   Settings,
   ScrollText,
   ChevronLeft,
@@ -27,6 +28,7 @@ const iconMap: Record<string, React.FC<{ size?: number; className?: string }>> =
   Users,
   Building2,
   MessageSquare,
+  Globe,
   Settings,
   ScrollText,
 }

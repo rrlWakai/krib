@@ -1,9 +1,13 @@
-import { siteContent } from "../../../lib/data";
-import { images } from "../../../lib/images";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "../../ui/Reveal";
+import { images } from "../../../lib/images";
+import { usePublishedWebsite } from "../../../hooks/usePublishedWebsite";
+import { resolveHomeContent } from "../../../lib/websiteContent";
 
 export function Hero() {
+  const { content } = usePublishedWebsite();
+  const home = resolveHomeContent(content?.pages?.home);
+
   return (
     <header className="relative h-[100dvh] w-full flex items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -18,17 +22,17 @@ export function Hero() {
         <div className="max-w-3xl">
           <Reveal delay={0} duration={0.6}>
             <p className="font-body text-label-caps text-white/80 tracking-[0.3em] mb-5">
-              {siteContent.hero.subtitle}
+              {home.hero.subtitle}
             </p>
           </Reveal>
           <Reveal delay={200} duration={0.6}>
             <h1 className="font-display text-display-lg max-md:text-display-lg-mobile text-white mb-6 leading-tight">
-              {siteContent.hero.title}
+              {home.hero.title}
             </h1>
           </Reveal>
           <Reveal delay={400} duration={0.6}>
             <p className="font-body text-body-lg text-white/90 max-w-xl leading-relaxed">
-              {siteContent.hero.description}
+              {home.hero.description}
             </p>
           </Reveal>
           <Reveal delay={600} duration={0.6}>

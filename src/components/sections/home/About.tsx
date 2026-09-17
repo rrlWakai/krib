@@ -1,20 +1,24 @@
 import { Reveal } from '../../ui/Reveal'
-import { siteContent } from '../../../lib/data'
 import { images } from '../../../lib/images'
+import { usePublishedWebsite } from '../../../hooks/usePublishedWebsite'
+import { resolveHomeContent } from '../../../lib/websiteContent'
 
 export function About() {
+  const { content } = usePublishedWebsite()
+  const home = resolveHomeContent(content?.pages?.home)
+
   return (
     <section className="py-section-gap bg-surface-container-low">
       <div className="mx-auto w-full max-w-container-max px-margin-desktop max-md:px-margin-mobile grid grid-cols-1 md:grid-cols-2 items-center gap-20">
         <Reveal className="order-2 md:order-1">
           <p className="font-body text-label-caps text-secondary mb-6 tracking-[0.2em]">
-            {siteContent.about.label}
+            {home.about.label}
           </p>
           <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-8 leading-tight">
-            {siteContent.about.title}
+            {home.about.title}
           </h2>
           <div className="space-y-5 text-on-surface-variant font-body text-body-lg leading-relaxed">
-            {siteContent.about.paragraphs.map((p, i) => (
+            {home.about.paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           </div>

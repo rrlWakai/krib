@@ -147,24 +147,33 @@ export type Database = {
       gallery_images: {
         Row: {
           alt_text: string
+          caption: string
           created_at: string
+          file_name: string
           id: string
+          is_visible: boolean
           sort_order: number
           storage_path: string
           villa_id: string
         }
         Insert: {
           alt_text?: string
+          caption?: string
           created_at?: string
+          file_name?: string
           id?: string
+          is_visible?: boolean
           sort_order?: number
           storage_path: string
           villa_id: string
         }
         Update: {
           alt_text?: string
+          caption?: string
           created_at?: string
+          file_name?: string
           id?: string
+          is_visible?: boolean
           sort_order?: number
           storage_path?: string
           villa_id?: string
@@ -487,6 +496,83 @@ export type Database = {
           max_guests?: number
           name?: string
           slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      villa_marketing: {
+        Row: {
+          draft_content: Json
+          id: string
+          is_published: boolean
+          published_at: string | null
+          published_by: string | null
+          published_content: Json
+          updated_at: string
+          villa_id: string
+        }
+        Insert: {
+          draft_content?: Json
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          published_content?: Json
+          updated_at?: string
+          villa_id: string
+        }
+        Update: {
+          draft_content?: Json
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          published_content?: Json
+          updated_at?: string
+          villa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "villa_marketing_villa_id_fkey"
+            columns: ["villa_id"]
+            isOneToOne: true
+            referencedRelation: "villas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      website_pages: {
+        Row: {
+          draft_content: Json
+          id: string
+          is_published: boolean
+          published_at: string | null
+          published_by: string | null
+          published_content: Json
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          draft_content?: Json
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          published_content?: Json
+          slug: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          draft_content?: Json
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          published_content?: Json
+          slug?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []

@@ -4,12 +4,14 @@ import { ArrowLeft } from 'lucide-react'
 import { PageHero } from '../components/ui/PageHero'
 import { Reveal } from '../components/ui/Reveal'
 import { SectionLabel } from '../components/ui/SectionLabel'
-import { siteContent } from '../lib/data'
 import { pageTransition } from '../lib/animations'
 import { images } from '../lib/images'
+import { usePublishedWebsite } from '../hooks/usePublishedWebsite'
+import { resolveAboutPageContent } from '../lib/websiteContent'
 
 export function AboutPage() {
-  const { aboutPage } = siteContent
+  const { content } = usePublishedWebsite()
+  const aboutPage = resolveAboutPageContent(content?.pages?.about)
 
   return (
     <motion.main
@@ -58,8 +60,7 @@ export function AboutPage() {
       <section className="py-24 px-margin-desktop max-md:px-margin-mobile max-w-container-max mx-auto text-center">
         <Reveal>
           <p className="font-display text-quote italic text-on-surface-variant max-w-2xl mx-auto mb-12">
-            &ldquo;We are not a resort. We are not a hotel. We are a place
-            where you can breathe, connect, and remember what matters most.&rdquo;
+            &ldquo;{aboutPage.quote}&rdquo;
           </p>
           <Link
             to="/"

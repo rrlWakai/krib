@@ -18,6 +18,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
   { label: 'Guests', icon: 'Users', path: '/admin/guests' },
   { label: 'SMS Activity', icon: 'MessageSquare', path: '/admin/sms-activity' },
+  { label: 'Website Manager', icon: 'Globe', path: '/admin/website' },
   { label: 'Audit Logs', icon: 'ScrollText', path: '/admin/audit-logs' },
   { label: 'Settings', icon: 'Settings', path: '/admin/settings' },
 ];

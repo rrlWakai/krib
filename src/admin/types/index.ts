@@ -180,3 +180,46 @@ export interface NavItem {
   icon: string;
   path: string;
 }
+
+export interface AdminWebsitePage {
+  id: string;
+  slug: string;
+  title: string;
+  draft_content: Record<string, unknown>;
+  published_content: Record<string, unknown>;
+  is_published: boolean;
+  published_at: string | null;
+  published_by: string | null;
+  updated_at: string;
+}
+
+export interface AdminVillaMarketing {
+  id: string;
+  villa_id: string;
+  draft_content: Record<string, unknown>;
+  published_content: Record<string, unknown>;
+  is_published: boolean;
+  published_at: string | null;
+  published_by: string | null;
+  updated_at: string;
+  villa: {
+    slug: string;
+    name: string;
+  } | null;
+}
+
+export interface AdminGalleryImage {
+  id: string;
+  villa_id: string;
+  storage_path: string;
+  alt_text: string;
+  caption: string;
+  file_name: string;
+  sort_order: number;
+  is_visible: boolean;
+  created_at: string;
+  villa: {
+    slug: string;
+    name: string;
+  } | null;
+}

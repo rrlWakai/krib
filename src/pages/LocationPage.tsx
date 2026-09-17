@@ -4,14 +4,17 @@ import { ArrowLeft, MapPin } from 'lucide-react'
 import { PageHero } from '../components/ui/PageHero'
 import { Reveal } from '../components/ui/Reveal'
 import { SectionLabel } from '../components/ui/SectionLabel'
-import { siteContent, nearbyAttractions } from '../lib/data'
+import { nearbyAttractions } from '../lib/data'
 import { pageTransition } from '../lib/animations'
 import { getIcon } from '../lib/iconMap'
+import { usePublishedWebsite } from '../hooks/usePublishedWebsite'
+import { resolveLocationContent } from '../lib/websiteContent'
 
 const MAP_EMBED = 'https://www.google.com/maps?q=3M8R+XWR+Beverley+Place+Yorkshire+San+Fernando+Pampanga&output=embed'
 
 export function LocationPage() {
-  const { location } = siteContent
+  const { content } = usePublishedWebsite()
+  const location = resolveLocationContent(content?.pages?.location)
 
   return (
     <motion.main
