@@ -1611,9 +1611,15 @@ function StepDetails({
 
       <div>
         <label className="font-body text-[11px] text-on-surface-variant/60 uppercase tracking-[0.12em] font-semibold block mb-1.5">
-          Anything we should know?{" "}
-          <span className="text-on-surface-variant/30">(optional)</span>
+          Special Requests{" "}
+          <span className="text-on-surface-variant/30 normal-case font-normal">
+            (Optional)
+          </span>
         </label>
+        <p className="font-body text-sm text-on-surface-variant mt-1 mb-2">
+          Let us know if you have any special requests. We&apos;ll do our best
+          to accommodate, but availability isn&apos;t guaranteed.
+        </p>
         <textarea
           value={message}
           onChange={(e) => onMessageChange(e.target.value)}
