@@ -52,6 +52,10 @@ function overlapsDay(res: Reservation, dayKey: string): boolean {
   return reservationDayKey(res.arrival_datetime) <= dayKey && dayKey <= reservationDayKey(res.checkout_datetime)
 }
 
+function arrivesOnDay(res: Reservation, dayKey: string): boolean {
+  return reservationDayKey(res.arrival_datetime) === dayKey
+}
+
 export default function Calendar() {
   const todayKey = businessDayKey(new Date())
   const [view, setView] = useState<ViewMode>('month')
@@ -142,7 +146,7 @@ export default function Calendar() {
   const getReservationsForDayInMonth = useCallback(
     (day: number) => {
       const dateKey = manilaDateKey(currentYear, currentMonth, day)
-      return filteredReservations.filter((r) => overlapsDay(r, dateKey))
+      return filteredReservations.filter((r) => arrivesOnDay(r, dateKey))
     },
     [currentYear, currentMonth, filteredReservations],
   )
@@ -225,9 +229,10 @@ export default function Calendar() {
   const weekReservations = useMemo(() => {
     const firstKey = weekKeys[0]
     const lastKey = weekKeys[6]
-    return filteredReservations.filter((r) =>
-      reservationDayKey(r.arrival_datetime) <= lastKey && reservationDayKey(r.checkout_datetime) >= firstKey,
-    )
+    return filteredReservations.filter((r) => {
+      const key = reservationDayKey(r.arrival_datetime)
+      return key >= firstKey && key <= lastKey
+    })
   }, [filteredReservations, weekKeys])
 
   const dayReservations = useMemo(() => {
@@ -548,16 +553,13 @@ function WeekView({
   onReservationClick: (e: React.MouseEvent, r: Reservation) => void
 }) {
   const firstKey = keys[0]
-  const lastKey = keys[6]
 
   const getReservationPosition = useCallback((r: Reservation) => {
-    const startKey = reservationDayKey(r.arrival_datetime)
-    const endKey = reservationDayKey(r.checkout_datetime)
-    const start = startKey < firstKey ? 0 : keys.findIndex((k) => k >= startKey)
-    let end = endKey >= lastKey ? 6 : keys.findIndex((k) => k > endKey) - 1
-    if (end < start) end = start
-    return { start: Math.max(0, start), end: Math.min(6, end) }
-  }, [keys, firstKey, lastKey])
+    const arrivalKey = reservationDayKey(r.arrival_datetime)
+    let col = keys.findIndex((k) => k === arrivalKey)
+    if (col === -1) col = arrivalKey < firstKey ? 0 : 6
+    return { start: col, end: col }
+  }, [keys, firstKey])
 
   return (
     <>
