@@ -11,7 +11,11 @@ import type { AdminNotification } from '../types/notifications'
 
 const POLL_INTERVAL = 30_000
 
-export function useNotifications() {
+interface UseNotificationsOptions {
+  onNewNotification?: (notification: AdminNotification) => void
+}
+
+export function useNotifications(options?: UseNotificationsOptions) {
   const { admin } = useAuth()
   const [notifications, setNotifications] = useState<AdminNotification[]>([])
   const [loading, setLoading] = useState(true)
@@ -19,6 +23,10 @@ export function useNotifications() {
   const channelRef = useRef<RealtimeChannel | null>(null)
   const seenIds = useRef<Set<string>>(new Set())
   const mountedRef = useRef(true)
+  const onNewNotificationRef = useRef<((n: AdminNotification) => void) | undefined>(
+    options?.onNewNotification,
+  )
+  onNewNotificationRef.current = options?.onNewNotification
 
   const unreadCount = notifications.filter((n) => !n.is_read).length
 
@@ -72,6 +80,7 @@ export function useNotifications() {
           if (seenIds.current.has(newNotification.id)) return
           seenIds.current.add(newNotification.id)
           setNotifications((prev) => [newNotification, ...prev])
+          onNewNotificationRef.current?.(newNotification)
         },
       )
       .subscribe()

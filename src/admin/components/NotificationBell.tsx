@@ -1,16 +1,22 @@
 import { useState } from 'react'
 import { Bell } from 'lucide-react'
 import { useNotifications } from '../hooks/useNotifications'
+import { useNotificationSound } from '../hooks/useNotificationSound'
 import { NotificationPanel } from './NotificationsPanel'
 import { cn } from '../../lib/cn'
 
 export function NotificationBell() {
+  const { playNewReservationSound } = useNotificationSound()
   const {
     notifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
-  } = useNotifications()
+  } = useNotifications({
+    onNewNotification: (notification) => {
+      if (notification.type === 'new_reservation') playNewReservationSound()
+    },
+  })
   const [open, setOpen] = useState(false)
 
   return (

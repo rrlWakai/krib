@@ -9,6 +9,8 @@ import {
   Save,
   Smartphone,
   UserCheck,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { PageHeader } from "../components/PageHeader";
 import { LoadingBlock, ErrorBlock } from "../components/AdminState";
@@ -22,6 +24,7 @@ import { approveAdminUser, updateSiteSettings } from "../services/mutations";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { clearSiteSettingsCache } from "../../services/api/settings";
 import { useBrowserPush } from "../hooks/useBrowserPush";
+import { useNotificationSound } from "../hooks/useNotificationSound";
 import type {
   SiteSettings,
   BusinessSettings,
@@ -538,6 +541,8 @@ export default function SettingsPage() {
 
         <BrowserNotificationsSection />
 
+        <NotificationSoundSection />
+
         {/* Legal */}
         <section className="border border-[#ECECEC] rounded-lg bg-white p-5">
           <div className="mb-4 flex items-center gap-3">
@@ -684,6 +689,77 @@ function BrowserNotificationsSection() {
           )}
         </div>
       )}
+    </section>
+  );
+}
+
+function NotificationSoundSection() {
+  const { enabled, setSoundEnabled, testSound } = useNotificationSound();
+
+  return (
+    <section className="border border-[#ECECEC] rounded-lg bg-white p-5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0f2f7]">
+          <Volume2 size={16} className="text-[#0A1F44]" />
+        </div>
+        <div className="flex-1">
+          <h2 className="font-display text-[16px] font-medium text-[#0A1F44]">
+            New Reservation Sound
+          </h2>
+          <p className="font-body text-[12px] text-[#757575]">
+            Play a sound in this browser when a new reservation notification
+            arrives in the admin dashboard.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FAFAFA] p-4">
+        <div className="flex items-center gap-3">
+          {enabled ? (
+            <Volume2 size={14} className="shrink-0 text-[#0A1F44]" />
+          ) : (
+            <VolumeX size={14} className="shrink-0 text-[#757575]" />
+          )}
+          <div>
+            <p className="font-body text-[13px] font-medium text-[#0A1F44]">
+              Notification Sound
+            </p>
+            <p className="font-body text-[11px] text-[#757575]">
+              {enabled
+                ? "On — new reservations play a sound in this browser"
+                : "Off — new reservations are silent in this browser"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={testSound}
+            className="min-h-[36px] rounded-lg border border-[#ECECEC] bg-white px-4 font-body text-[12px] font-medium text-[#0A1F44] transition-colors hover:bg-[#FAFAFA]"
+          >
+            Test Sound
+          </button>
+          <button
+            type="button"
+            onClick={() => setSoundEnabled(enabled === false)}
+            className={cn(
+              "relative inline-flex h-7 w-11 shrink-0 items-center rounded-full transition-colors duration-200",
+              enabled ? "bg-[#0A1F44]" : "bg-[#ECECEC]",
+            )}
+            role="switch"
+            aria-checked={enabled}
+            aria-label="Toggle notification sound"
+          >
+            <span
+              className={cn(
+                "inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200",
+                enabled ? "translate-x-[22px]" : "translate-x-[2px]",
+              )}
+            />
+          </button>
+        </div>
+      </div>
     </section>
   );
 }
