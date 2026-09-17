@@ -2,16 +2,9 @@ export const STAY_HOURS = 21
 export const ASIA_MANILA_UTC_OFFSET_MINUTES = 480
 
 export const ARRIVAL_TIME_SLOTS = [
-  '11:00',
-  '12:00',
-  '13:00',
+
   '14:00',
-  '15:00',
-  '16:00',
-  '17:00',
-  '18:00',
-  '19:00',
-  '20:00',
+
 ] as const
 
 export const DEFAULT_ARRIVAL_TIME = '14:00'
