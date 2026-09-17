@@ -4,6 +4,24 @@ import { getAdminClient } from '../_shared/adminClient.ts'
 
 const STAY_HOURS = 21
 
+function overlapIntervals(
+  firstArrival: string,
+  firstCheckout: string,
+  secondArrival: string,
+  secondCheckout: string,
+): boolean {
+  const firstArrivalTime = new Date(firstArrival).getTime()
+  const firstCheckoutTime = new Date(firstCheckout).getTime()
+  const secondArrivalTime = new Date(secondArrival).getTime()
+  const secondCheckoutTime = new Date(secondCheckout).getTime()
+
+  if ([firstArrivalTime, firstCheckoutTime, secondArrivalTime, secondCheckoutTime].some(Number.isNaN)) {
+    return true
+  }
+
+  return firstArrivalTime < secondCheckoutTime && firstCheckoutTime > secondArrivalTime
+}
+
 Deno.serve(async (req: Request) => {
   const cors = handleCors(req)
   if (cors) return cors
@@ -64,7 +82,17 @@ Deno.serve(async (req: Request) => {
     const { data: reservations, error: reservationsError } = await query
     if (reservationsError) throw reservationsError
 
-    const booked = reservations ?? []
+    const candidates = reservations ?? []
+    const booked = arrival && checkout
+      ? candidates.filter((reservation) =>
+          overlapIntervals(
+            arrival.toISOString(),
+            checkout.toISOString(),
+            reservation.arrival_datetime,
+            reservation.checkout_datetime,
+          ),
+        )
+      : candidates
 
     return new Response(
       JSON.stringify({

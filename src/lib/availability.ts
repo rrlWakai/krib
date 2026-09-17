@@ -19,7 +19,16 @@ export function overlapIntervals(
   secondArrival: string,
   secondCheckout: string,
 ): boolean {
-  return firstArrival < secondCheckout && firstCheckout > secondArrival
+  const firstArrivalTime = new Date(firstArrival).getTime()
+  const firstCheckoutTime = new Date(firstCheckout).getTime()
+  const secondArrivalTime = new Date(secondArrival).getTime()
+  const secondCheckoutTime = new Date(secondCheckout).getTime()
+
+  if ([firstArrivalTime, firstCheckoutTime, secondArrivalTime, secondCheckoutTime].some(Number.isNaN)) {
+    return true
+  }
+
+  return firstArrivalTime < secondCheckoutTime && firstCheckoutTime > secondArrivalTime
 }
 
 export function isBlockedArrival(
