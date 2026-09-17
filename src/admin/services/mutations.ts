@@ -45,6 +45,32 @@ function invalidateReservationData(id: string) {
   invalidateAdminCache('reservations', 'sms-logs', `reservation:${id}`)
 }
 
+export interface CreateManualReservationInput {
+  villa_id: string
+  arrival_date: string
+  full_name: string
+  email: string
+  phone: string
+  adults: number
+  children: number
+  infants?: number
+  pets?: number
+  is_party?: boolean
+  special_requests?: string
+}
+
+export async function createManualReservation(
+  payload: CreateManualReservationInput,
+): Promise<{ data: Reservation | null; error: AdminFunctionError | null }> {
+  const result = await invokeAdminFunction<{ reservation: Reservation }>(
+    'create_manual_reservation',
+    payload as unknown as Record<string, unknown>,
+  )
+  if (result.error) return { data: null, error: result.error }
+  invalidateAdminCache('reservations', 'guests', 'audit-logs')
+  return { data: result.data?.reservation ?? null, error: null }
+}
+
 export async function approveReservation(
   reservationId: string,
 ): Promise<{ data: Reservation | null; error: AdminFunctionError | null }> {

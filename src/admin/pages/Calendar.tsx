@@ -11,6 +11,7 @@ import { LoadingBlock, ErrorBlock } from '../components/AdminState'
 import { useAdminQuery } from '../hooks/useAdminQuery'
 import OccupancySummary from '../components/calendar/OccupancySummary'
 import ReservationDrawer from '../components/calendar/ReservationDrawer'
+import ManualBookingModal from '../components/calendar/ManualBookingModal'
 import {
   getDaysInMonth,
   getFirstDayOfMonth,
@@ -31,6 +32,8 @@ import {
 import type { Reservation, ReservationStatus } from '../types'
 import { StatusBadge } from '../components/StatusBadge'
 import { cn } from '../../lib/cn'
+import { combineArrivalDatetime, computeCheckout } from '../../lib/bookingTime'
+import { overlapIntervals } from '../../lib/availability'
 
 type ViewMode = 'month' | 'week' | 'day'
 
@@ -73,6 +76,9 @@ export default function Calendar() {
   const [showFilters, setShowFilters] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
   const [drawerKey, setDrawerKey] = useState(0)
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
+  const [manualBookingDate, setManualBookingDate] = useState<string | null>(null)
+  const [manualBookingVillaId, setManualBookingVillaId] = useState<string | undefined>(undefined)
 
   const reservationsQuery = useAdminQuery('reservations', async () => {
     const { fetchAllReservations } = await import('../services/api')
@@ -225,6 +231,37 @@ export default function Calendar() {
   }
 
   function closeDrawer() { setSelectedReservation(null) }
+
+  const getReservationsBlockingDate = useCallback((dateKey: string) => {
+    const arrival = combineArrivalDatetime(dateKey, '14:00')
+    const checkout = computeCheckout(arrival)
+    return reservations.filter((reservation) =>
+      ACTIVE_STATUSES.includes(reservation.status) &&
+      overlapIntervals(arrival, checkout, reservation.arrival_datetime, reservation.checkout_datetime),
+    )
+  }, [reservations])
+
+  const selectedDateReservations = selectedDateKey
+    ? getReservationsBlockingDate(selectedDateKey)
+    : []
+  const availableVillasForSelectedDate = selectedDateKey
+    ? villas.filter((villa) =>
+        villa.is_active &&
+        !selectedDateReservations.some((reservation) => reservation.villa_id === villa.id),
+      )
+    : []
+
+  function handleDateClick(dateKey: string) {
+    setSelectedDateKey(dateKey)
+  }
+
+  function openManualBooking() {
+    if (!selectedDateKey || availableVillasForSelectedDate.length === 0) return
+    setManualBookingDate(selectedDateKey)
+    setManualBookingVillaId(
+      availableVillasForSelectedDate.length === 1 ? availableVillasForSelectedDate[0].slug : undefined,
+    )
+  }
 
   const weekReservations = useMemo(() => {
     const firstKey = weekKeys[0]
@@ -420,11 +457,14 @@ export default function Calendar() {
         <div className="px-5 py-4">
           {view === 'month' && (
             <MonthView
-                dates={monthDates}
-                getReservations={getReservationsForDayInMonth}
-                isToday={isToday}
-                onReservationClick={handleReservationClick}
-              />
+              dates={monthDates}
+              year={currentYear}
+              month={currentMonth}
+              getReservations={getReservationsForDayInMonth}
+              isToday={isToday}
+              onReservationClick={handleReservationClick}
+              onDayClick={handleDateClick}
+            />
           )}
           {view === 'week' && (
             <WeekView
@@ -440,6 +480,41 @@ export default function Calendar() {
               reservations={dayReservations}
               onReservationClick={handleReservationClick}
             />
+          )}
+
+          {view === 'month' && selectedDateKey && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#ECECEC] bg-[#FAFAFA] px-4 py-3">
+              <div>
+                <p className="font-body text-[13px] font-medium text-[#0A1F44]">
+                  {formatManilaDateKey(selectedDateKey, { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+                <p className="font-body text-[11px] text-[#757575]">
+                  {selectedDateReservations.length > 0
+                    ? `${selectedDateReservations.length} reservation${selectedDateReservations.length === 1 ? '' : 's'} at the fixed 2:00 PM arrival time.`
+                    : 'No reservation at the fixed 2:00 PM arrival time.'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedDateReservations[0] && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReservation(selectedDateReservations[0])}
+                    className="rounded-lg border border-[#ECECEC] px-3 py-2 font-body text-[12px] font-medium text-[#0A1F44] transition-colors hover:bg-white"
+                  >
+                    View Reservation
+                  </button>
+                )}
+                {availableVillasForSelectedDate.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={openManualBooking}
+                    className="rounded-lg bg-[#0A1F44] px-3 py-2 font-body text-[12px] font-medium text-white transition-colors hover:bg-[#142d5b]"
+                  >
+                    + Add Booking
+                  </button>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -474,17 +549,33 @@ export default function Calendar() {
         onClose={closeDrawer}
         onStatusChange={refreshDrawer}
       />
+
+      <ManualBookingModal
+        open={manualBookingDate !== null}
+        arrivalDate={manualBookingDate ?? ''}
+        villas={availableVillasForSelectedDate}
+        defaultVillaId={manualBookingVillaId}
+        onClose={() => setManualBookingDate(null)}
+        onCreated={(created) => {
+          setManualBookingDate(null)
+          setSelectedDateKey(null)
+          refreshDrawer(created)
+        }}
+      />
     </div>
   )
 }
 
 function MonthView({
-  dates, getReservations, isToday, onReservationClick,
+  dates, year, month, getReservations, isToday, onReservationClick, onDayClick,
 }: {
   dates: (number | null)[]
+  year: number
+  month: number
   getReservations: (day: number) => Reservation[]
   isToday: (day: number) => boolean
   onReservationClick: (e: React.MouseEvent, r: Reservation) => void
+  onDayClick: (dateKey: string) => void
 }) {
   return (
     <>
@@ -501,7 +592,11 @@ function MonthView({
           const dayRes = getReservations(day)
           const today = isToday(day)
           return (
-            <div key={`d-${day}`} className="min-h-[90px] bg-white p-1.5 md:min-h-[120px] md:p-2">
+            <div
+              key={`d-${day}`}
+              className="min-h-[90px] cursor-pointer bg-white p-1.5 md:min-h-[120px] md:p-2"
+              onClick={() => onDayClick(manilaDateKey(year, month, day))}
+            >
               <div className="mb-1.5 flex items-center justify-center md:justify-start">
                 <span className={cn(
                   'flex h-6 w-6 items-center justify-center rounded-full font-body text-[12px]',
