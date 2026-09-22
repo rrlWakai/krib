@@ -67,7 +67,7 @@ Deno.serve(async (req: Request) => {
   const cors = handleCors(req)
   if (cors) return cors
   if (req.method !== 'POST') return methodNotAllowed(req.method)
-
+    
   try {
     const auth = await getAdminUser(req)
     if (!auth.ok) return auth.response
