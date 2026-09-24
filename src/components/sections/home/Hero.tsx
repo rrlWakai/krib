@@ -11,9 +11,14 @@ export function Hero() {
   return (
     <header className="relative h-[100dvh] w-full flex items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <div
-          className="w-full h-full bg-cover bg-center scale-105"
-          style={{ backgroundImage: `url(${images.hero})` }}
+        <img
+          src={images.hero}
+          alt="KRiB Beverly Place private villa"
+          width={1536}
+          height={1024}
+          fetchPriority="high"
+          decoding="async"
+          className="h-full w-full object-cover object-center scale-105"
         />
         <div className="absolute inset-0 bg-black/35" />
       </div>

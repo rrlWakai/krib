@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Private admin area - keep out of search results
+Disallow: /admin
+
+Sitemap: https://kribproperties.com/sitemap.xml

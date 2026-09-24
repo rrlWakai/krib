@@ -75,6 +75,10 @@ export function Connect() {
                 src={images.social}
                 alt="A lifestyle image of KRiB Beverly Place"
                 className="h-full w-full object-cover"
+                width={1024}
+                height={1024}
+                loading="lazy"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-linear-to-t from-[#0f172a]/70 via-[#0f172a]/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">

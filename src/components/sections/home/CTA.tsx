@@ -22,6 +22,10 @@ export function CTA() {
       <motion.img
         src={images.cta}
         alt=""
+        width={1376}
+        height={768}
+        loading="lazy"
+        decoding="async"
         style={{ y, scale }}
         className="absolute inset-0 h-[112%] w-full object-cover"
       />

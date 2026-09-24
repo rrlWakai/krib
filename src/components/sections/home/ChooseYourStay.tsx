@@ -64,6 +64,10 @@ export function ChooseYourStay() {
                   className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
                   src={villa1.image}
                   alt={villa1.name}
+                  width={943}
+                  height={1136}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               </div>
@@ -125,6 +129,10 @@ export function ChooseYourStay() {
                   className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
                   src={villa2.image}
                   alt={villa2.name}
+                  width={1264}
+                  height={843}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               </div>

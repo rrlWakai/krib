@@ -1,9 +1,15 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { WorkspaceHeader } from './WorkspaceHeader'
 import { useSidebarState } from '../hooks/useBreakpoint'
+import { setNoIndex, restoreIndex } from '../../lib/seo'
 
 export function AdminLayout() {
+  useEffect(() => {
+    setNoIndex()
+    return restoreIndex
+  }, [])
   const {
     isMobile,
     collapsed,

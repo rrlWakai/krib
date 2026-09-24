@@ -30,11 +30,19 @@ export function About() {
               className="w-full aspect-4/5 object-cover rounded-default shadow-elevated"
               src={images.about}
               alt="Family gathering at KRiB Beverly Place"
+              width={1024}
+              height={1051}
+              loading="lazy"
+              decoding="async"
             />
             <img
               src={images.krib2}
               alt="KRiB Beverly Place"
               className="absolute -bottom-6 -left-6 w-48 h-48 object-cover rounded-default shadow-elevated hidden md:block"
+              width={1264}
+              height={843}
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </Reveal>

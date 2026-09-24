@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { cn } from "../../lib/cn";
+import { setNoIndex, restoreIndex } from "../../lib/seo";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -42,6 +43,10 @@ export function AdminLogin() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  useEffect(() => {
+    setNoIndex();
+    return restoreIndex;
+  }, []);
   const passwordRequirementState = PASSWORD_REQUIREMENTS.map((requirement) =>
     requirement.test(password),
   );

@@ -75,6 +75,8 @@ export function Experiences() {
                           className="w-full h-280px lg:h-340px object-cover transition-transform duration-1000"
                           src={exp.image}
                           alt={exp.title}
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
                     </div>
@@ -108,6 +110,8 @@ export function Experiences() {
                         className="w-full h-200px object-cover"
                         src={exp.image}
                         alt={exp.title}
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                     <p className="font-body text-body-md text-on-surface-variant leading-relaxed">
