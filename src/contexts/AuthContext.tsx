@@ -31,11 +31,6 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (
-    fullName: string,
-    email: string,
-    password: string,
-  ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshAdmin: () => Promise<void>;
 }
@@ -161,19 +156,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [supabase],
   );
 
-  const signUp = useCallback(
-    async (fullName: string, email: string, password: string) => {
-      const { error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: { data: { full_name: fullName.trim() } },
-      });
-      if (error) return { error: handleAuthError(error) };
-      return { error: null };
-    },
-    [supabase],
-  );
-
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setState({
@@ -200,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, signIn, signUp, signOut, refreshAdmin }}
+      value={{ ...state, signIn, signOut, refreshAdmin }}
     >
       {children}
     </AuthContext.Provider>
