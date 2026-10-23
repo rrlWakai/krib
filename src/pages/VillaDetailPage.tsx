@@ -115,6 +115,13 @@ export function VillaDetailPage() {
   const liveVilla = liveVillas[slug];
   const liveId = liveVilla?.id;
 
+  const marketing = websiteContent?.villaMarketing[liveId] ?? null;
+
+  // A CMS override only counts when it actually provides amenities. An empty
+  // CMS array must never hide the villa's existing (static) amenities.
+  const cmsAmenities =
+    Array.isArray(marketing?.amenities) && marketing.amenities.length > 0;
+
   const resolvedMarketing = resolveVillaMarketing(
     liveId ? websiteContent?.villaMarketing[liveId] : undefined,
     staticVilla
@@ -123,10 +130,53 @@ export function VillaDetailPage() {
           description: staticVilla.description,
           story: staticVilla.story,
           quickHighlights: staticVilla.quickHighlights,
+          policies: staticVilla.policies,
+          amenities: staticVilla.amenities,
+          attractions: nearbyAttractions.map((a) => ({
+            id: a.id,
+            icon: a.icon,
+            name: a.name,
+            description: a.description,
+            travelTime: a.travelTime,
+          })),
         }
       : { tagline: "", description: "", story: "", quickHighlights: [] },
     liveVilla?.description?.trim() ?? null,
   );
+
+  // Rendered once and reused so the CMS grid and the static fallback share the
+  // identical resolved categories (CMS override wins; otherwise static copy).
+  const amenityGrid = resolvedMarketing.amenities.map((category) => (
+    <div key={category.category} className="mb-14 last:mb-0">
+      <Reveal>
+        <div className="flex items-center gap-4 mb-8">
+          <span className="font-body text-label-caps text-primary uppercase tracking-[0.28em] text-sm font-medium">
+            {category.category}
+          </span>
+          <span className="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent" />
+        </div>
+      </Reveal>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-5">
+        {category.items.map((item) => {
+          const Icon = getIcon(item.icon);
+          return (
+            <motion.div
+              key={item.label}
+              variants={fadeUp}
+              className="flex items-center gap-4"
+            >
+              <span className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full border border-outline-variant/35 text-on-surface-variant/60">
+                <Icon size={18} strokeWidth={1.5} />
+              </span>
+              <span className="font-body text-body-md text-on-surface leading-tight">
+                {item.label}
+              </span>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  ));
 
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -444,11 +494,11 @@ export function VillaDetailPage() {
                 <Reveal>
                   <SectionLabel>AVAILABILITY</SectionLabel>
                   <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-4 leading-tight">
-                    Find your date
+                    {resolvedMarketing.availabilityHeading}
                   </h2>
                   <p className="font-body text-body-lg text-on-surface-variant leading-relaxed mb-10">
                     {isKrib1(villa.id) || isKrib2(villa.id)
-                      ? "KRiB 1 and KRiB 2 welcome arrivals at 2:00 PM for a fixed 21-hour stay. Choose the date you would like to arrive; crossed-out dates are already reserved."
+                      ? resolvedMarketing.availabilityDescription
                       : "Choose the date you would like to arrive; crossed-out dates are already reserved."}
                   </p>
                 </Reveal>
@@ -473,11 +523,7 @@ export function VillaDetailPage() {
                       {resolvedMarketing.story}
                     </p>
                     <p className="font-body text-body-lg text-on-surface-variant leading-relaxed">
-                      Whether you are planning a quiet weekend escape or a
-                      lively celebration with loved ones,
-                      {villa.name} provides the perfect setting. The open living
-                      spaces, private pool, and thoughtfully designed interiors
-                      create an atmosphere that is both luxurious and welcoming.
+                      {resolvedMarketing.storySupplemental.replace('provides the perfect setting', `${villa.name} provides the perfect setting`)}
                     </p>
                   </div>
                 </Reveal>
@@ -485,49 +531,16 @@ export function VillaDetailPage() {
 
               {/* ----- 4. AMENITIES (Editorial Grid) ----- */}
               <section id="amenities">
-                {villa.slug === 'krib-2' ? (
-                  <VillaAmenities villaName={villa.name} />
+                <Reveal>
+                  <SectionLabel>AMENITIES</SectionLabel>
+                  <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-10">
+                    Everything you need
+                  </h2>
+                </Reveal>
+                {cmsAmenities || villa.slug !== 'krib-2' ? (
+                  <>{amenityGrid}</>
                 ) : (
-                  <>
-                    <Reveal>
-                      <SectionLabel>AMENITIES</SectionLabel>
-                      <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-10">
-                        Everything you need
-                      </h2>
-                    </Reveal>
-
-                    {villa.amenities.map((category) => (
-                      <div key={category.category} className="mb-14 last:mb-0">
-                        <Reveal>
-                          <div className="flex items-center gap-4 mb-8">
-                            <span className="font-body text-label-caps text-primary uppercase tracking-[0.28em] text-sm font-medium">
-                              {category.category}
-                            </span>
-                            <span className="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent" />
-                          </div>
-                        </Reveal>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-5">
-                          {category.items.map((item) => {
-                            const Icon = getIcon(item.icon);
-                            return (
-                              <motion.div
-                                key={item.label}
-                                variants={fadeUp}
-                                className="flex items-center gap-4"
-                              >
-                                <span className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full border border-outline-variant/35 text-on-surface-variant/60">
-                                  <Icon size={18} strokeWidth={1.5} />
-                                </span>
-                                <span className="font-body text-body-md text-on-surface leading-tight">
-                                  {item.label}
-                                </span>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </>
+                  <VillaAmenities villaName={villa.name} />
                 )}
               </section>
             </div>
@@ -729,13 +742,11 @@ export function VillaDetailPage() {
                   {villa.location}
                 </h2>
                 <p className="font-body text-body-lg text-on-surface-variant mb-10 leading-relaxed">
-                  Tucked away in Beverly Place, Mexico, Pampanga, KRiB offers a
-                  peaceful escape while staying close to shopping, dining,
-                  entertainment, and major road connections.
+                  {resolvedMarketing.locationDescription}
                 </p>
 
                 <div className="space-y-6 mb-10">
-                  {nearbyAttractions.map((a) => {
+                  {resolvedMarketing.attractions.map((a) => {
                     const Icon = getIcon(a.icon);
                     return (
                       <div key={a.id} className="flex items-start gap-4">
@@ -813,7 +824,7 @@ export function VillaDetailPage() {
               </p>
             </Reveal>
 
-            <VillaPolicies policies={villa.policies} />
+            <VillaPolicies policies={resolvedMarketing.policies} />
           </div>
         </section>
       </motion.main>

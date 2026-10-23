@@ -62,7 +62,14 @@ export interface VillaMarketingContent {
   tagline?: string;
   description?: string;
   story?: string;
+  storySupplemental?: string;
   quickHighlights?: string[];
+  availabilityHeading?: string;
+  availabilityDescription?: string;
+  locationDescription?: string;
+  policies?: { icon: string; label: string; value: string }[];
+  amenities?: { category: string; items: { icon: string; label: string }[] }[];
+  attractions?: { id: string; icon: string; name: string; description: string; travelTime: string }[];
 }
 
 export interface PublishedGalleryImage {

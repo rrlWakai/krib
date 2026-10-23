@@ -20,9 +20,6 @@ import { cn } from '../../../lib/cn'
 
 type Draft = Record<string, unknown>
 
-const PLACEHOLDER_EXAMPLE =
-  '• 20 guests, air-conditioned\n• Private pool\n• Grill area'
-
 function VillaEditorDraft({
   marketing,
   onChange,
@@ -60,6 +57,12 @@ function VillaEditorDraft({
           onChange={(v) => onChange({ ...draft, story: v })}
           rows={7}
         />
+        <TextAreaField
+          label="Story supplemental paragraph"
+          value={(draft.storySupplemental as string) ?? ''}
+          onChange={(v) => onChange({ ...draft, storySupplemental: v })}
+          rows={4}
+        />
       </Card>
 
       <Card title="Quick Highlights">
@@ -76,9 +79,273 @@ function VillaEditorDraft({
             })
           }
           rows={4}
-          placeholder={PLACEHOLDER_EXAMPLE}
+          placeholder="• 20 guests, air-conditioned\n• Private pool\n• Grill area"
           hint="Shown as chips on the villa page."
         />
+      </Card>
+
+      <Card title="Availability section">
+        <Field
+          label="Heading"
+          value={(draft.availabilityHeading as string) ?? ''}
+          onChange={(v) => onChange({ ...draft, availabilityHeading: v })}
+        />
+        <TextAreaField
+          label="Description"
+          value={(draft.availabilityDescription as string) ?? ''}
+          onChange={(v) => onChange({ ...draft, availabilityDescription: v })}
+          rows={4}
+        />
+      </Card>
+
+      <Card title="House policies">
+        {((draft.policies as { icon: string; label: string; value: string }[]) ?? []).map((p, idx) => (
+          <div key={idx} className="mb-4 rounded border border-[#ECECEC] p-3 space-y-2">
+            <Field
+              label="Icon"
+              value={p.icon}
+              onChange={(v) => {
+                const next = [...((draft.policies as any[]) ?? [])]
+                next[idx] = { ...next[idx], icon: v }
+                onChange({ ...draft, policies: next })
+              }}
+            />
+            <Field
+              label="Label"
+              value={p.label}
+              onChange={(v) => {
+                const next = [...((draft.policies as any[]) ?? [])]
+                next[idx] = { ...next[idx], label: v }
+                onChange({ ...draft, policies: next })
+              }}
+            />
+            <Field
+              label="Value"
+              value={p.value}
+              onChange={(v) => {
+                const next = [...((draft.policies as any[]) ?? [])]
+                next[idx] = { ...next[idx], value: v }
+                onChange({ ...draft, policies: next })
+              }}
+            />
+            <button
+              type="button"
+              className="text-xs text-red-600"
+              onClick={() => {
+                const next = [...((draft.policies as any[]) ?? [])]
+                next.splice(idx, 1)
+                onChange({ ...draft, policies: next })
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="text-xs text-[#0A1F44]"
+          onClick={() => {
+            const next = [...((draft.policies as any[]) ?? [])]
+            next.push({ icon: 'info', label: '', value: '' })
+            onChange({ ...draft, policies: next })
+          }}
+        >
+          + Add policy
+        </button>
+      </Card>
+
+      <Card title="Location">
+        <TextAreaField
+          label="Location description"
+          value={(draft.locationDescription as string) ?? ''}
+          onChange={(v) => onChange({ ...draft, locationDescription: v })}
+          rows={4}
+          hint="Shown on the villa page under the location heading."
+        />
+      </Card>
+
+      <Card title="Nearby attractions">
+        {((draft.attractions as { id: string; icon: string; name: string; description: string; travelTime: string }[]) ?? []).map(
+          (a, idx) => {
+            const save = (next: { id: string; icon: string; name: string; description: string; travelTime: string }[]) =>
+              onChange({ ...draft, attractions: next })
+            return (
+              <div
+                key={a.id ?? `attr-${idx}`}
+                className="mb-4 rounded border border-[#ECECEC] p-3 space-y-2"
+              >
+                <Field
+                  label="Name"
+                  value={a.name}
+                  onChange={(v) => {
+                    const next = [...((draft.attractions as any[]) ?? [])]
+                    next[idx] = { ...next[idx], name: v }
+                    save(next)
+                  }}
+                />
+                <Field
+                  label="Description"
+                  value={a.description}
+                  onChange={(v) => {
+                    const next = [...((draft.attractions as any[]) ?? [])]
+                    next[idx] = { ...next[idx], description: v }
+                    save(next)
+                  }}
+                />
+                <Field
+                  label="Travel time"
+                  value={a.travelTime}
+                  onChange={(v) => {
+                    const next = [...((draft.attractions as any[]) ?? [])]
+                    next[idx] = { ...next[idx], travelTime: v }
+                    save(next)
+                  }}
+                />
+                <Field
+                  label="Icon key"
+                  value={a.icon}
+                  onChange={(v) => {
+                    const next = [...((draft.attractions as any[]) ?? [])]
+                    next[idx] = { ...next[idx], icon: v }
+                    save(next)
+                  }}
+                  hint="e.g. store, directions_car"
+                />
+                <button
+                  type="button"
+                  className="text-xs text-red-600"
+                  onClick={() => {
+                    const next = [...((draft.attractions as any[]) ?? [])]
+                    next.splice(idx, 1)
+                    save(next)
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            )
+          },
+        )}
+        <button
+          type="button"
+          className="text-xs text-[#0A1F44]"
+          onClick={() => {
+            const next = [...((draft.attractions as any[]) ?? [])]
+            next.push({
+              id: `attr-${Date.now()}`,
+              icon: 'store',
+              name: '',
+              description: '',
+              travelTime: '',
+            })
+            onChange({ ...draft, attractions: next })
+          }}
+        >
+          + Add attraction
+        </button>
+      </Card>
+
+      <Card title="Amenities">
+        {((draft.amenities as { category: string; items: { icon: string; label: string }[] }[]) ?? []).map(
+          (c, cIdx) => {
+            const save = (next: { category: string; items: { icon: string; label: string }[] }[]) =>
+              onChange({ ...draft, amenities: next })
+            return (
+              <div
+                key={`cat-${cIdx}`}
+                className="mb-4 rounded border border-[#ECECEC] p-3 space-y-2"
+              >
+                <Field
+                  label="Category"
+                  value={c.category}
+                  onChange={(v) => {
+                    const next = [...((draft.amenities as any[]) ?? [])]
+                    next[cIdx] = { ...next[cIdx], category: v }
+                    save(next)
+                  }}
+                />
+                {((c.items as { icon: string; label: string }[]) ?? []).map(
+                  (it, iIdx) => {
+                    return (
+                      <div key={iIdx} className="flex items-end gap-2">
+                        <Field
+                          label="Icon"
+                          value={it.icon}
+                          onChange={(v) => {
+                            const next = [...((draft.amenities as any[]) ?? [])]
+                            const items = [...((next[cIdx] as any).items ?? [])]
+                            items[iIdx] = { ...items[iIdx], icon: v }
+                            next[cIdx] = { ...next[cIdx], items }
+                            save(next)
+                          }}
+                        />
+                        <Field
+                          label="Label"
+                          value={it.label}
+                          onChange={(v) => {
+                            const next = [...((draft.amenities as any[]) ?? [])]
+                            const items = [...((next[cIdx] as any).items ?? [])]
+                            items[iIdx] = { ...items[iIdx], label: v }
+                            next[cIdx] = { ...next[cIdx], items }
+                            save(next)
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="text-xs text-red-600 ml-2"
+                          onClick={() => {
+                            const next = [...((draft.amenities as any[]) ?? [])]
+                            const items = [...((next[cIdx] as any).items ?? [])]
+                            items.splice(iIdx, 1)
+                            next[cIdx] = { ...next[cIdx], items }
+                            save(next)
+                          }}
+                        >
+                          Remove item
+                        </button>
+                      </div>
+                    )
+                  },
+                )}
+                <button
+                  type="button"
+                  className="text-xs text-[#0A1F44] mt-2"
+                  onClick={() => {
+                    const next = [...((draft.amenities as any[]) ?? [])]
+                    const items = [...((next[cIdx] as any).items ?? [])]
+                    items.push({ icon: 'store', label: '' })
+                    next[cIdx] = { ...next[cIdx], items }
+                    save(next)
+                  }}
+                >
+                  + Add item
+                </button>
+                <button
+                  type="button"
+                  className="text-xs text-red-600 mt-2"
+                  onClick={() => {
+                    const next = [...((draft.amenities as any[]) ?? [])]
+                    next.splice(cIdx, 1)
+                    save(next)
+                  }}
+                >
+                  Remove category
+                </button>
+              </div>
+            )
+          },
+        )}
+        <button
+          type="button"
+          className="text-xs text-[#0A1F44]"
+          onClick={() => {
+            const next = [...((draft.amenities as any[]) ?? [])]
+            next.push({ category: '', items: [{ icon: 'store', label: '' }] })
+            onChange({ ...draft, amenities: next })
+          }}
+        >
+          + Add category
+        </button>
       </Card>
     </div>
   )

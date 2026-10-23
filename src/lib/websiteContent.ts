@@ -264,7 +264,14 @@ export interface ResolvedVillaMarketing {
   tagline: string;
   description: string;
   story: string;
+  storySupplemental: string;
   quickHighlights: string[];
+  availabilityHeading: string;
+  availabilityDescription: string;
+  locationDescription: string;
+  policies: { icon: string; label: string; value: string }[];
+  amenities: { category: string; items: { icon: string; label: string }[] }[];
+  attractions: { id: string; icon: string; name: string; description: string; travelTime: string }[];
 }
 
 /**
@@ -283,7 +290,14 @@ export function resolveVillaMarketing(
     tagline: string;
     description: string;
     story: string;
+    storySupplemental?: string;
     quickHighlights: string[];
+    availabilityHeading?: string;
+    availabilityDescription?: string;
+    locationDescription?: string;
+    policies?: { icon: string; label: string; value: string }[];
+    amenities?: { category: string; items: { icon: string; label: string }[] }[];
+    attractions?: { id: string; icon: string; name: string; description: string; travelTime: string }[];
   },
   dbDescription: string | null | undefined,
 ): ResolvedVillaMarketing {
@@ -306,7 +320,62 @@ export function resolveVillaMarketing(
           ? effectiveDbDescription
           : fallback.description,
     story: mergeText(fallback.story, mark.story),
+    storySupplemental: mergeText(
+      fallback.storySupplemental ?? "Whether you are planning a quiet weekend escape or a lively celebration with loved ones, provides the perfect setting. The open living spaces, private pool, and thoughtfully designed interiors create an atmosphere that is both luxurious and welcoming.",
+      mark.storySupplemental,
+    ),
     quickHighlights: mergeStringArray(fallback.quickHighlights, mark.quickHighlights),
+    availabilityHeading: mergeText(
+      fallback.availabilityHeading ?? "Find your date",
+      mark.availabilityHeading,
+    ),
+    availabilityDescription: mergeText(
+      fallback.availabilityDescription ?? "KRiB 1 and KRiB 2 welcome arrivals at 2:00 PM for a fixed 21-hour stay. Choose the date you would like to arrive; crossed-out dates are already reserved.",
+      mark.availabilityDescription,
+    ),
+    locationDescription: mergeText(
+      fallback.locationDescription ?? "Tucked away in Beverly Place, Mexico, Pampanga, KRiB offers a peaceful escape while staying close to shopping, dining, entertainment, and major road connections.",
+      mark.locationDescription,
+    ),
+    policies: (Array.isArray(mark.policies) && mark.policies.length > 0
+      ? mark.policies
+          .filter(isRecord)
+          .map((p) => ({
+            icon: mergeText("", p.icon),
+            label: mergeText("", p.label),
+            value: mergeText("", p.value),
+          }))
+          .filter((p) => p.label && p.value)
+      : null) ?? fallback.policies ?? [],
+    amenities: (Array.isArray(mark.amenities) && mark.amenities.length > 0
+      ? mark.amenities
+          .filter(isRecord)
+          .map((c) => ({
+            category: mergeText("", c.category),
+            items: Array.isArray(c.items)
+              ? c.items
+                  .filter(isRecord)
+                  .map((it) => ({
+                    icon: mergeText("", it.icon),
+                    label: mergeText("", it.label),
+                  }))
+                  .filter((it) => it.label)
+              : [],
+          }))
+          .filter((c) => c.category && c.items.length > 0)
+      : null) ?? fallback.amenities ?? [],
+    attractions: (Array.isArray(mark.attractions) && mark.attractions.length > 0
+      ? mark.attractions
+          .filter(isRecord)
+          .map((a, idx) => ({
+            id: mergeText(`attr-${idx + 1}`, a.id),
+            icon: mergeText("", a.icon),
+            name: mergeText("", a.name),
+            description: mergeText("", a.description),
+            travelTime: mergeText("", a.travelTime),
+          }))
+          .filter((a) => a.name)
+      : null) ?? fallback.attractions ?? [],
   };
 }
 
