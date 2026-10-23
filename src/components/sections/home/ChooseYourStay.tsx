@@ -5,6 +5,8 @@ import { Reveal } from "../../ui/Reveal";
 import { villas } from "../../../lib/data";
 import { useLiveVillas } from "../../../hooks/useLiveVillas";
 import type { VillaDetail } from "../../../types";
+import { usePublishedWebsite } from "../../../hooks/usePublishedWebsite";
+import { resolveHomeContent } from "../../../lib/websiteContent";
 
 const quickInfoIcons: Record<string, LucideIcon> = {
   users: Users,
@@ -15,6 +17,8 @@ const quickInfoIcons: Record<string, LucideIcon> = {
 
 export function ChooseYourStay() {
   const { liveVillas } = useLiveVillas();
+  const { content } = usePublishedWebsite();
+  const home = resolveHomeContent(content?.pages?.home);
   const [staticVilla1, staticVilla2] = villas;
 
   const mergeLive = (villa: VillaDetail): VillaDetail => {
@@ -42,15 +46,13 @@ export function ChooseYourStay() {
       <Reveal>
         <div className="max-w-2xl mb-20">
           <p className="font-body text-label-caps text-secondary mb-4 tracking-[0.2em]">
-            CHOOSE YOUR VILLA
+            {home.villas.label}
           </p>
           <h2 className="font-display text-headline-xl max-md:text-headline-xl-mobile mb-6">
-            Two Villas. One unforgettable experience.
+            {home.villas.title}
           </h2>
           <p className="font-body text-body-lg text-on-surface-variant">
-            Whether you are planning an intimate family getaway or a grand
-            celebration, each villa offers its own personality. The question is
-            not which is better — but which feels like yours.
+            {home.villas.description}
           </p>
         </div>
       </Reveal>

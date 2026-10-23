@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, Facebook, Instagram } from "lucide-react";
 import { Reveal } from "../../ui/Reveal";
 import { images } from "../../../lib/images";
+import { usePublishedWebsite } from "../../../hooks/usePublishedWebsite";
+import { resolveHomeContent } from "../../../lib/websiteContent";
 
 const socialPlatforms = [
   {
@@ -23,6 +25,9 @@ const socialPlatforms = [
 ];
 
 export function Connect() {
+  const { content } = usePublishedWebsite();
+  const home = resolveHomeContent(content?.pages?.home);
+
   return (
     <section
       id="connect"
@@ -34,17 +39,16 @@ export function Connect() {
             <div className="relative flex flex-col justify-center bg-[#f3f7fb] p-10 md:p-14 lg:p-16">
               <Reveal className="max-w-xl">
                 <p className="mb-6 font-body text-label-caps uppercase tracking-[0.24em] text-primary">
-                  Let's Connect
+                  {home.connect.label}
                 </p>
                 <h2 className="mb-6 font-display text-headline-xl leading-tight text-on-surface max-md:text-headline-xl-mobile">
-                  Have questions about your stay, availability, or celebrations?
+                  {home.connect.title}
                 </h2>
                 <p className="mb-4 font-body text-body-lg text-on-surface-variant">
-                  We're just a message away.
+                  {home.connect.lead}
                 </p>
                 <p className="mb-10 font-body text-body-lg leading-relaxed text-on-surface-variant">
-                  Connect with us on Facebook or Instagram and we'll be happy to
-                  help you plan your perfect getaway.
+                  {home.connect.description}
                 </p>
 
                 <div className="flex flex-wrap gap-4">

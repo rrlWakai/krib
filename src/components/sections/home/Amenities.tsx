@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { Waves, Snowflake, Tv, Music, Wifi, UtensilsCrossed, Gamepad2, ShowerHead } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { usePublishedWebsite } from '../../../hooks/usePublishedWebsite'
+import { resolveHomeContent } from '../../../lib/websiteContent'
 
 const signatureAmenities: { icon: LucideIcon; label: string }[] = [
   { icon: Waves, label: 'Private Swimming Pool' },
@@ -14,6 +16,9 @@ const signatureAmenities: { icon: LucideIcon; label: string }[] = [
 ]
 
 export function Amenities() {
+  const { content } = usePublishedWebsite()
+  const home = resolveHomeContent(content?.pages?.home)
+
   return (
     <section className="relative overflow-hidden bg-white py-section-gap">
       {/* Subtle background texture */}
@@ -32,15 +37,14 @@ export function Amenities() {
           <div className="flex items-center gap-4 mb-5">
             <span className="w-8 h-px bg-primary/40" />
             <span className="font-body text-label-caps text-primary uppercase tracking-[0.28em] text-sm font-medium">
-              Featured Amenities
+              {home.amenities.label}
             </span>
           </div>
           <h2 className="font-display text-display-md max-md:text-display-md-mobile text-on-surface mb-5 leading-tight max-w-3xl">
-            Designed for comfort, built for connection.
+            {home.amenities.title}
           </h2>
           <p className="font-body text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
-            Every villa is thoughtfully equipped so you can focus on what
-            matters — spending time with the people you love.
+            {home.amenities.description}
           </p>
         </motion.div>
 

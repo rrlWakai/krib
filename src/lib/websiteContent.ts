@@ -1,4 +1,4 @@
-import { siteContent } from "./data";
+import { siteContent, experiences as experienceFallback } from "./data";
 import { resolveStorageUrl } from "../services/api/website";
 import type { PublishedGalleryImage } from "../services/api/website";
 
@@ -35,6 +35,39 @@ const CTA_FALLBACK = {
   buttonLabel: "Explore Villas",
 };
 
+const HOME_SECTION_FALLBACKS = {
+  experiences: {
+    label: "The Experience",
+    title: "Weekends at KRiB are built around what matters most.",
+    items: experienceFallback,
+  },
+  villas: {
+    label: "Choose Your Villa",
+    title: "Two Villas. One unforgettable experience.",
+    description:
+      "Whether you are planning an intimate family getaway or a grand celebration, each villa offers its own personality. The question is not which is better — but which feels like yours.",
+  },
+  amenities: {
+    label: "Featured Amenities",
+    title: "Designed for comfort, built for connection.",
+    description:
+      "Every villa is thoughtfully equipped so you can focus on what matters — spending time with the people you love.",
+  },
+  faq: {
+    label: "Guidance",
+    title: "Everything you need to know before you arrive.",
+    description:
+      "We have gathered the questions guests ask most when planning their stay.",
+  },
+  connect: {
+    label: "Let's Connect",
+    title: "Have questions about your stay, availability, or celebrations?",
+    lead: "We're just a message away.",
+    description:
+      "Connect with us on Facebook or Instagram and we'll be happy to help you plan your perfect getaway.",
+  },
+};
+
 export interface ResolvedHomeContent {
   hero: {
     subtitle: string;
@@ -52,12 +85,33 @@ export interface ResolvedHomeContent {
     description: string;
     buttonLabel: string;
   };
+  experiences: { label: string; title: string; items: { id: string; title: string; description: string; image: string }[] };
+  villas: { label: string; title: string; description: string };
+  amenities: { label: string; title: string; description: string };
+  faq: { label: string; title: string; description: string };
+  connect: { label: string; title: string; lead: string; description: string };
 }
 
 export function resolveHomeContent(page: unknown): ResolvedHomeContent {
   const hero = isRecord(page) && isRecord(page.hero) ? page.hero : {};
   const about = isRecord(page) && isRecord(page.about) ? page.about : {};
   const cta = isRecord(page) && isRecord(page.cta) ? page.cta : {};
+  const experiences = isRecord(page) && isRecord(page.experiences) ? page.experiences : {};
+  const villas = isRecord(page) && isRecord(page.villas) ? page.villas : {};
+  const amenities = isRecord(page) && isRecord(page.amenities) ? page.amenities : {};
+  const faq = isRecord(page) && isRecord(page.faq) ? page.faq : {};
+  const connect = isRecord(page) && isRecord(page.connect) ? page.connect : {};
+  const experienceItems = Array.isArray(experiences.items)
+    ? experiences.items
+        .filter(isRecord)
+        .map((item, index) => ({
+          id: mergeText(experienceFallback[index]?.id ?? `experience-${index + 1}`, item.id),
+          title: mergeText(experienceFallback[index]?.title ?? "", item.title),
+          description: mergeText(experienceFallback[index]?.description ?? "", item.description),
+          image: mergeText(experienceFallback[index]?.image ?? "", item.image),
+        }))
+        .filter((item) => item.title && item.description && item.image)
+    : [];
 
   return {
     hero: {
@@ -75,6 +129,32 @@ export function resolveHomeContent(page: unknown): ResolvedHomeContent {
       title: mergeText(CTA_FALLBACK.title, cta.title),
       description: mergeText(CTA_FALLBACK.description, cta.description),
       buttonLabel: mergeText(CTA_FALLBACK.buttonLabel, cta.buttonLabel),
+    },
+    experiences: {
+      label: mergeText(HOME_SECTION_FALLBACKS.experiences.label, experiences.label),
+      title: mergeText(HOME_SECTION_FALLBACKS.experiences.title, experiences.title),
+      items: experienceItems.length > 0 ? experienceItems : HOME_SECTION_FALLBACKS.experiences.items,
+    },
+    villas: {
+      label: mergeText(HOME_SECTION_FALLBACKS.villas.label, villas.label),
+      title: mergeText(HOME_SECTION_FALLBACKS.villas.title, villas.title),
+      description: mergeText(HOME_SECTION_FALLBACKS.villas.description, villas.description),
+    },
+    amenities: {
+      label: mergeText(HOME_SECTION_FALLBACKS.amenities.label, amenities.label),
+      title: mergeText(HOME_SECTION_FALLBACKS.amenities.title, amenities.title),
+      description: mergeText(HOME_SECTION_FALLBACKS.amenities.description, amenities.description),
+    },
+    faq: {
+      label: mergeText(HOME_SECTION_FALLBACKS.faq.label, faq.label),
+      title: mergeText(HOME_SECTION_FALLBACKS.faq.title, faq.title),
+      description: mergeText(HOME_SECTION_FALLBACKS.faq.description, faq.description),
+    },
+    connect: {
+      label: mergeText(HOME_SECTION_FALLBACKS.connect.label, connect.label),
+      title: mergeText(HOME_SECTION_FALLBACKS.connect.title, connect.title),
+      lead: mergeText(HOME_SECTION_FALLBACKS.connect.lead, connect.lead),
+      description: mergeText(HOME_SECTION_FALLBACKS.connect.description, connect.description),
     },
   };
 }

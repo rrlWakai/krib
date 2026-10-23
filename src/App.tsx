@@ -1,4 +1,10 @@
-import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Lenis from "lenis";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -17,16 +23,17 @@ const VillaDetailPage = lazy(() =>
     default: m.VillaDetailPage,
   })),
 );
-const LocationPage = lazy(() =>
-  import("./pages/LocationPage").then((m) => ({ default: m.LocationPage })),
-);
 const MyReservationPage = lazy(() =>
-  import("./pages/MyReservationPage").then((m) => ({ default: m.MyReservationPage })),
+  import("./pages/MyReservationPage").then((m) => ({
+    default: m.MyReservationPage,
+  })),
 );
 
 // Admin pages (lazy loaded)
 const AdminLayout = lazy(() =>
-  import("./admin/layout/AdminLayout").then((m) => ({ default: m.AdminLayout })),
+  import("./admin/layout/AdminLayout").then((m) => ({
+    default: m.AdminLayout,
+  })),
 );
 const AdminDashboard = lazy(() =>
   import("./admin/pages/Dashboard").then((m) => ({ default: m.default })),
@@ -35,7 +42,9 @@ const AdminReservations = lazy(() =>
   import("./admin/pages/Reservations").then((m) => ({ default: m.default })),
 );
 const AdminReservationDetail = lazy(() =>
-  import("./admin/pages/ReservationDetail").then((m) => ({ default: m.default })),
+  import("./admin/pages/ReservationDetail").then((m) => ({
+    default: m.default,
+  })),
 );
 const AdminCalendar = lazy(() =>
   import("./admin/pages/Calendar").then((m) => ({ default: m.default })),
@@ -59,7 +68,9 @@ const AdminAuditLogs = lazy(() =>
   import("./admin/pages/AuditLogs").then((m) => ({ default: m.default })),
 );
 const AdminWebsiteManager = lazy(() =>
-  import("./admin/pages/website/WebsiteManager").then((m) => ({ default: m.default })),
+  import("./admin/pages/website/WebsiteManager").then((m) => ({
+    default: m.default,
+  })),
 );
 
 function PageLoader() {
@@ -70,7 +81,13 @@ function PageLoader() {
   );
 }
 
-function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l: boolean) => void }) {
+function MainLayout({
+  loading,
+  setLoading,
+}: {
+  loading: boolean;
+  setLoading: (l: boolean) => void;
+}) {
   const location = useLocation();
   const lenisRef = useRef<Lenis | null>(null);
 
@@ -120,7 +137,7 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
     };
   }, [loading]);
 
-  const isAdminRoute = location.pathname.startsWith('/admin')
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <>
@@ -147,7 +164,6 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                 <Route path="/" element={<HomePage />} />
                 <Route path="/krib-1" element={<VillaDetailPage />} />
                 <Route path="/krib-2" element={<VillaDetailPage />} />
-                <Route path="/location" element={<LocationPage />} />
                 <Route path="/my-reservation" element={<MyReservationPage />} />
 
                 {/* Admin Login — public */}
@@ -164,10 +180,16 @@ function MainLayout({ loading, setLoading }: { loading: boolean; setLoading: (l:
                 >
                   <Route index element={<AdminDashboard />} />
                   <Route path="reservations" element={<AdminReservations />} />
-                  <Route path="reservations/:id" element={<AdminReservationDetail />} />
+                  <Route
+                    path="reservations/:id"
+                    element={<AdminReservationDetail />}
+                  />
                   <Route path="calendar" element={<AdminCalendar />} />
                   <Route path="guests" element={<AdminGuests />} />
-                  <Route path="villas" element={<Navigate to="/admin" replace />} />
+                  <Route
+                    path="villas"
+                    element={<Navigate to="/admin" replace />}
+                  />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="sms-activity" element={<AdminSmsActivity />} />
                   <Route path="website" element={<AdminWebsiteManager />} />

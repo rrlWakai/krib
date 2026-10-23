@@ -20,10 +20,28 @@ export interface CtaContent {
   buttonLabel: string;
 }
 
+export interface HomeSectionContent {
+  label: string;
+  title: string;
+  description?: string;
+}
+
+export interface ExperienceTimelineItem {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
 export interface HomePageContent {
   hero: HeroContent;
   about: AboutContent;
   cta: CtaContent;
+  experiences: HomeSectionContent & { items: ExperienceTimelineItem[] };
+  villas: HomeSectionContent;
+  amenities: HomeSectionContent;
+  faq: HomeSectionContent;
+  connect: { label: string; title: string; lead: string; description: string };
 }
 
 export interface AboutPageSection {
@@ -38,21 +56,7 @@ export interface AboutPageContent {
   quote: string;
 }
 
-export interface Direction {
-  from: string;
-  via: string;
-  travelTime: string;
-  description: string;
-}
-
-export interface LocationContent {
-  heroTitle: string;
-  heroDescription: string;
-  address: string;
-  directions: Direction[];
-}
-
-export type PageContent = HomePageContent | AboutPageContent | LocationContent;
+export type PageContent = HomePageContent | AboutPageContent;
 
 export interface VillaMarketingContent {
   tagline?: string;

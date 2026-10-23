@@ -9,7 +9,7 @@ import { cn } from '../../../lib/cn'
 type TabId = 'pages' | 'villas' | 'gallery'
 
 const TABS: { id: TabId; label: string; description: string }[] = [
-  { id: 'pages', label: 'Pages', description: 'Home, About, Location copy' },
+  { id: 'pages', label: 'Pages', description: 'Homepage sections and copy' },
   { id: 'villas', label: 'Village Content', description: 'Villa marketing copy' },
   { id: 'gallery', label: 'Gallery', description: 'Villa photos & captions' },
 ]

@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../../lib/cn";
 import { faqCategories } from "../../../lib/data";
 import type { FAQCategory } from "../../../types";
+import { usePublishedWebsite } from "../../../hooks/usePublishedWebsite";
+import { resolveHomeContent } from "../../../lib/websiteContent";
 
 function ChapterAccordion({
   category,
@@ -161,6 +163,9 @@ function ChapterAccordion({
 }
 
 export function FAQ() {
+  const { content } = usePublishedWebsite();
+  const home = resolveHomeContent(content?.pages?.home);
+
   return (
     <section className="relative overflow-hidden bg-white py-section-gap">
       {/* Subtle background texture */}
@@ -179,15 +184,14 @@ export function FAQ() {
           <div className="flex items-center gap-4 mb-5">
             <span className="w-8 h-px bg-primary/40" />
             <span className="font-body text-label-caps text-primary uppercase tracking-[0.28em] text-sm font-medium">
-              Guidance
+              {home.faq.label}
             </span>
           </div>
           <h2 className="font-display text-display-md max-md:text-display-md-mobile text-on-surface mb-5 leading-tight max-w-3xl">
-            Everything you need to know before you arrive.
+            {home.faq.title}
           </h2>
           <p className="font-body text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
-            We have gathered the questions guests ask most when planning their
-            stay. If you cannot find what you are looking for, reach out on{" "}
+            {home.faq.description} If you cannot find what you are looking for, reach out on{" "}
             <a
               href="https://www.facebook.com/KribBeverlyPlace"
               target="_blank"
