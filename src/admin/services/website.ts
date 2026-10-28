@@ -26,7 +26,7 @@ export const CMS_QUERY_KEYS = [
   'website-gallery',
 ] as const
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+export const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
 function fail(error: { code?: string; message?: string }): ServiceResult<never> {
   return {
@@ -318,6 +318,32 @@ export async function uploadGalleryImage(
   }
   invalidateCms()
   return { data: data as unknown as AdminGalleryImage, error: null }
+}
+
+export async function uploadSiteImage(
+  file: File,
+  folder = 'site',
+): Promise<ServiceResult<{ url: string; path: string }>> {
+  const supabase = getSupabaseClient()
+  if (!isSupportedAvatarFile(file) || file.size > MAX_IMAGE_SIZE) {
+    return fail({
+      code: 'INVALID_FILE',
+      message: 'Use a JPG, PNG, WebP, or AVIF image smaller than 5 MB.',
+    })
+  }
+
+  const ext = normalizeAvatarExtension(file.type || file.name, 'jpg')
+  const path = `${folder}/${Date.now()}-${randomSegment()}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('villa-gallery')
+    .upload(path, file, { contentType: file.type || 'image/jpeg', upsert: false })
+  if (uploadError) {
+    return fail({ code: 'UPLOAD', message: uploadError.message })
+  }
+
+  const { data } = supabase.storage.from('villa-gallery').getPublicUrl(path)
+  return { data: { url: data.publicUrl, path }, error: null }
 }
 
 export async function updateGalleryImage(

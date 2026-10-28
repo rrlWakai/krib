@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronDown, Eye, Save, Send } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, Eye, Save, Send, Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { LoadingBlock, ErrorBlock } from '../../components/AdminState'
 import { useAdminQuery } from '../../hooks/useAdminQuery'
@@ -12,7 +12,8 @@ import {
   logAudit,
 } from '../../services/website'
 import type { AdminWebsitePage } from '../../types'
-import { Field, TextAreaField, Card, PrimaryButton, GhostButton } from './fields'
+import { Field, TextAreaField, Card, PrimaryButton, GhostButton, SmallButton } from './fields'
+import { ImageUploadField } from './ImageUploadField'
 import { PreviewModal } from './PreviewModal'
 import {
   resolveHomeContent,
@@ -31,6 +32,38 @@ function textToParagraphs(text: string): string[] {
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)
+}
+
+interface TimelineItem {
+  id: string
+  title: string
+  description: string
+  image: string
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Reads the raw timeline items from the draft. Unlike resolveHomeContent this
+ * keeps incomplete items (including newly added empty ones) so they can be
+ * edited instead of silently disappearing from the form.
+ */
+function getTimelineItems(
+  draft: Draft,
+  defaults: TimelineItem[],
+): TimelineItem[] {
+  const experiences = (draft.experiences ?? {}) as Record<string, unknown>
+  if (!Array.isArray(experiences.items)) return defaults
+  return experiences.items
+    .filter(isRecord)
+    .map((item) => ({
+      id: String(item.id ?? ''),
+      title: String(item.title ?? ''),
+      description: String(item.description ?? ''),
+      image: String(item.image ?? ''),
+    }))
 }
 
 /* Legacy helper for the retired standalone About editor.
@@ -102,11 +135,55 @@ function HomeForm({
   const cta = (draft.cta ?? {}) as Record<string, string>
   const resolved = resolveHomeContent(draft)
   const experiences = { ...resolved.experiences, ...((draft.experiences ?? {}) as Record<string, string>) }
-  const experienceItems = resolved.experiences.items
+  const timelineItems = getTimelineItems(draft, resolved.experiences.items)
   const villas = { ...resolved.villas, ...((draft.villas ?? {}) as Record<string, string>) }
   const amenities = { ...resolved.amenities, ...((draft.amenities ?? {}) as Record<string, string>) }
   const faq = { ...resolved.faq, ...((draft.faq ?? {}) as Record<string, string>) }
   const connect = { ...resolved.connect, ...((draft.connect ?? {}) as Record<string, string>) }
+
+  function patchItems(updater: (items: TimelineItem[]) => TimelineItem[]) {
+    onChange({
+      ...draft,
+      experiences: {
+        ...((draft.experiences ?? {}) as Record<string, unknown>),
+        items: updater(timelineItems),
+      },
+    })
+  }
+
+  function addTimelineItem() {
+    patchItems((items) => [
+      ...items,
+      {
+        id: `experience-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        title: '',
+        description: '',
+        image: '',
+      },
+    ])
+  }
+
+  function deleteTimelineItem(index: number) {
+    patchItems((items) => items.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  function moveTimelineItem(from: number, to: number) {
+    patchItems((items) => {
+      if (to < 0 || to >= items.length) return items
+      const next = [...items]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return next
+    })
+  }
+
+  function updateTimelineItem(index: number, patch: Partial<TimelineItem>) {
+    patchItems((items) =>
+      items.map((entry, itemIndex) =>
+        itemIndex === index ? { ...entry, ...patch } : entry,
+      ),
+    )
+  }
 
   return (
     <div className="space-y-5">
@@ -201,28 +278,69 @@ function HomeForm({
         value={{ label: experiences.label, title: experiences.title }}
         onChange={(patch) => onChange({ ...draft, experiences: { ...experiences, ...patch } })}
       />
-      <Card title="Experience Timeline" subtitle="Each entry is one card in the Experience timeline. Use a public image URL for the card image.">
-        <div className="space-y-4">
-          {experienceItems.map((item, index) => (
+      <Card
+        title="Experience Timeline"
+        subtitle="Cards appear on the website in the order you arrange them. A card is hidden on the public site until it has a title, description, and image."
+        actions={
+          <SmallButton onClick={addTimelineItem}>Add item</SmallButton>
+        }
+      >
+        {timelineItems.length === 0 && (
+          <p className="mb-4 font-body text-[12px] text-[#757575]">
+            No timeline items yet — the website will show the default timeline.
+          </p>
+        )}
+        <div className="space-y-3">
+          {timelineItems.map((item, index) => (
             <div key={item.id} className="rounded-lg border border-[#ECECEC] bg-[#FAFAFA] p-4">
-              <p className="mb-3 font-body text-[12px] font-medium text-[#0A1F44]">Timeline item {index + 1}</p>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="font-body text-[12px] font-medium text-[#0A1F44]">
+                  Timeline item {index + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => moveTimelineItem(index, index - 1)}
+                  disabled={index === 0}
+                  aria-label="Move timeline item up"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#ECECEC] text-[#757575] transition-colors disabled:opacity-50 disabled:pointer-events-none hover:!bg-[#f0f2f7]"
+                >
+                  <ArrowUp size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveTimelineItem(index, index + 1)}
+                  disabled={index === timelineItems.length - 1}
+                  aria-label="Move timeline item down"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#ECECEC] text-[#757575] transition-colors disabled:opacity-50 disabled:pointer-events-none hover:!bg-[#f0f2f7]"
+                >
+                  <ArrowDown size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteTimelineItem(index)}
+                  aria-label="Delete timeline item"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#ECECEC] text-[#757575] transition-colors hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
               <div className="space-y-3">
                 <Field
                   label="Title"
                   value={item.title}
-                  onChange={(title) => onChange({ ...draft, experiences: { ...experiences, items: experienceItems.map((entry, itemIndex) => itemIndex === index ? { ...entry, title } : entry) } })}
+                  onChange={(title) => updateTimelineItem(index, { title })}
                 />
                 <TextAreaField
                   label="Description"
                   value={item.description}
-                  onChange={(description) => onChange({ ...draft, experiences: { ...experiences, items: experienceItems.map((entry, itemIndex) => itemIndex === index ? { ...entry, description } : entry) } })}
+                  onChange={(description) => updateTimelineItem(index, { description })}
                   rows={3}
                 />
-                <Field
-                  label="Image URL"
+                <ImageUploadField
+                  label="Image"
                   value={item.image}
-                  onChange={(image) => onChange({ ...draft, experiences: { ...experiences, items: experienceItems.map((entry, itemIndex) => itemIndex === index ? { ...entry, image } : entry) } })}
-                  hint="Paste a public image URL."
+                  onChange={(image) => updateTimelineItem(index, { image })}
+                  folder="site/experiences"
                 />
               </div>
             </div>
@@ -244,92 +362,6 @@ function HomeForm({
   )
 }
 
-/* Legacy standalone About editor, kept out of the single-page manager.
-function AboutPageForm({
-  draft,
-  onChange,
-}: {
-  draft: Draft
-  onChange: (next: Draft) => void
-}) {
-  const sections = (Array.isArray(draft.sections) ? draft.sections : []) as {
-    title: string
-    paragraphs: string[]
-  }[]
-
-  return (
-    <div className="space-y-5">
-      <Card title="Hero">
-        <div className="grid grid-cols-1 gap-4">
-          <Field
-            label="Title"
-            value={(draft.heroTitle as string) ?? ''}
-            onChange={(v) => onChange({ ...draft, heroTitle: v })}
-          />
-          <TextAreaField
-            label="Description"
-            value={(draft.heroDescription as string) ?? ''}
-            onChange={(v) => onChange({ ...draft, heroDescription: v })}
-            rows={3}
-          />
-        </div>
-      </Card>
-
-      <Card
-        title="Story Sections"
-        subtitle="Each section appears as the numbered stories on the About page."
-        actions={
-          <GhostButton
-            onClick={() =>
-              onChange({
-                ...draft,
-                sections: [...sections, { title: '', paragraphs: [''] }],
-              })
-            }
-          >
-            <Plus size={12} /> Add section
-          </GhostButton>
-        }
-      >
-        <div className="space-y-3">
-          {sections.map((section, i) => (
-            <SectionEditor
-              key={i}
-              title={section.title ?? ''}
-              paragraphs={section.paragraphs ?? []}
-              onChange={(patch) => {
-                const next = [...sections]
-                next[i] = { ...next[i], ...patch }
-                onChange({ ...draft, sections: next })
-              }}
-              onRemove={() => {
-                const next = [...sections]
-                next.splice(i, 1)
-                onChange({ ...draft, sections: next })
-              }}
-            />
-          ))}
-          {sections.length === 0 && (
-            <p className="font-body text-[12px] text-[#757575]">
-              No sections yet. Add one to start.
-            </p>
-          )}
-        </div>
-      </Card>
-
-      <Card title="Closing Quote">
-        <TextAreaField
-          label="Quote"
-          value={(draft.quote as string) ?? ''}
-          onChange={(v) => onChange({ ...draft, quote: v })}
-          rows={3}
-        />
-      </Card>
-    </div>
-  )
-}
-
-*/
 function PageEditor({
   page,
   fields,

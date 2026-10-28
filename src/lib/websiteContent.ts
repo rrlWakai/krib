@@ -104,12 +104,19 @@ export function resolveHomeContent(page: unknown): ResolvedHomeContent {
   const experienceItems = Array.isArray(experiences.items)
     ? experiences.items
         .filter(isRecord)
-        .map((item, index) => ({
-          id: mergeText(experienceFallback[index]?.id ?? `experience-${index + 1}`, item.id),
-          title: mergeText(experienceFallback[index]?.title ?? "", item.title),
-          description: mergeText(experienceFallback[index]?.description ?? "", item.description),
-          image: mergeText(experienceFallback[index]?.image ?? "", item.image),
-        }))
+        .map((item, index) => {
+          const id =
+            typeof item.id === 'string' && item.id.trim() !== ''
+              ? item.id
+              : experienceFallback[index]?.id ?? `experience-${index + 1}`
+          const fallback = experienceFallback.find((f) => f.id === id)
+          return {
+            id,
+            title: mergeText(fallback?.title ?? '', item.title),
+            description: mergeText(fallback?.description ?? '', item.description),
+            image: mergeText(fallback?.image ?? '', item.image),
+          }
+        })
         .filter((item) => item.title && item.description && item.image)
     : [];
 
